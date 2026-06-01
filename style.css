@@ -1,1 +1,214 @@
-:root{--brand:#0f766e;--bg:#eef4f7;--card:#fff;--text:#0f172a;--muted:#64748b;--line:#dbe4ea;--danger:#dc2626}*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;color:var(--text);font-size:17px}header{position:sticky;top:0;z-index:5;background:rgba(255,255,255,.94);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);padding:16px;display:flex;justify-content:space-between;align-items:center}h1{font-size:24px;margin:0;font-weight:900}h2{font-size:26px}h3{margin:0 0 10px}.muted,#status{color:var(--muted);font-size:14px}nav{position:sticky;top:75px;background:var(--bg);z-index:4;display:flex;gap:8px;padding:10px 12px}.tab{flex:1;background:#dfe8ef;color:#475569}.tab.active{background:var(--brand);color:#fff}main{padding:14px;max-width:800px;margin:auto}.page{display:none}.page.active{display:block}button{border:0;border-radius:16px;padding:13px 15px;font-weight:900;font-size:16px;background:#e2e8f0;color:#0f172a}.primary{width:100%;background:var(--brand);color:white;margin-top:16px;padding:17px}.secondary{background:white;border:1px solid var(--line)}.danger{background:var(--danger);color:white}.hidden{display:none!important}input,select,textarea{width:100%;border:2px solid var(--line);border-radius:17px;padding:15px;font:inherit;background:white;color:var(--text);outline:none;margin-top:6px}textarea{min-height:90px}label{font-weight:850;color:#475569;display:block;margin:14px 0}#list{display:grid;gap:12px;margin-top:14px}.card{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:16px;box-shadow:0 6px 18px rgba(15,23,42,.06)}.card h3{font-size:23px}.row{display:flex;gap:8px;flex-wrap:wrap}.pill{background:#ecfeff;color:#0f766e;border-radius:999px;padding:6px 10px;font-size:13px;font-weight:850}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.actions button{flex:1;min-width:105px}.kv{border-top:1px solid var(--line);padding:12px 0}.kv b{display:block;color:#475569}.kv span{white-space:pre-wrap}.photoBox{border:2px dashed var(--line);border-radius:24px;background:#f8fafc;padding:16px;text-align:center}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:12px}.thumbWrap{position:relative}.thumb{width:100%;aspect-ratio:1.15/1;object-fit:cover;border-radius:18px;border:1px solid var(--line);background:#e2e8f0}.x{position:absolute;right:6px;top:6px;border-radius:999px;padding:6px 10px;background:rgba(0,0,0,.65);color:white}.modal{position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;padding:18px}#bigPhoto{max-width:100%;max-height:88vh;border-radius:18px}#closePhoto,#closeQr{position:absolute;top:18px;right:18px;border-radius:999px;width:54px;height:54px;font-size:28px;padding:0}.box{position:relative;background:white;border-radius:24px;padding:24px;text-align:center;color:#0f172a}
+:root{
+  --bg:#0b0f14;
+  --card:#121821;
+  --card2:#18212d;
+  --border:#263241;
+  --gold:#d4af37;
+  --text:#f5f7fa;
+  --muted:#9ca9b8;
+  --green:#19c37d;
+  --danger:#ef4444;
+}
+
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body{
+  background:linear-gradient(to bottom,#0b0f14,#101722);
+  color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",sans-serif;
+  min-height:100vh;
+}
+
+.topbar{
+  position:sticky;
+  top:0;
+  z-index:100;
+  background:rgba(11,15,20,.95);
+  backdrop-filter: blur(20px);
+  border-bottom:1px solid rgba(255,255,255,.06);
+  padding:18px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.topbar h1{
+  font-size:24px;
+  font-weight:800;
+}
+
+#status{
+  color:var(--muted);
+  font-size:13px;
+  margin-top:4px;
+}
+
+.iconBtn{
+  width:50px;
+  height:50px;
+  border-radius:16px;
+  border:none;
+  background:var(--card);
+  color:var(--gold);
+  font-size:20px;
+}
+
+.tabs{
+  display:flex;
+  gap:10px;
+  padding:15px;
+}
+
+.tab{
+  flex:1;
+  border:none;
+  border-radius:18px;
+  background:var(--card);
+  color:var(--muted);
+  padding:14px;
+  font-size:15px;
+  font-weight:700;
+}
+
+.tab.active{
+  background:linear-gradient(135deg,#d4af37,#8f6b10);
+  color:black;
+}
+
+main{
+  padding:18px;
+}
+
+.search{
+  width:100%;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:22px;
+  padding:18px;
+  color:white;
+  font-size:16px;
+  margin-bottom:18px;
+}
+
+.search::placeholder{
+  color:#6d7a8a;
+}
+
+.patientCard{
+  background:linear-gradient(145deg,#131b26,#1a2432);
+  border:1px solid rgba(255,255,255,.05);
+  border-radius:28px;
+  padding:20px;
+  margin-bottom:16px;
+  box-shadow:0 10px 30px rgba(0,0,0,.35);
+}
+
+.patientCard h3{
+  font-size:23px;
+  margin-bottom:12px;
+}
+
+.pill{
+  display:inline-flex;
+  padding:8px 14px;
+  border-radius:999px;
+  background:#212c3a;
+  color:#c9d4df;
+  margin-right:8px;
+  margin-bottom:10px;
+  font-size:13px;
+}
+
+.actions{
+  display:flex;
+  gap:10px;
+  margin-top:16px;
+}
+
+.actions button{
+  flex:1;
+  border:none;
+  border-radius:18px;
+  padding:14px;
+  font-weight:700;
+}
+
+button{
+  cursor:pointer;
+}
+
+.primary{
+  background:linear-gradient(135deg,#d4af37,#8f6b10);
+  color:black;
+}
+
+.secondary{
+  background:#1f2937;
+  color:white;
+}
+
+.danger{
+  background:#3a1518;
+  color:#ff7d7d;
+}
+
+form{
+  background:var(--card);
+  border-radius:30px;
+  padding:22px;
+  border:1px solid rgba(255,255,255,.05);
+}
+
+label{
+  display:block;
+  margin-bottom:16px;
+  color:#d6dde7;
+  font-size:14px;
+}
+
+input,
+textarea,
+select{
+  width:100%;
+  margin-top:8px;
+  border:none;
+  border-radius:20px;
+  background:#0f1620;
+  border:1px solid var(--border);
+  padding:18px;
+  color:white;
+  font-size:16px;
+}
+
+textarea{
+  min-height:120px;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+}
+
+.thumb{
+  width:100%;
+  border-radius:22px;
+  object-fit:cover;
+  aspect-ratio:1/1;
+}
+
+.card{
+  background:var(--card);
+  border-radius:28px;
+  padding:20px;
+  border:1px solid rgba(255,255,255,.06);
+}
+
+.hidden{
+  display:none !important;
+}
