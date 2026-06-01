@@ -6,7 +6,6 @@ const $ = id => document.getElementById(id);
 
 let patients = [];
 let pendingFiles = [];
-let scanner = null;
 
 async function api(path, options = {}) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
@@ -30,45 +29,44 @@ function makeId() {
 function showPage(id) {
   document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
   document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-
   $(id)?.classList.add("active");
   document.querySelector(`[data-page="${id}"]`)?.classList.add("active");
   window.scrollTo(0, 0);
 }
 
-function parseVisits(progress) {
-  if (!progress) return [];
+function parseClinicData(raw) {
+  if (!raw) return { visits: [], appointments: [], payments: [] };
 
   try {
-    const data = JSON.parse(progress);
-    if (Array.isArray(data)) return data;
-  } catch {}
+    const data = JSON.parse(raw);
 
-  return [{
-    date: "Old note",
-    tooth: "",
-    treatment: "",
-    note: progress
-  }];
+    if (Array.isArray(data)) {
+      return { visits: data, appointments: [], payments: [] };
+    }
+
+    return {
+      visits: data.visits || [],
+      appointments: data.appointments || [],
+      payments: data.payments || []
+    };
+  } catch {
+    return {
+      visits: [{ date: "Old note", note: raw }],
+      appointments: [],
+      payments: []
+    };
+  }
 }
 
-function visitsToText(visits) {
-  return JSON.stringify(visits || []);
+function saveClinicData(data) {
+  return JSON.stringify(data || { visits: [], appointments: [], payments: [] });
 }
 
 async function loadPatients() {
-  try {
-    $("status").textContent = "Loading cloud...";
-    patients = await api("patients?select=*&order=created_at.desc");
-    renderPatients();
-    $("status").textContent = "Cloud connected ✅";
-
-    const match = location.hash.match(/patient=([^&]+)/);
-    if (match) openPatient(match[1]);
-  } catch (err) {
-    $("status").textContent = "Cloud error ❌";
-    console.error(err);
-  }
+  $("status").textContent = "Loading cloud...";
+  patients = await api("patients?select=*&order=created_at.desc");
+  renderPatients();
+  $("status").textContent = "Cloud connected ✅";
 }
 
 function renderPatients() {
@@ -78,8 +76,7 @@ function renderPatients() {
     (p.name || "").toLowerCase().includes(q) ||
     (p.phone || "").includes(q) ||
     (p.case_id || "").toLowerCase().includes(q) ||
-    (p.diagnosis || "").toLowerCase().includes(q) ||
-    (p.chief_complaint || "").toLowerCase().includes(q)
+    (p.diagnosis || "").toLowerCase().includes(q)
   );
 
   $("list").innerHTML = filtered.length
@@ -87,7 +84,11 @@ function renderPatients() {
     : `<div class="card"><h3>No patients yet</h3></div>`;
 
   filtered.forEach(p => {
-    const visits = parseVisits(p.progress_notes);
+    const data = parseClinicData(p.progress_notes);
+
+    const total = data.payments.reduce((s, x) => s + Number(x.total || 0), 0);
+    const paid = data.payments.reduce((s, x) => s + Number(x.paid || 0), 0);
+    const remaining = total - paid;
 
     const card = document.createElement("div");
     card.className = "patientCard";
@@ -96,7 +97,8 @@ function renderPatients() {
       <span class="pill">ID: ${p.case_id || "-"}</span>
       <span class="pill">${p.phone || "No phone"}</span>
       <span class="pill">${(p.photos || []).length} photos</span>
-      <span class="pill">${visits.length} visits</span>
+      <span class="pill">${data.visits.length} visits</span>
+      <span class="pill">Remaining: ${remaining}</span>
 
       <p style="color:var(--muted);margin-top:8px">
         ${p.chief_complaint || p.diagnosis || ""}
@@ -114,17 +116,14 @@ function renderPatients() {
 }
 
 function getFormData(oldPatient = null) {
-  const oldVisits = parseVisits(oldPatient?.progress_notes);
+  const oldData = parseClinicData(oldPatient?.progress_notes);
   const newNote = $("progressNotes")?.value.trim();
 
-  let visits = [...oldVisits];
-
   if (newNote) {
-    visits.unshift({
+    oldData.visits.unshift({
       date: new Date().toLocaleString(),
-      tooth: $("caseId").value || "",
-      treatment: $("treatmentPlan").value || "",
-      note: newNote
+      note: newNote,
+      treatment: $("treatmentPlan").value || ""
     });
   }
 
@@ -138,7 +137,7 @@ function getFormData(oldPatient = null) {
     medical_alerts: $("medicalAlerts").value,
     diagnosis: $("diagnosis").value,
     treatment_plan: $("treatmentPlan").value,
-    progress_notes: visitsToText(visits),
+    progress_notes: saveClinicData(oldData),
     photos: oldPatient?.photos || []
   };
 }
@@ -154,15 +153,8 @@ function fillForm(p = null) {
   $("medicalAlerts").value = p?.medical_alerts || "";
   $("diagnosis").value = p?.diagnosis || "";
   $("treatmentPlan").value = p?.treatment_plan || "";
-
   $("progressNotes").value = "";
-  $("progressNotes").placeholder = p
-    ? "Write a new visit note..."
-    : "Write first visit note...";
-
   $("formTitle").textContent = p ? "Edit Patient" : "Add Patient";
-  $("preview").innerHTML = "";
-  pendingFiles = [];
 }
 
 async function compressImage(file) {
@@ -260,6 +252,7 @@ $("patientForm").addEventListener("submit", async e => {
       });
     }
 
+    pendingFiles = [];
     $("patientForm").reset();
     fillForm();
     await loadPatients();
@@ -282,9 +275,11 @@ $("photos").addEventListener("change", e => {
 
 window.openPatient = function(id) {
   const p = patients.find(x => x.id === id);
-  if (!p) return;
+  const data = parseClinicData(p.progress_notes);
 
-  const visits = parseVisits(p.progress_notes);
+  const total = data.payments.reduce((s, x) => s + Number(x.total || 0), 0);
+  const paid = data.payments.reduce((s, x) => s + Number(x.paid || 0), 0);
+  const remaining = total - paid;
 
   $("details").innerHTML = `
     <div class="card">
@@ -300,19 +295,45 @@ window.openPatient = function(id) {
       <div class="kv"><b>Diagnosis</b><span>${p.diagnosis || "-"}</span></div>
       <div class="kv"><b>Treatment plan</b><span>${p.treatment_plan || "-"}</span></div>
 
-      <h3 style="margin-top:24px">Visits History</h3>
+      <h3 class="sectionTitle">Visits History</h3>
       ${
-        visits.length
-          ? visits.map((v, i) => `
+        data.visits.length
+          ? data.visits.map((v, i) => `
             <div class="kv">
-              <b>Visit ${visits.length - i} — ${v.date}</b>
+              <b>Visit ${data.visits.length - i}</b>
+              <div class="visitDate">${v.date}</div>
               <span>${v.note || "-"}</span>
             </div>
           `).join("")
           : `<div class="kv"><span>No visits yet</span></div>`
       }
 
-      <h3 style="margin-top:24px">Photos / X-rays</h3>
+      <h3 class="sectionTitle">Appointments</h3>
+      <div class="actions">
+        <button class="primary" onclick="addAppointment('${p.id}')">+ Add Appointment</button>
+      </div>
+      ${
+        data.appointments.length
+          ? data.appointments.map(a => `
+            <div class="appointment">
+              <b>${a.date || "-"}</b>
+              <p>${a.note || ""}</p>
+            </div>
+          `).join("")
+          : `<div class="kv"><span>No appointments yet</span></div>`
+      }
+
+      <h3 class="sectionTitle">Payments</h3>
+      <div class="miniGrid">
+        <div class="miniCard"><b>Total</b><div class="money">${total}</div></div>
+        <div class="miniCard"><b>Paid</b><div class="money">${paid}</div></div>
+        <div class="miniCard"><b>Remaining</b><div class="money unpaid">${remaining}</div></div>
+      </div>
+      <div class="actions">
+        <button class="primary" onclick="addPayment('${p.id}')">+ Add Payment</button>
+      </div>
+
+      <h3 class="sectionTitle">Photos / X-rays</h3>
       <div class="grid">
         ${
           (p.photos || []).map(ph =>
@@ -330,6 +351,48 @@ window.openPatient = function(id) {
   `;
 
   showPage("detail");
+};
+
+window.addAppointment = async function(id) {
+  const p = patients.find(x => x.id === id);
+  const data = parseClinicData(p.progress_notes);
+
+  const date = prompt("Appointment date/time:");
+  if (!date) return;
+
+  const note = prompt("Appointment note:");
+  data.appointments.unshift({ date, note: note || "" });
+
+  await api(`patients?id=eq.${id}`, {
+    method: "PATCH",
+    body: JSON.stringify({ progress_notes: saveClinicData(data) })
+  });
+
+  await loadPatients();
+  openPatient(id);
+};
+
+window.addPayment = async function(id) {
+  const p = patients.find(x => x.id === id);
+  const data = parseClinicData(p.progress_notes);
+
+  const total = prompt("Total treatment cost:");
+  if (!total) return;
+
+  const paid = prompt("Paid amount:");
+  data.payments.unshift({
+    date: new Date().toLocaleString(),
+    total: Number(total || 0),
+    paid: Number(paid || 0)
+  });
+
+  await api(`patients?id=eq.${id}`, {
+    method: "PATCH",
+    body: JSON.stringify({ progress_notes: saveClinicData(data) })
+  });
+
+  await loadPatients();
+  openPatient(id);
 };
 
 window.editPatient = function(id) {
@@ -361,50 +424,11 @@ window.showQR = function(id) {
   $("qrModal").classList.remove("hidden");
 };
 
-async function startScan() {
-  try {
-    scanner = new Html5Qrcode("reader");
-
-    await scanner.start(
-      { facingMode: "environment" },
-      { fps: 10, qrbox: 250 },
-      text => {
-        const match = text.match(/#patient=([^&]+)/);
-        if (match) {
-          stopScan();
-          openPatient(match[1]);
-        } else {
-          alert("Not a patient QR");
-        }
-      }
-    );
-
-    $("startScan").classList.add("hidden");
-    $("stopScan").classList.remove("hidden");
-
-  } catch (err) {
-    alert("Scanner failed: " + err.message);
-  }
-}
-
-async function stopScan() {
-  if (scanner) {
-    await scanner.stop();
-    scanner = null;
-  }
-
-  $("reader").innerHTML = "";
-  $("startScan").classList.remove("hidden");
-  $("stopScan").classList.add("hidden");
-}
-
 $("closePhoto")?.addEventListener("click", () => $("photoModal").classList.add("hidden"));
 $("closeQr")?.addEventListener("click", () => $("qrModal").classList.add("hidden"));
 $("backBtn")?.addEventListener("click", () => showPage("patients"));
 $("refreshBtn")?.addEventListener("click", loadPatients);
 $("search")?.addEventListener("input", renderPatients);
-$("startScan")?.addEventListener("click", startScan);
-$("stopScan")?.addEventListener("click", stopScan);
 
 document.querySelectorAll(".tab").forEach(tab => {
   tab.addEventListener("click", () => showPage(tab.dataset.page));
