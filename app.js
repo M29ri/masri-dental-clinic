@@ -35,31 +35,33 @@ function showPage(id) {
 }
 
 function parseClinicData(raw) {
-  if (!raw) return { visits: [], appointments: [], payments: [] };
+  if (!raw) return { visits: [], appointments: [], payments: [], teeth: {} };
 
   try {
     const data = JSON.parse(raw);
 
     if (Array.isArray(data)) {
-      return { visits: data, appointments: [], payments: [] };
+      return { visits: data, appointments: [], payments: [], teeth: {} };
     }
 
     return {
       visits: data.visits || [],
       appointments: data.appointments || [],
-      payments: data.payments || []
+      payments: data.payments || [],
+      teeth: data.teeth || {}
     };
   } catch {
     return {
       visits: [{ date: "Old note", note: raw }],
       appointments: [],
-      payments: []
+      payments: [],
+      teeth: {}
     };
   }
 }
 
 function saveClinicData(data) {
-  return JSON.stringify(data || { visits: [], appointments: [], payments: [] });
+  return JSON.stringify(data || { visits: [], appointments: [], payments: [], teeth: {} });
 }
 
 async function loadPatients() {
@@ -67,6 +69,9 @@ async function loadPatients() {
   patients = await api("patients?select=*&order=created_at.desc");
   renderPatients();
   $("status").textContent = "Cloud connected ✅";
+
+  const match = location.hash.match(/patient=([^&]+)/);
+  if (match) openPatient(match[1]);
 }
 
 function renderPatients() {
@@ -85,7 +90,6 @@ function renderPatients() {
 
   filtered.forEach(p => {
     const data = parseClinicData(p.progress_notes);
-
     const total = data.payments.reduce((s, x) => s + Number(x.total || 0), 0);
     const paid = data.payments.reduce((s, x) => s + Number(x.paid || 0), 0);
     const remaining = total - paid;
@@ -273,6 +277,27 @@ $("photos").addEventListener("change", e => {
   ).join("");
 });
 
+function renderToothChart(p) {
+  const data = parseClinicData(p.progress_notes);
+  const teeth = data.teeth || {};
+
+  const numbers = [
+    18,17,16,15,14,13,12,11,
+    21,22,23,24,25,26,27,28,
+    48,47,46,45,44,43,42,41,
+    31,32,33,34,35,36,37,38
+  ];
+
+  return numbers.map(n => {
+    const status = teeth[n] || "healthy";
+    return `
+      <button class="tooth ${status}" onclick="changeTooth('${p.id}', '${n}')">
+        ${n}
+      </button>
+    `;
+  }).join("");
+}
+
 window.openPatient = function(id) {
   const p = patients.find(x => x.id === id);
   const data = parseClinicData(p.progress_notes);
@@ -307,6 +332,21 @@ window.openPatient = function(id) {
           `).join("")
           : `<div class="kv"><span>No visits yet</span></div>`
       }
+
+      <h3 class="sectionTitle">Tooth Chart</h3>
+      <div class="toothLegend">
+        <span class="legendItem">Healthy</span>
+        <span class="legendItem">Caries</span>
+        <span class="legendItem">Filling</span>
+        <span class="legendItem">RCT</span>
+        <span class="legendItem">Crown</span>
+        <span class="legendItem">Missing</span>
+        <span class="legendItem">Extraction</span>
+        <span class="legendItem">Implant</span>
+      </div>
+      <div class="toothChart">
+        ${renderToothChart(p)}
+      </div>
 
       <h3 class="sectionTitle">Appointments</h3>
       <div class="actions">
@@ -345,12 +385,51 @@ window.openPatient = function(id) {
       <div class="actions">
         <button class="primary" onclick="editPatient('${p.id}')">Edit</button>
         <button class="secondary" onclick="showQR('${p.id}')">QR</button>
+        <button class="secondary" onclick="exportPDF('${p.id}')">PDF</button>
         <button class="danger" onclick="deletePatient('${p.id}')">Delete</button>
       </div>
     </div>
   `;
 
   showPage("detail");
+};
+
+window.changeTooth = async function(patientId, toothNumber) {
+  const p = patients.find(x => x.id === patientId);
+  const data = parseClinicData(p.progress_notes);
+
+  if (!data.teeth) data.teeth = {};
+
+  const options = [
+    "healthy",
+    "caries",
+    "filling",
+    "rct",
+    "crown",
+    "missing",
+    "extraction",
+    "implant"
+  ];
+
+  const current = data.teeth[toothNumber] || "healthy";
+  const next = prompt(
+    `Tooth ${toothNumber} status:\n\n` +
+    options.join("\n") +
+    `\n\nCurrent: ${current}`,
+    current
+  );
+
+  if (!next || !options.includes(next.toLowerCase())) return;
+
+  data.teeth[toothNumber] = next.toLowerCase();
+
+  await api(`patients?id=eq.${patientId}`, {
+    method: "PATCH",
+    body: JSON.stringify({ progress_notes: saveClinicData(data) })
+  });
+
+  await loadPatients();
+  openPatient(patientId);
 };
 
 window.addAppointment = async function(id) {
@@ -393,6 +472,70 @@ window.addPayment = async function(id) {
 
   await loadPatients();
   openPatient(id);
+};
+
+window.exportPDF = function(id) {
+  const p = patients.find(x => x.id === id);
+  const data = parseClinicData(p.progress_notes);
+
+  const total = data.payments.reduce((s, x) => s + Number(x.total || 0), 0);
+  const paid = data.payments.reduce((s, x) => s + Number(x.paid || 0), 0);
+  const remaining = total - paid;
+
+  const win = window.open("", "_blank");
+
+  win.document.write(`
+    <html>
+      <head>
+        <title>${p.name} - Patient File</title>
+        <style>
+          body{font-family:Arial;padding:25px;color:#111}
+          h1{border-bottom:2px solid #111;padding-bottom:10px}
+          h2{margin-top:25px}
+          .box{border:1px solid #ccc;padding:12px;margin:10px 0;border-radius:10px}
+          img{max-width:180px;margin:8px;border-radius:8px}
+        </style>
+      </head>
+      <body>
+        <h1>Masri Dental Clinic</h1>
+        <h2>Patient File</h2>
+        <p><b>Name:</b> ${p.name || ""}</p>
+        <p><b>ID:</b> ${p.case_id || ""}</p>
+        <p><b>Phone:</b> ${p.phone || ""}</p>
+        <p><b>Age:</b> ${p.age || ""}</p>
+        <p><b>Gender:</b> ${p.gender || ""}</p>
+
+        <h2>Clinical Data</h2>
+        <div class="box"><b>Chief complaint:</b><br>${p.chief_complaint || "-"}</div>
+        <div class="box"><b>Medical alerts:</b><br>${p.medical_alerts || "-"}</div>
+        <div class="box"><b>Diagnosis:</b><br>${p.diagnosis || "-"}</div>
+        <div class="box"><b>Treatment plan:</b><br>${p.treatment_plan || "-"}</div>
+
+        <h2>Visits</h2>
+        ${
+          data.visits.length
+            ? data.visits.map(v => `<div class="box"><b>${v.date}</b><br>${v.note || "-"}</div>`).join("")
+            : "<p>No visits</p>"
+        }
+
+        <h2>Payments</h2>
+        <p><b>Total:</b> ${total}</p>
+        <p><b>Paid:</b> ${paid}</p>
+        <p><b>Remaining:</b> ${remaining}</p>
+
+        <h2>Photos / X-rays</h2>
+        ${
+          (p.photos || []).map(ph => `<img src="${ph.url}">`).join("") || "<p>No photos</p>"
+        }
+
+        <script>
+          window.onload = () => setTimeout(() => window.print(), 500);
+        </script>
+      </body>
+    </html>
+  `);
+
+  win.document.close();
 };
 
 window.editPatient = function(id) {
