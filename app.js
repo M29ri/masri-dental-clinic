@@ -3,8 +3,10 @@ const SUPABASE_KEY = "sb_publishable_9sp5XCEbqCNk0CQNyoE8SA_3a-rXoDn";
 const BUCKET = "patient-photos";
 
 const $ = id => document.getElementById(id);
+
 let patients = [];
 let pendingFiles = [];
+let scanner = null;
 
 async function api(path, options = {}) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
@@ -16,41 +18,77 @@ async function api(path, options = {}) {
       ...(options.headers || {})
     }
   });
+
   if (!res.ok) throw new Error(await res.text());
   return res.status === 204 ? null : await res.json();
-}
-
-function showPage(id) {
-  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
-  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-  $(id).classList.add("active");
-  document.querySelector(`[data-page="${id}"]`)?.classList.add("active");
 }
 
 function makeId() {
   return "P-" + Date.now();
 }
 
+function showPage(id) {
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+
+  $(id)?.classList.add("active");
+  document.querySelector(`[data-page="${id}"]`)?.classList.add("active");
+  window.scrollTo(0, 0);
+}
+
+function parseVisits(progress) {
+  if (!progress) return [];
+
+  try {
+    const data = JSON.parse(progress);
+    if (Array.isArray(data)) return data;
+  } catch {}
+
+  return [{
+    date: "Old note",
+    tooth: "",
+    treatment: "",
+    note: progress
+  }];
+}
+
+function visitsToText(visits) {
+  return JSON.stringify(visits || []);
+}
+
 async function loadPatients() {
-  $("status").textContent = "Loading cloud...";
-  patients = await api("patients?select=*&order=created_at.desc");
-  renderPatients();
-  $("status").textContent = "Cloud connected ✅";
+  try {
+    $("status").textContent = "Loading cloud...";
+    patients = await api("patients?select=*&order=created_at.desc");
+    renderPatients();
+    $("status").textContent = "Cloud connected ✅";
+
+    const match = location.hash.match(/patient=([^&]+)/);
+    if (match) openPatient(match[1]);
+  } catch (err) {
+    $("status").textContent = "Cloud error ❌";
+    console.error(err);
+  }
 }
 
 function renderPatients() {
-  const q = ($("search").value || "").toLowerCase();
+  const q = ($("search")?.value || "").toLowerCase();
 
   const filtered = patients.filter(p =>
     (p.name || "").toLowerCase().includes(q) ||
     (p.phone || "").includes(q) ||
     (p.case_id || "").toLowerCase().includes(q) ||
-    (p.diagnosis || "").toLowerCase().includes(q)
+    (p.diagnosis || "").toLowerCase().includes(q) ||
+    (p.chief_complaint || "").toLowerCase().includes(q)
   );
 
-  $("list").innerHTML = filtered.length ? "" : `<div class="card"><h3>No patients yet</h3></div>`;
+  $("list").innerHTML = filtered.length
+    ? ""
+    : `<div class="card"><h3>No patients yet</h3></div>`;
 
   filtered.forEach(p => {
+    const visits = parseVisits(p.progress_notes);
+
     const card = document.createElement("div");
     card.className = "patientCard";
     card.innerHTML = `
@@ -58,7 +96,11 @@ function renderPatients() {
       <span class="pill">ID: ${p.case_id || "-"}</span>
       <span class="pill">${p.phone || "No phone"}</span>
       <span class="pill">${(p.photos || []).length} photos</span>
-      <p style="color:var(--muted);margin-top:8px">${p.chief_complaint || p.diagnosis || ""}</p>
+      <span class="pill">${visits.length} visits</span>
+
+      <p style="color:var(--muted);margin-top:8px">
+        ${p.chief_complaint || p.diagnosis || ""}
+      </p>
 
       <div class="actions">
         <button class="primary" onclick="openPatient('${p.id}')">Open</button>
@@ -66,13 +108,28 @@ function renderPatients() {
         <button class="secondary" onclick="showQR('${p.id}')">QR</button>
       </div>
     `;
+
     $("list").appendChild(card);
   });
 }
 
-function getFormData() {
+function getFormData(oldPatient = null) {
+  const oldVisits = parseVisits(oldPatient?.progress_notes);
+  const newNote = $("progressNotes")?.value.trim();
+
+  let visits = [...oldVisits];
+
+  if (newNote) {
+    visits.unshift({
+      date: new Date().toLocaleString(),
+      tooth: $("caseId").value || "",
+      treatment: $("treatmentPlan").value || "",
+      note: newNote
+    });
+  }
+
   return {
-    case_id: $("caseId").value || makeId(),
+    case_id: $("caseId").value || oldPatient?.case_id || makeId(),
     name: $("name").value,
     phone: $("phone").value,
     age: $("age").value,
@@ -81,8 +138,8 @@ function getFormData() {
     medical_alerts: $("medicalAlerts").value,
     diagnosis: $("diagnosis").value,
     treatment_plan: $("treatmentPlan").value,
-    progress_notes: $("progressNotes").value,
-    photos: []
+    progress_notes: visitsToText(visits),
+    photos: oldPatient?.photos || []
   };
 }
 
@@ -97,8 +154,15 @@ function fillForm(p = null) {
   $("medicalAlerts").value = p?.medical_alerts || "";
   $("diagnosis").value = p?.diagnosis || "";
   $("treatmentPlan").value = p?.treatment_plan || "";
-  $("progressNotes").value = p?.progress_notes || "";
+
+  $("progressNotes").value = "";
+  $("progressNotes").placeholder = p
+    ? "Write a new visit note..."
+    : "Write first visit note...";
+
   $("formTitle").textContent = p ? "Edit Patient" : "Add Patient";
+  $("preview").innerHTML = "";
+  pendingFiles = [];
 }
 
 async function compressImage(file) {
@@ -131,7 +195,8 @@ async function uploadPhotos(patientId) {
 
   for (const file of pendingFiles) {
     const blob = await compressImage(file);
-    const path = `${patientId}/${Date.now()}-${file.name}.jpg`;
+    const cleanName = file.name.replace(/[^a-zA-Z0-9.]/g, "-");
+    const path = `${patientId}/${Date.now()}-${cleanName}.jpg`;
 
     const res = await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/${path}`, {
       method: "POST",
@@ -160,23 +225,20 @@ $("patientForm").addEventListener("submit", async e => {
   e.preventDefault();
 
   try {
-    $("saveBtn").textContent = "Saving...";
     $("saveBtn").disabled = true;
+    $("saveBtn").textContent = "Saving...";
 
     const id = $("rowId").value;
-    let data = getFormData();
+    const oldPatient = patients.find(p => p.id === id);
+    let data = getFormData(oldPatient);
     let saved;
 
     if (id) {
-      const old = patients.find(p => p.id === id);
-      data.photos = old.photos || [];
-
       saved = await api(`patients?id=eq.${id}`, {
         method: "PATCH",
         headers: { Prefer: "return=representation" },
         body: JSON.stringify(data)
       });
-
       saved = saved[0];
     } else {
       saved = await api("patients", {
@@ -184,7 +246,6 @@ $("patientForm").addEventListener("submit", async e => {
         headers: { Prefer: "return=representation" },
         body: JSON.stringify(data)
       });
-
       saved = saved[0];
     }
 
@@ -199,17 +260,16 @@ $("patientForm").addEventListener("submit", async e => {
       });
     }
 
-    pendingFiles = [];
-    fillForm();
     $("patientForm").reset();
+    fillForm();
     await loadPatients();
     showPage("patients");
 
   } catch (err) {
     alert("Save failed: " + err.message);
   } finally {
-    $("saveBtn").textContent = "Save Patient";
     $("saveBtn").disabled = false;
+    $("saveBtn").textContent = "Save Patient";
   }
 });
 
@@ -224,10 +284,13 @@ window.openPatient = function(id) {
   const p = patients.find(x => x.id === id);
   if (!p) return;
 
+  const visits = parseVisits(p.progress_notes);
+
   $("details").innerHTML = `
     <div class="card">
-      <h2>${p.name}</h2>
-      <span class="pill">ID: ${p.case_id}</span>
+      <h2>${p.name || "No name"}</h2>
+
+      <span class="pill">ID: ${p.case_id || "-"}</span>
       <span class="pill">${p.phone || "No phone"}</span>
       <span class="pill">${p.age || "-"} yrs</span>
       <span class="pill">${p.gender || "-"}</span>
@@ -236,13 +299,26 @@ window.openPatient = function(id) {
       <div class="kv"><b>Medical alerts</b><span>${p.medical_alerts || "-"}</span></div>
       <div class="kv"><b>Diagnosis</b><span>${p.diagnosis || "-"}</span></div>
       <div class="kv"><b>Treatment plan</b><span>${p.treatment_plan || "-"}</span></div>
-      <div class="kv"><b>Progress / Visits</b><span>${p.progress_notes || "-"}</span></div>
 
-      <h3 style="margin-top:20px">Photos / X-rays</h3>
+      <h3 style="margin-top:24px">Visits History</h3>
+      ${
+        visits.length
+          ? visits.map((v, i) => `
+            <div class="kv">
+              <b>Visit ${visits.length - i} — ${v.date}</b>
+              <span>${v.note || "-"}</span>
+            </div>
+          `).join("")
+          : `<div class="kv"><span>No visits yet</span></div>`
+      }
+
+      <h3 style="margin-top:24px">Photos / X-rays</h3>
       <div class="grid">
-        ${(p.photos || []).map(ph =>
-          `<img class="thumb" src="${ph.url}" onclick="viewPhoto('${ph.url}')">`
-        ).join("") || "<p>No photos</p>"}
+        ${
+          (p.photos || []).map(ph =>
+            `<img class="thumb" src="${ph.url}" onclick="viewPhoto('${ph.url}')">`
+          ).join("") || "<p>No photos</p>"
+        }
       </div>
 
       <div class="actions">
@@ -285,11 +361,50 @@ window.showQR = function(id) {
   $("qrModal").classList.remove("hidden");
 };
 
+async function startScan() {
+  try {
+    scanner = new Html5Qrcode("reader");
+
+    await scanner.start(
+      { facingMode: "environment" },
+      { fps: 10, qrbox: 250 },
+      text => {
+        const match = text.match(/#patient=([^&]+)/);
+        if (match) {
+          stopScan();
+          openPatient(match[1]);
+        } else {
+          alert("Not a patient QR");
+        }
+      }
+    );
+
+    $("startScan").classList.add("hidden");
+    $("stopScan").classList.remove("hidden");
+
+  } catch (err) {
+    alert("Scanner failed: " + err.message);
+  }
+}
+
+async function stopScan() {
+  if (scanner) {
+    await scanner.stop();
+    scanner = null;
+  }
+
+  $("reader").innerHTML = "";
+  $("startScan").classList.remove("hidden");
+  $("stopScan").classList.add("hidden");
+}
+
 $("closePhoto")?.addEventListener("click", () => $("photoModal").classList.add("hidden"));
 $("closeQr")?.addEventListener("click", () => $("qrModal").classList.add("hidden"));
 $("backBtn")?.addEventListener("click", () => showPage("patients"));
 $("refreshBtn")?.addEventListener("click", loadPatients);
 $("search")?.addEventListener("input", renderPatients);
+$("startScan")?.addEventListener("click", startScan);
+$("stopScan")?.addEventListener("click", stopScan);
 
 document.querySelectorAll(".tab").forEach(tab => {
   tab.addEventListener("click", () => showPage(tab.dataset.page));
