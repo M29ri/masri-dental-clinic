@@ -338,3 +338,58 @@ textarea{
     font-size:21px;
   }
 }
+.sectionTitle{
+  margin-top:24px;
+  margin-bottom:12px;
+  color:var(--gold);
+  font-size:22px;
+  font-weight:900;
+}
+
+.miniGrid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  margin-top:14px;
+}
+
+.miniCard{
+  background:#0f1620;
+  border:1px solid var(--border);
+  border-radius:22px;
+  padding:16px;
+}
+
+.miniCard b{
+  display:block;
+  color:var(--gold);
+  margin-bottom:6px;
+}
+
+.money{
+  font-size:22px;
+  font-weight:900;
+  color:var(--green);
+}
+
+.unpaid{
+  color:#ff7676;
+}
+
+.appointment{
+  background:#0f1620;
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:14px;
+  margin-top:10px;
+}
+
+.appointment b{
+  color:var(--gold);
+}
+
+.visitDate{
+  color:var(--muted);
+  font-size:13px;
+  margin-bottom:6px;
+}
