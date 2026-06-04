@@ -344,6 +344,58 @@ function injectExtraStyles() {
     .modalClose{position:absolute;top:18px;right:18px;width:50px;height:50px;border-radius:50%;border:none;background:#1f2937;color:white;font-size:28px}
     .qrBox{background:#111827;border:1px solid var(--gold,#d4af37);border-radius:28px;padding:24px;text-align:center}
     #qrcode{background:white;padding:16px;border-radius:20px;margin:20px auto;width:max-content}
+    .photoViewer{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.96);
+  z-index:99999;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  backdrop-filter:blur(10px);
+}
+
+.photoViewer.hidden{
+  display:none;
+}
+
+.photoViewer img{
+  max-width:95vw;
+  max-height:82vh;
+  border-radius:26px;
+  object-fit:contain;
+  box-shadow:0 20px 60px rgba(0,0,0,.5);
+}
+
+.photoControls{
+  display:flex;
+  gap:12px;
+  margin-top:18px;
+  flex-wrap:wrap;
+}
+
+.photoControls button{
+  border:none;
+  border-radius:18px;
+  padding:14px 18px;
+  background:#121821;
+  color:white;
+  font-weight:800;
+}
+
+.photoClose{
+  position:absolute;
+  top:22px;
+  right:22px;
+  width:56px;
+  height:56px;
+  border:none;
+  border-radius:50%;
+  background:#111827;
+  color:white;
+  font-size:22px;
+}
   `;
   document.head.appendChild(style);
 }
