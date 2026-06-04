@@ -184,31 +184,41 @@ async function addUser() {
 }
 
 function applyUserBar() {
-  const topbar = document.querySelector(".topbar") || document.querySelector("header");
-  if (!topbar || !currentUser) return;
+  if (!currentUser) return;
+
+  const old = document.getElementById("userBar");
+  if (old) old.remove();
 
   const userBox = document.createElement("div");
+  userBox.id = "userBar";
   userBox.style.cssText = `
-    margin-top:10px;
+    position:sticky;
+    top:0;
+    z-index:999;
+    background:#0b1118;
+    padding:10px;
     display:flex;
     gap:8px;
     flex-wrap:wrap;
     align-items:center;
+    border-bottom:1px solid #263241;
   `;
 
   userBox.innerHTML = `
     <span class="pill">
       ${currentUser.full_name || currentUser.username} (${currentUser.role})
     </span>
+
     ${
       currentUser.role === "admin"
         ? `<button class="secondary" onclick="addUser()">+ User</button>`
         : ""
     }
+
     <button class="danger" onclick="logout()">Logout</button>
   `;
 
-  topbar.appendChild(userBox);
+  document.body.prepend(userBox);
 }
 
 function canEdit() {
