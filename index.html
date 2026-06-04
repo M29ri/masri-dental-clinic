@@ -387,14 +387,31 @@
 </head>
 
 <body>
-  <main class="app">
-    <header>
-      <div class="brand">
-        <h1>Masri Dental Clinic</h1>
-        <span id="status">Loading cloud...</span>
+  <main class="app"><header class="topHeader">
+  <div class="brand">
+    <h1>Masri Dental Clinic</h1>
+    <span id="status">Loading cloud...</span>
+  </div>
+
+  <div class="topActions">
+    <div class="doctorBox">
+      <div class="doctorName" id="doctorName">
+        Doctor
       </div>
-      <button id="refreshBtn" aria-label="Refresh">↻</button>
-    </header>
+      <div class="doctorRole" id="doctorRole">
+        Loading...
+      </div>
+    </div>
+
+    <button id="refreshBtn" aria-label="Refresh">
+      ↻
+    </button>
+
+    <button id="logoutBtn" class="logoutBtn">
+      Logout
+    </button>
+  </div>
+</header>
 
     <nav class="tabs">
       <button class="tab active" data-page="dashboard">Dashboard</button>
