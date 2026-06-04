@@ -209,7 +209,7 @@ function showLoginScreen() {
         ">Create doctor account</button>
 
         <p style="margin-top:18px;color:#9ca9b8;font-size:13px;">
-          Default admin: admin / 1234
+          Clinic access only
         </p>
       </div>
     </div>
