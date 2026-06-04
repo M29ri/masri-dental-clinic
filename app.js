@@ -489,6 +489,8 @@ function renderDashboard() {
 let paidToday = 0;
   let missingPlan = 0;
   let upcoming = [];
+  let todayAppointments = [];
+let overdueAppointments = [];
 
   patients.forEach(p => {
     const data = parseClinicData(p.progress_notes);
@@ -512,15 +514,32 @@ data.payments.forEach(pay => {
       missingPlan++;
     }
 
-    data.appointments.forEach(a => {
-      upcoming.push({
-        patient: p.name || "No name",
-        phone: p.phone || "",
-        date: a.date || "",
-        note: a.note || ""
-      });
-    });
-  });
+data.appointments.forEach(a => {
+  const item = {
+    patient: p.name || "No name",
+    phone: p.phone || "",
+    date: a.date || "",
+    note: a.note || ""
+  };
+
+  const appDate = new Date(a.date);
+  const today = new Date();
+
+  if (!isNaN(appDate)) {
+    const appDay = appDate.toDateString();
+    const todayDay = today.toDateString();
+
+    if (appDay === todayDay) {
+      todayAppointments.push(item);
+    } else if (appDate < today) {
+      overdueAppointments.push(item);
+    } else {
+      upcoming.push(item);
+    }
+  } else {
+    upcoming.push(item);
+  }
+});
 
   upcoming = upcoming.slice(0, 5);
 
@@ -578,7 +597,41 @@ data.payments.forEach(pay => {
         ${upcoming.length} upcoming appointments
       </span>
     </div>
+<div class="dashboardPanel">
+  <h2>Today Appointments</h2>
 
+  ${
+    todayAppointments.length
+      ? todayAppointments.map(a => `
+        <div class="appointment">
+          <b>${safeText(a.date)}</b>
+          <p>${safeText(a.patient)} - ${safeText(a.phone)}</p>
+          <p>${safeText(a.note)}</p>
+        </div>
+      `).join("")
+      : `<p style="color:var(--muted);font-weight:800">
+          No appointments today
+        </p>`
+  }
+</div>
+
+<div class="dashboardPanel">
+  <h2>Overdue Appointments</h2>
+
+  ${
+    overdueAppointments.length
+      ? overdueAppointments.map(a => `
+        <div class="appointment">
+          <b>${safeText(a.date)}</b>
+          <p>${safeText(a.patient)} - ${safeText(a.phone)}</p>
+          <p>${safeText(a.note)}</p>
+        </div>
+      `).join("")
+      : `<p style="color:var(--muted);font-weight:800">
+          No overdue appointments
+        </p>`
+  }
+</div>
     <div class="dashboardPanel">
       <h2>Upcoming Appointments</h2>
 
