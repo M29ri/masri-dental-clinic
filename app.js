@@ -287,14 +287,55 @@ function injectExtraStyles() {
     .kv span{color:#e5edf6;white-space:pre-wrap;line-height:1.6}
     .toothChart{display:grid;grid-template-columns:repeat(8,1fr);gap:8px;margin-top:14px}
     .tooth{background:#0f1620;border:1px solid var(--border,#263241);color:white;border-radius:14px;padding:10px 4px;text-align:center;font-size:13px;font-weight:800}
-    .tooth.healthy{border-color:#334155}
-    .tooth.caries{background:#4a1d1d;color:#ff9b9b}
-    .tooth.filling{background:#1e3a5f;color:#93c5fd}
-    .tooth.rct{background:#3b2f13;color:#facc15}
-    .tooth.crown{background:#3a2b00;color:#ffd700}
-    .tooth.missing{background:#111827;color:#6b7280;text-decoration:line-through}
-    .tooth.extraction{background:#3f1111;color:#f87171}
-    .tooth.implant{background:#12352b;color:#5eead4}
+    .tooth.healthy{
+  background:linear-gradient(180deg,#12351f,#0f2417);
+  border:1px solid #22c55e;
+  color:#86efac;
+}
+
+.tooth.caries{
+  background:linear-gradient(180deg,#4a1d1d,#210b0b);
+  border:1px solid #ef4444;
+  color:#fecaca;
+}
+
+.tooth.filling{
+  background:linear-gradient(180deg,#1e3a5f,#0b1f35);
+  border:1px solid #60a5fa;
+  color:#bfdbfe;
+}
+
+.tooth.rct{
+  background:linear-gradient(180deg,#3b2f13,#1f1605);
+  border:1px solid #facc15;
+  color:#fde68a;
+}
+
+.tooth.crown{
+  background:linear-gradient(135deg,#d4af37,#8f6b10);
+  border:1px solid #f5d76e;
+  color:#111;
+}
+
+.tooth.missing{
+  background:#05070a;
+  border:1px solid #374151;
+  color:#6b7280;
+  text-decoration:line-through;
+  opacity:.75;
+}
+
+.tooth.extraction{
+  background:linear-gradient(180deg,#3f1111,#170505);
+  border:1px solid #fb7185;
+  color:#fecdd3;
+}
+
+.tooth.implant{
+  background:linear-gradient(180deg,#12352b,#062019);
+  border:1px solid #2dd4bf;
+  color:#99f6e4;
+}
     .toothLegend{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
     .legendItem{background:#0f1620;border:1px solid var(--border,#263241);padding:8px 10px;border-radius:999px;font-size:12px;color:var(--muted,#9ca9b8)}
     .modal{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:999;display:flex;align-items:center;justify-content:center;padding:18px}
