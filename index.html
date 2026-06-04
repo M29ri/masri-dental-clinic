@@ -454,6 +454,9 @@
       <button class="tab" data-page="patients">Patients</button>
       <button class="tab" data-page="form">Add</button>
       <button class="tab" data-page="scan">Scan QR</button>
+     <button class="tab" data-page="settings">
+  Settings
+</button> 
     </nav>
 
     <section id="dashboard" class="page active">
@@ -625,6 +628,33 @@
   </div>
 
 </div>
+  <section id="settings" class="page">
+  <div class="card">
+    <h2>Clinic Branding</h2>
+
+    <label>Clinic Name</label>
+    <input id="clinicName" placeholder="Enter clinic name">
+
+    <label style="margin-top:16px">
+      Clinic Logo
+    </label>
+
+    <input
+      type="file"
+      id="clinicLogo"
+      accept="image/*"
+    >
+
+    <div class="actions" style="margin-top:16px">
+      <button
+        class="primary"
+        onclick="saveClinicBranding()"
+      >
+        Save Branding
+      </button>
+    </div>
+  </div>
+</section>
   <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
   <script src="https://unpkg.com/html5-qrcode"></script>
   <script src="app.js"></script>
