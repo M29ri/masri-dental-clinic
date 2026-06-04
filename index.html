@@ -1,1 +1,554 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Masri Dental Clinic</title><meta name="theme-color" content="#0f766e"><link rel="manifest" href="manifest.webmanifest"><link rel="stylesheet" href="style.css"><script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script><script src="https://unpkg.com/html5-qrcode"></script></head><body><header><div><h1>Masri Dental Clinic</h1><p id="status">Loading cloud...</p></div><button id="refreshBtn">↻</button></header><nav><button class="tab active" data-page="patients">Patients</button><button class="tab" data-page="form">Add</button><button class="tab" data-page="scan">Scan QR</button></nav><main><section id="patients" class="page active"><input id="search" placeholder="Search name, phone, ID..."><div id="list"></div></section><section id="form" class="page"><h2 id="formTitle">Add Patient</h2><form id="patientForm"><input type="hidden" id="rowId"><label>Patient ID<input id="caseId" placeholder="Auto if empty"></label><label>Name<input id="name" required></label><label>Phone<input id="phone" inputmode="tel"></label><label>Age<input id="age" inputmode="numeric"></label><label>Gender<select id="gender"><option></option><option>Male</option><option>Female</option></select></label><label>Chief complaint<textarea id="chiefComplaint"></textarea></label><label>Medical alerts<textarea id="medicalAlerts"></textarea></label><label>Diagnosis<textarea id="diagnosis"></textarea></label><label>Treatment plan<textarea id="treatmentPlan"></textarea></label><label>Progress notes<textarea id="progressNotes"></textarea></label><div class="photoBox"><h3>Photos / X-rays</h3><input id="photos" type="file" accept="image/*" multiple><p>Photos save through Netlify proxy to cloud.</p><div id="preview" class="grid"></div></div><button id="saveBtn" class="primary" type="submit">Save Patient</button><button id="cancelBtn" class="secondary hidden" type="button">Cancel Edit</button></form></section><section id="detail" class="page"><button class="secondary" id="backBtn">← Back</button><div id="details"></div></section><section id="scan" class="page"><h2>Scan Patient QR</h2><button id="startScan" class="primary">Start Scanner</button><button id="stopScan" class="secondary hidden">Stop Scanner</button><div id="reader"></div></section></main><div id="photoModal" class="modal hidden"><button id="closePhoto">×</button><img id="bigPhoto"></div><div id="qrModal" class="modal hidden"><div class="box"><button id="closeQr">×</button><h2>Patient QR</h2><div id="qrcode"></div><p class="muted">Scan to open this patient file.</p></div></div><script src="app.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#070b10">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Masri Dental Clinic</title>
+
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="style.css">
+
+  <style>
+    :root{
+      --bg:#070b10;
+      --card:#121821;
+      --border:#263241;
+      --text:#f8fafc;
+      --muted:#9ca9b8;
+      --gold:#d4af37;
+      --gold2:#8f6b10;
+      --danger:#dc3b35;
+      --green:#19c37d;
+      --soft:#202a39;
+    }
+
+    *{box-sizing:border-box}
+
+    html,body{
+      margin:0;
+      min-height:100%;
+      background:
+        radial-gradient(circle at top right,rgba(212,175,55,.10),transparent 35%),
+        linear-gradient(180deg,#070b10 0%,#0b1118 55%,#06090d 100%);
+      color:var(--text);
+      font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Arial,sans-serif;
+    }
+
+    body{padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+
+    .app{
+      width:100%;
+      max-width:980px;
+      margin:0 auto;
+      padding:18px;
+    }
+
+    header{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:14px;
+      margin-bottom:18px;
+    }
+
+    .brand h1{
+      margin:0;
+      font-size:clamp(34px,7vw,58px);
+      line-height:.95;
+      letter-spacing:-1.8px;
+      font-weight:1000;
+    }
+
+    #status{
+      display:block;
+      color:var(--muted);
+      margin-top:10px;
+      font-size:18px;
+      font-weight:800;
+    }
+
+    #refreshBtn{
+      width:58px;
+      height:58px;
+      border-radius:22px;
+      border:1px solid var(--border);
+      background:linear-gradient(180deg,#202a39,#121821);
+      color:var(--text);
+      font-size:26px;
+      font-weight:900;
+      box-shadow:0 12px 35px rgba(0,0,0,.25);
+    }
+
+    .tabs{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:10px;
+      position:sticky;
+      top:0;
+      z-index:80;
+      background:rgba(7,11,16,.82);
+      backdrop-filter:blur(18px);
+      padding:10px 0 12px;
+      margin-bottom:16px;
+    }
+
+    .tab{
+      border:none;
+      border-radius:22px;
+      padding:15px 10px;
+      background:var(--soft);
+      color:var(--muted);
+      font-size:16px;
+      font-weight:1000;
+      min-height:54px;
+    }
+
+    .tab.active{
+      background:linear-gradient(135deg,var(--gold),var(--gold2));
+      color:#050505;
+      box-shadow:0 14px 30px rgba(212,175,55,.20);
+    }
+
+    .page{display:none}
+    .page.active{display:block}
+
+    .heroGrid{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:12px;
+      margin-bottom:16px;
+    }
+
+    .statCard{
+      background:linear-gradient(180deg,#172030,#111827);
+      border:1px solid var(--border);
+      border-radius:28px;
+      padding:18px;
+      min-height:120px;
+      box-shadow:0 18px 45px rgba(0,0,0,.25);
+    }
+
+    .statCard small{
+      display:block;
+      color:var(--muted);
+      font-size:13px;
+      font-weight:900;
+      margin-bottom:8px;
+      text-transform:uppercase;
+      letter-spacing:.5px;
+    }
+
+    .statCard strong{
+      display:block;
+      font-size:34px;
+      font-weight:1000;
+      color:var(--text);
+      letter-spacing:-1px;
+    }
+
+    .quickActions{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+      margin-bottom:16px;
+    }
+
+    .dashboardPanel,
+    .card,
+    .patientCard{
+      background:linear-gradient(180deg,#172030,#111827);
+      border:1px solid var(--border);
+      border-radius:30px;
+      padding:20px;
+      box-shadow:0 18px 45px rgba(0,0,0,.28);
+      margin-bottom:16px;
+    }
+
+    .dashboardPanel h2,
+    .card h2,
+    .patientCard h3{
+      margin:0 0 14px;
+      font-size:clamp(28px,6vw,44px);
+      line-height:1.05;
+      letter-spacing:-1px;
+      font-weight:1000;
+    }
+
+    input,textarea,select{
+      width:100%;
+      border:1px solid var(--border);
+      background:#0f1620;
+      color:var(--text);
+      border-radius:22px;
+      padding:17px;
+      font-size:17px;
+      outline:none;
+    }
+
+    textarea{
+      min-height:110px;
+      resize:vertical;
+      line-height:1.5;
+    }
+
+    label{
+      display:block;
+      color:var(--muted);
+      font-weight:900;
+      margin:14px 0 8px;
+    }
+
+    .formGrid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+    }
+
+    .full{grid-column:1/-1}
+
+    .searchWrap{margin-bottom:16px}
+
+    #search{
+      font-size:21px;
+      border-radius:28px;
+      padding:20px 22px;
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      background:#202b3a;
+      color:#dbe6f3;
+      border-radius:999px;
+      padding:9px 14px;
+      font-weight:900;
+      margin:4px 5px 4px 0;
+    }
+
+    .actions{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:10px;
+      margin-top:18px;
+    }
+
+    button{
+      cursor:pointer;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    .primary,.secondary,.danger{
+      border:none;
+      border-radius:22px;
+      padding:16px 14px;
+      min-height:52px;
+      font-size:16px;
+      font-weight:1000;
+    }
+
+    .primary{
+      background:linear-gradient(135deg,var(--gold),var(--gold2));
+      color:#050505;
+    }
+
+    .secondary{
+      background:#202a39;
+      color:var(--text);
+    }
+
+    .danger{
+      background:linear-gradient(135deg,#e34a43,#a91f1a);
+      color:#fff;
+    }
+
+    .scanBox{
+      background:#0f1620;
+      border:1px dashed var(--border);
+      border-radius:28px;
+      padding:18px;
+      min-height:280px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:var(--muted);
+      margin-bottom:16px;
+    }
+
+    #reader{
+      width:100%;
+      overflow:hidden;
+      border-radius:24px;
+    }
+
+    .photoUpload{
+      border:1px dashed var(--border);
+      border-radius:28px;
+      padding:20px;
+      text-align:center;
+      background:#0f1620;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:12px;
+      margin-top:12px;
+    }
+
+    .thumbWrap{position:relative}
+
+    .thumb{
+      width:100%;
+      aspect-ratio:1/1;
+      object-fit:cover;
+      border-radius:22px;
+      border:1px solid var(--border);
+      background:#0f1620;
+    }
+
+    .x{
+      position:absolute;
+      top:8px;
+      right:8px;
+      width:38px;
+      height:38px;
+      border:none;
+      border-radius:50%;
+      background:rgba(0,0,0,.72);
+      color:white;
+      font-size:24px;
+      font-weight:1000;
+    }
+
+    .hidden{display:none!important}
+
+    .modal{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.92);
+      z-index:999;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:18px;
+    }
+
+    .modal.hidden{display:none!important}
+
+    .modal img{
+      max-width:100%;
+      max-height:85vh;
+      border-radius:24px;
+    }
+
+    .modalClose{
+      position:absolute;
+      top:18px;
+      right:18px;
+      width:50px;
+      height:50px;
+      border-radius:50%;
+      border:none;
+      background:#1f2937;
+      color:white;
+      font-size:28px;
+    }
+
+    .qrBox{
+      background:#111827;
+      border:1px solid var(--gold);
+      border-radius:28px;
+      padding:24px;
+      text-align:center;
+    }
+
+    #qrcode{
+      background:white;
+      padding:16px;
+      border-radius:20px;
+      margin:20px auto;
+      width:max-content;
+    }
+
+    @media(max-width:620px){
+      .app{padding:14px}
+      .tabs{gap:8px}
+      .tab{font-size:13px;padding:13px 6px;border-radius:18px}
+      .formGrid{grid-template-columns:1fr}
+      .actions{grid-template-columns:1fr 1fr}
+      .actions .danger{grid-column:1/-1}
+      #refreshBtn{width:52px;height:52px}
+    }
+  </style>
+</head>
+
+<body>
+  <main class="app">
+    <header>
+      <div class="brand">
+        <h1>Masri Dental Clinic</h1>
+        <span id="status">Loading cloud...</span>
+      </div>
+      <button id="refreshBtn" aria-label="Refresh">↻</button>
+    </header>
+
+    <nav class="tabs">
+      <button class="tab active" data-page="dashboard">Dashboard</button>
+      <button class="tab" data-page="patients">Patients</button>
+      <button class="tab" data-page="form">Add</button>
+      <button class="tab" data-page="scan">Scan QR</button>
+    </nav>
+
+    <section id="dashboard" class="page active">
+      <div id="dashboardContent">
+        <div class="heroGrid">
+          <div class="statCard"><small>Total patients</small><strong>—</strong></div>
+          <div class="statCard"><small>Photos</small><strong>—</strong></div>
+          <div class="statCard"><small>Unpaid</small><strong>—</strong></div>
+          <div class="statCard"><small>Visits</small><strong>—</strong></div>
+        </div>
+
+        <div class="quickActions">
+          <button class="primary" onclick="showPage('form')">+ New Patient</button>
+          <button class="secondary" onclick="showPage('scan')">Scan QR</button>
+        </div>
+
+        <div class="dashboardPanel">
+          <h2>Today</h2>
+          <p style="color:var(--muted);font-weight:800">
+            Dashboard will update after cloud data loads.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section id="patients" class="page">
+      <div class="searchWrap">
+        <input id="search" placeholder="Search name, phone, ID, diagnosis...">
+      </div>
+      <div id="list"></div>
+    </section>
+
+    <section id="form" class="page">
+      <div class="card">
+        <h2 id="formTitle">Add Patient</h2>
+
+        <form id="patientForm">
+          <input type="hidden" id="rowId">
+          <input type="hidden" id="caseId">
+
+          <div class="formGrid">
+            <div>
+              <label>Name</label>
+              <input id="name" required placeholder="Patient full name">
+            </div>
+
+            <div>
+              <label>Phone</label>
+              <input id="phone" placeholder="Phone number">
+            </div>
+
+            <div>
+              <label>Age</label>
+              <input id="age" type="number" placeholder="Age">
+            </div>
+
+            <div>
+              <label>Gender</label>
+              <select id="gender">
+                <option value="">Select gender</option>
+                <option>Male</option>
+                <option>Female</option>
+              </select>
+            </div>
+
+            <div class="full">
+              <label>Chief complaint</label>
+              <textarea id="chiefComplaint" placeholder="Main complaint"></textarea>
+            </div>
+
+            <div class="full">
+              <label>Medical alerts</label>
+              <textarea id="medicalAlerts" placeholder="Medical conditions, drugs, allergy..."></textarea>
+            </div>
+
+            <div class="full">
+              <label>Diagnosis</label>
+              <textarea id="diagnosis" placeholder="Diagnosis"></textarea>
+            </div>
+
+            <div class="full">
+              <label>Treatment plan</label>
+              <textarea id="treatmentPlan" placeholder="Treatment plan"></textarea>
+            </div>
+
+            <div class="full">
+              <label>Progress / Visit notes</label>
+              <textarea id="progressNotes" placeholder="Write visit note, date will be saved automatically"></textarea>
+            </div>
+
+            <div class="full">
+              <div class="photoUpload">
+                <h3>Photos / X-rays</h3>
+                <input id="photos" type="file" accept="image/*" multiple>
+                <p style="color:var(--muted);font-weight:800">
+                  Images are compressed and uploaded to Supabase cloud.
+                </p>
+                <div id="preview" class="grid"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button id="saveBtn" class="primary" type="submit">Save Patient</button>
+            <button class="secondary" type="button" onclick="fillForm();showPage('patients')">Cancel Edit</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <section id="detail" class="page">
+      <button id="backBtn" class="secondary" style="margin-bottom:14px">← Back</button>
+      <div id="details"></div>
+    </section>
+
+    <section id="scan" class="page">
+      <div class="card">
+        <h2>Scan Patient QR</h2>
+        <div class="scanBox">
+          <div id="reader">Scanner preview will appear here</div>
+        </div>
+
+        <div class="actions">
+          <button id="startScan" class="primary">Start Scanner</button>
+          <button id="stopScan" class="danger hidden">Stop Scanner</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="photoModal" class="modal hidden">
+    <button id="closePhoto" class="modalClose">×</button>
+    <img id="bigPhoto" alt="Patient photo">
+  </div>
+
+  <div id="qrModal" class="modal hidden">
+    <button id="closeQr" class="modalClose">×</button>
+    <div class="qrBox">
+      <h2>Patient QR</h2>
+      <div id="qrcode"></div>
+      <p style="color:var(--muted);font-weight:800">
+        Scan to open this patient file.
+      </p>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <script src="app.js"></script>
+</body>
+</html>
