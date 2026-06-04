@@ -396,6 +396,26 @@ function injectExtraStyles() {
   color:white;
   font-size:22px;
 }
+.timelineItem{
+  border-left:3px solid #d4af37;
+  padding:12px 16px;
+  margin-bottom:14px;
+  background:#111827;
+  border-radius:18px;
+}
+
+.timelineDate{
+  color:#9ca3af;
+  font-size:12px;
+  font-weight:800;
+  margin-bottom:6px;
+}
+
+.timelineText{
+  color:white;
+  font-size:15px;
+  font-weight:800;
+}
   `;
   document.head.appendChild(style);
 }
@@ -443,7 +463,71 @@ function saveClinicData(data) {
     teeth: data.teeth || {}
   });
 }
+function renderTimeline(patient) {
+  const data = parseClinicData(patient.progress_notes);
 
+  let timeline = [];
+
+  (data.visits || []).forEach(v => {
+    timeline.push({
+      type: "visit",
+      date: v.date || "",
+      text: v.note || "Visit note"
+    });
+  });
+
+  (data.payments || []).forEach(p => {
+    timeline.push({
+      type: "payment",
+      date: p.date || "",
+      text: `Paid ${p.paid || 0}`
+    });
+  });
+
+  (data.appointments || []).forEach(a => {
+    timeline.push({
+      type: "appointment",
+      date: a.date || "",
+      text: a.note || "Appointment"
+    });
+  });
+
+  (patient.photos || []).forEach(ph => {
+    timeline.push({
+      type: "photo",
+      date: ph.date || "",
+      text: "Photo added"
+    });
+  });
+
+  timeline.sort((a, b) =>
+    new Date(b.date) - new Date(a.date)
+  );
+
+  return timeline.length
+    ? timeline.map(item => `
+      <div class="timelineItem">
+        <div class="timelineDate">
+          ${safeText(item.date)}
+        </div>
+
+        <div class="timelineText">
+          ${
+            item.type === "payment" ? "💰" :
+            item.type === "visit" ? "📝" :
+            item.type === "appointment" ? "📅" :
+            "📷"
+          }
+          ${safeText(item.text)}
+        </div>
+      </div>
+    `).join("")
+    : `
+      <p style="color:var(--muted);font-weight:800">
+        No timeline yet
+      </p>
+    `;
+}
 function paymentTotals(data) {
   const total = data.payments.reduce((s, x) => s + Number(x.total || 0), 0);
   const paid = data.payments.reduce((s, x) => s + Number(x.paid || 0), 0);
@@ -913,7 +997,11 @@ function patientDetailsHTML(p) {
           `).join("") || "<p>No photos</p>"
         }
       </div>
+<h3 class="sectionTitle">Patient Timeline</h3>
 
+<div class="patientCard">
+  ${renderTimeline(p)}
+</div>
       <div class="actions">
         ${
           canEdit()
