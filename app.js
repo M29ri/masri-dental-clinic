@@ -251,7 +251,6 @@ function applyUserBar() {
   if (logoutBtn) {
     logoutBtn.onclick = logout;
   }
-}
 const brand =
   document.querySelector(".brand h1");
 
@@ -259,6 +258,7 @@ if (brand) {
   brand.textContent =
     currentUser.clinic_name ||
     "Dental Clinic";
+}
 }
 
 function canEdit() {
