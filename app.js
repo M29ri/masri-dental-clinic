@@ -1190,69 +1190,317 @@ window.exportPDF = function(id) {
 
   const win = window.open("", "_blank");
 
+window.exportPDF = function(id) {
+  const p = patients.find(x => x.id === id);
+
+  if (!p) {
+    alert("Patient not found or you do not have access.");
+    return;
+  }
+
+  const data = parseClinicData(p.progress_notes);
+  const money = paymentTotals(data);
+
+  const win = window.open("", "_blank");
+
   win.document.write(`
     <html>
       <head>
-        <title>${safeText(p.name)} - Patient File</title>
+        <title>${safeText(p.name)} - Dental Report</title>
+
         <style>
-          body{font-family:Arial;padding:25px;color:#111}
-          h1{border-bottom:2px solid #111;padding-bottom:10px}
-          h2{margin-top:25px}
-          .box{border:1px solid #ccc;padding:12px;margin:10px 0;border-radius:10px;white-space:pre-wrap}
-          img{max-width:180px;margin:8px;border-radius:8px}
-          table{border-collapse:collapse;width:100%;margin-top:10px}
-          td,th{border:1px solid #ccc;padding:8px;text-align:left}
+          body{
+            margin:0;
+            padding:0;
+            font-family:Arial, sans-serif;
+            background:#f4f6f8;
+            color:#111827;
+          }
+
+          .report{
+            max-width:900px;
+            margin:auto;
+            padding:28px;
+          }
+
+          .header{
+            background:linear-gradient(135deg,#070b10,#111827);
+            color:white;
+            border-radius:24px;
+            padding:26px;
+            margin-bottom:20px;
+          }
+
+          .header h1{
+            margin:0;
+            font-size:34px;
+          }
+
+          .header p{
+            margin:8px 0 0;
+            color:#d4af37;
+            font-weight:bold;
+          }
+
+          .section{
+            background:white;
+            border-radius:18px;
+            padding:20px;
+            margin-bottom:16px;
+            border:1px solid #e5e7eb;
+          }
+
+          .section h2{
+            margin:0 0 14px;
+            font-size:22px;
+            color:#111827;
+            border-bottom:2px solid #d4af37;
+            padding-bottom:8px;
+          }
+
+          .grid{
+            display:grid;
+            grid-template-columns:1fr 1fr;
+            gap:12px;
+          }
+
+          .item{
+            background:#f9fafb;
+            border-radius:14px;
+            padding:12px;
+            border:1px solid #e5e7eb;
+          }
+
+          .label{
+            display:block;
+            color:#6b7280;
+            font-size:12px;
+            font-weight:bold;
+            text-transform:uppercase;
+            margin-bottom:5px;
+          }
+
+          .value{
+            font-size:15px;
+            white-space:pre-wrap;
+          }
+
+          .visit,
+          .payment,
+          .appointment{
+            border-left:4px solid #d4af37;
+            padding:12px;
+            background:#f9fafb;
+            border-radius:12px;
+            margin-bottom:10px;
+          }
+
+          .photos{
+            display:grid;
+            grid-template-columns:repeat(3,1fr);
+            gap:10px;
+          }
+
+          .photos img{
+            width:100%;
+            height:160px;
+            object-fit:cover;
+            border-radius:14px;
+            border:1px solid #e5e7eb;
+          }
+
+          .summary{
+            display:grid;
+            grid-template-columns:repeat(3,1fr);
+            gap:10px;
+          }
+
+          .moneyBox{
+            background:#111827;
+            color:white;
+            border-radius:16px;
+            padding:14px;
+          }
+
+          .moneyBox b{
+            color:#d4af37;
+            display:block;
+            margin-bottom:6px;
+          }
+
+          .footer{
+            text-align:center;
+            color:#6b7280;
+            margin-top:24px;
+            font-size:12px;
+          }
+
+          @media print{
+            body{background:white}
+            .report{padding:0}
+            .section,.header{break-inside:avoid}
+            button{display:none}
+          }
         </style>
       </head>
+
       <body>
-        <h1>Masri Dental Clinic</h1>
-        <h2>Patient File</h2>
-        <p><b>Name:</b> ${safeText(p.name || "")}</p>
-        <p><b>ID:</b> ${safeText(p.case_id || "")}</p>
-        <p><b>Phone:</b> ${safeText(p.phone || "")}</p>
-        <p><b>Age:</b> ${safeText(p.age || "")}</p>
-        <p><b>Gender:</b> ${safeText(p.gender || "")}</p>
+        <div class="report">
+          <div class="header">
+            <h1>Masri Dental Clinic</h1>
+            <p>Professional Dental Patient Report</p>
+          </div>
 
-        <h2>Clinical Data</h2>
-        <div class="box"><b>Chief complaint:</b><br>${safeText(p.chief_complaint || "-")}</div>
-        <div class="box"><b>Medical alerts:</b><br>${safeText(p.medical_alerts || "-")}</div>
-        <div class="box"><b>Diagnosis:</b><br>${safeText(p.diagnosis || "-")}</div>
-        <div class="box"><b>Treatment plan:</b><br>${safeText(p.treatment_plan || "-")}</div>
+          <div class="section">
+            <h2>Patient Information</h2>
 
-        <h2>Visits</h2>
-        ${
-          data.visits.length
-            ? data.visits.map(v => `<div class="box"><b>${safeText(v.date)}</b><br>${safeText(v.note || "-")}</div>`).join("")
-            : "<p>No visits</p>"
-        }
+            <div class="grid">
+              <div class="item">
+                <span class="label">Name</span>
+                <span class="value">${safeText(p.name || "-")}</span>
+              </div>
 
-        <h2>Tooth Chart</h2>
-        <table>
-          <tr><th>Tooth</th><th>Status</th></tr>
-          ${Object.entries(data.teeth || {}).map(([tooth, status]) => `<tr><td>${tooth}</td><td>${safeText(status)}</td></tr>`).join("") || "<tr><td colspan='2'>No tooth data</td></tr>"}
-        </table>
+              <div class="item">
+                <span class="label">Patient ID</span>
+                <span class="value">${safeText(p.case_id || "-")}</span>
+              </div>
 
-        <h2>Appointments</h2>
-        ${
-          data.appointments.length
-            ? data.appointments.map(a => `<div class="box"><b>${safeText(a.date)}</b><br>${safeText(a.note || "")}</div>`).join("")
-            : "<p>No appointments</p>"
-        }
+              <div class="item">
+                <span class="label">Phone</span>
+                <span class="value">${safeText(p.phone || "-")}</span>
+              </div>
 
-        <h2>Payments</h2>
-        <p><b>Total:</b> ${money.total}</p>
-        <p><b>Paid:</b> ${money.paid}</p>
-        <p><b>Remaining:</b> ${money.remaining}</p>
+              <div class="item">
+                <span class="label">Age / Gender</span>
+                <span class="value">${safeText(p.age || "-")} / ${safeText(p.gender || "-")}</span>
+              </div>
+            </div>
+          </div>
 
-        <h2>Photos / X-rays</h2>
-        ${(p.photos || []).map(ph => `<img src="${ph.url}">`).join("") || "<p>No photos</p>"}
+          <div class="section">
+            <h2>Clinical Summary</h2>
+
+            <div class="item">
+              <span class="label">Chief Complaint</span>
+              <span class="value">${safeText(p.chief_complaint || "-")}</span>
+            </div>
+
+            <br>
+
+            <div class="item">
+              <span class="label">Medical Alerts</span>
+              <span class="value">${safeText(p.medical_alerts || "-")}</span>
+            </div>
+
+            <br>
+
+            <div class="item">
+              <span class="label">Diagnosis</span>
+              <span class="value">${safeText(p.diagnosis || "-")}</span>
+            </div>
+
+            <br>
+
+            <div class="item">
+              <span class="label">Treatment Plan</span>
+              <span class="value">${safeText(p.treatment_plan || "-")}</span>
+            </div>
+          </div>
+
+          <div class="section">
+            <h2>Payments Summary</h2>
+
+            <div class="summary">
+              <div class="moneyBox">
+                <b>Total</b>
+                ${money.total}
+              </div>
+
+              <div class="moneyBox">
+                <b>Paid</b>
+                ${money.paid}
+              </div>
+
+              <div class="moneyBox">
+                <b>Remaining</b>
+                ${money.remaining}
+              </div>
+            </div>
+          </div>
+
+          <div class="section">
+            <h2>Visits History</h2>
+
+            ${
+              data.visits.length
+                ? data.visits.map(v => `
+                  <div class="visit">
+                    <b>${safeText(v.date || "")}</b>
+                    <p>${safeText(v.note || "-")}</p>
+                  </div>
+                `).join("")
+                : "<p>No visits recorded.</p>"
+            }
+          </div>
+
+          <div class="section">
+            <h2>Appointments</h2>
+
+            ${
+              data.appointments.length
+                ? data.appointments.map(a => `
+                  <div class="appointment">
+                    <b>${safeText(a.date || "")}</b>
+                    <p>${safeText(a.note || "-")}</p>
+                  </div>
+                `).join("")
+                : "<p>No appointments recorded.</p>"
+            }
+          </div>
+
+          <div class="section">
+            <h2>Payments History</h2>
+
+            ${
+              data.payments.length
+                ? data.payments.map(pay => `
+                  <div class="payment">
+                    <b>${safeText(pay.date || "")}</b>
+                    <p>Total: ${Number(pay.total || 0)} | Paid: ${Number(pay.paid || 0)} | Remaining: ${Number(pay.total || 0) - Number(pay.paid || 0)}</p>
+                  </div>
+                `).join("")
+                : "<p>No payments recorded.</p>"
+            }
+          </div>
+
+          <div class="section">
+            <h2>Photos / X-rays</h2>
+
+            <div class="photos">
+              ${
+                (p.photos || []).length
+                  ? p.photos.map(ph => `
+                    <img src="${ph.url}">
+                  `).join("")
+                  : "<p>No photos recorded.</p>"
+              }
+            </div>
+          </div>
+
+          <div class="footer">
+            Generated by Masri Dental Clinic Management System
+          </div>
+        </div>
 
         <script>
-          window.onload = () => setTimeout(() => window.print(), 500);
+          window.onload = () => setTimeout(() => window.print(), 700);
         </script>
       </body>
     </html>
   `);
+
+  win.document.close();
+};
 
   win.document.close();
 };
