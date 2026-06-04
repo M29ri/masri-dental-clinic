@@ -392,6 +392,8 @@ function renderDashboard() {
   let totalPhotos = 0;
   let totalVisits = 0;
   let unpaid = 0;
+  let totalRevenue = 0;
+let paidToday = 0;
   let missingPlan = 0;
   let upcoming = [];
 
@@ -402,7 +404,17 @@ function renderDashboard() {
     totalPhotos += (p.photos || []).length;
     totalVisits += data.visits.length;
     unpaid += money.remaining;
+totalRevenue += money.paid;
 
+data.payments.forEach(pay => {
+  const payDate = new Date(pay.date).toDateString();
+  const today = new Date().toDateString();
+
+  if (payDate === today) {
+    paidToday += Number(pay.paid || 0);
+  }
+});
+    
     if (!p.treatment_plan || !p.treatment_plan.trim()) {
       missingPlan++;
     }
@@ -440,7 +452,17 @@ function renderDashboard() {
         <small>Total visits</small>
         <strong>${totalVisits}</strong>
       </div>
-    </div>
+    
+    <div class="statCard">
+  <small>Total revenue</small>
+  <strong>${totalRevenue}</strong>
+</div>
+
+<div class="statCard">
+  <small>Paid today</small>
+  <strong>${paidToday}</strong>
+</div>
+</div>
 
     <div class="quickActions">
       <button class="primary" onclick="fillForm();showPage('form')">
