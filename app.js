@@ -874,6 +874,10 @@ window.openPatient = function(id) {
 };
 
 window.changeTooth = async function(patientId, toothNumber) {
+ if (!currentUser || !["admin", "doctor"].includes(currentUser.role)) {
+  alert("You don't have permission to edit tooth chart");
+  return;
+} 
   const p = patients.find(x => x.id === patientId);
   const data = parseClinicData(p.progress_notes);
 
@@ -1163,7 +1167,17 @@ window.exportPDF = function(id) {
 
   win.document.close();
 };
+window.editPatient = function(id) {
+  if (!currentUser || !["admin", "doctor"].includes(currentUser.role)) {
+    alert("You don't have permission to edit patients");
+    return;
+  }
 
+  const p = patients.find(x => x.id === id);
+
+  fillForm(p);
+  showPage("form");
+};
 window.deletePatient = async function(id) {
 
   if (!currentUser || currentUser.role !== "admin") {
