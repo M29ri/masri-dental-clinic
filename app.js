@@ -380,7 +380,104 @@ async function loadPatients() {
     }
   }
 }
+function renderDashboard() {
+  const dash = document.getElementById("dashboardContent");
+  if (!dash) return;
 
+  let totalPhotos = 0;
+  let totalVisits = 0;
+  let unpaid = 0;
+  let missingPlan = 0;
+  let upcoming = [];
+
+  patients.forEach(p => {
+    const data = parseClinicData(p.progress_notes);
+    const money = paymentTotals(data);
+
+    totalPhotos += (p.photos || []).length;
+    totalVisits += data.visits.length;
+    unpaid += money.remaining;
+
+    if (!p.treatment_plan || !p.treatment_plan.trim()) {
+      missingPlan++;
+    }
+
+    data.appointments.forEach(a => {
+      upcoming.push({
+        patient: p.name || "No name",
+        phone: p.phone || "",
+        date: a.date || "",
+        note: a.note || ""
+      });
+    });
+  });
+
+  upcoming = upcoming.slice(0, 5);
+
+  dash.innerHTML = `
+    <div class="heroGrid">
+      <div class="statCard">
+        <small>Total patients</small>
+        <strong>${patients.length}</strong>
+      </div>
+
+      <div class="statCard">
+        <small>Total photos</small>
+        <strong>${totalPhotos}</strong>
+      </div>
+
+      <div class="statCard">
+        <small>Unpaid balance</small>
+        <strong>${unpaid}</strong>
+      </div>
+
+      <div class="statCard">
+        <small>Total visits</small>
+        <strong>${totalVisits}</strong>
+      </div>
+    </div>
+
+    <div class="quickActions">
+      <button class="primary" onclick="fillForm();showPage('form')">
+        + New Patient
+      </button>
+
+      <button class="secondary" onclick="showPage('scan')">
+        Scan QR
+      </button>
+    </div>
+
+    <div class="dashboardPanel">
+      <h2>Clinic Alerts</h2>
+
+      <span class="pill">
+        ${missingPlan} without treatment plan
+      </span>
+
+      <span class="pill">
+        ${upcoming.length} upcoming appointments
+      </span>
+    </div>
+
+    <div class="dashboardPanel">
+      <h2>Upcoming Appointments</h2>
+
+      ${
+        upcoming.length
+          ? upcoming.map(a => `
+            <div class="appointment">
+              <b>${safeText(a.date)}</b>
+              <p>${safeText(a.patient)} - ${safeText(a.phone)}</p>
+              <p>${safeText(a.note)}</p>
+            </div>
+          `).join("")
+          : `<p style="color:var(--muted);font-weight:800">
+              No upcoming appointments
+            </p>`
+      }
+    </div>
+  `;
+}
 function renderPatients() {
   const q = ($("search")?.value || "").toLowerCase();
 
