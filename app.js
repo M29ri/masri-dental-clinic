@@ -252,6 +252,14 @@ function applyUserBar() {
     logoutBtn.onclick = logout;
   }
 }
+const brand =
+  document.querySelector(".brand h1");
+
+if (brand) {
+  brand.textContent =
+    currentUser.clinic_name ||
+    "Dental Clinic";
+}
 
 function canEdit() {
   return currentUser && ["admin", "doctor"].includes(currentUser.role);
@@ -1573,8 +1581,26 @@ window.exportPDF = function(id) {
 
       <body>
         <div class="report">
-          <div class="header">
-            <h1>Masri Dental Clinic</h1>
+          <div class="header">${
+  currentUser.clinic_logo
+    ? `<img
+        src="${currentUser.clinic_logo}"
+        style="
+          width:90px;
+          height:90px;
+          object-fit:contain;
+          margin-bottom:12px;
+        "
+      >`
+    : ""
+}
+
+<h1>
+  ${
+    currentUser.clinic_name ||
+    "Dental Clinic"
+  }
+</h1>
             <p>Professional Dental Patient Report</p>
           </div>
 
