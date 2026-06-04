@@ -1163,9 +1163,56 @@ window.deletePhoto = async function(id, index) {
   openPatient(id);
 };
 
+let currentPhotoList = [];
+let currentPhotoIndex = 0;
+
+function openPhotoViewer(index = 0) {
+  if (!currentPhotoList.length) return;
+
+  currentPhotoIndex = index;
+
+  document.getElementById("viewerImage").src =
+    currentPhotoList[currentPhotoIndex].url;
+
+  document.getElementById("photoViewer").classList.remove("hidden");
+}
+
+function closePhotoViewer() {
+  document.getElementById("photoViewer").classList.add("hidden");
+}
+
+function nextPhoto() {
+  if (!currentPhotoList.length) return;
+
+  currentPhotoIndex =
+    (currentPhotoIndex + 1) % currentPhotoList.length;
+
+  document.getElementById("viewerImage").src =
+    currentPhotoList[currentPhotoIndex].url;
+}
+
+function prevPhoto() {
+  if (!currentPhotoList.length) return;
+
+  currentPhotoIndex =
+    (currentPhotoIndex - 1 + currentPhotoList.length) %
+    currentPhotoList.length;
+
+  document.getElementById("viewerImage").src =
+    currentPhotoList[currentPhotoIndex].url;
+}
+
 window.viewPhoto = function(url) {
-  $("bigPhoto").src = url;
-  $("photoModal").classList.remove("hidden");
+  const patient = patients.find(p =>
+    (p.photos || []).some(ph => ph.url === url)
+  );
+
+  currentPhotoList = patient?.photos || [{ url }];
+  currentPhotoIndex = currentPhotoList.findIndex(ph => ph.url === url);
+
+  if (currentPhotoIndex < 0) currentPhotoIndex = 0;
+
+  openPhotoViewer(currentPhotoIndex);
 };
 
 window.showQR = function(id) {
@@ -1331,6 +1378,9 @@ document.querySelectorAll(".tab").forEach(tab => {
     showPage(tab.dataset.page)
   );
 });
+document.getElementById("closeViewer")?.addEventListener("click", closePhotoViewer);
+document.getElementById("nextPhoto")?.addEventListener("click", nextPhoto);
+document.getElementById("prevPhoto")?.addEventListener("click", prevPhoto);
 
 window.addEventListener("load", async () => {
   try {
