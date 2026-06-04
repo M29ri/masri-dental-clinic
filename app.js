@@ -809,17 +809,49 @@ window.changeTooth = async function(patientId, toothNumber) {
 
   const data = parseClinicData(p.progress_notes);
 
-  const options = ["healthy", "caries", "filling", "rct", "crown", "missing", "extraction", "implant"];
+  const options = [
+  "healthy",
+  "caries",
+  "filling",
+  "rct",
+  "crown",
+  "missing",
+  "extraction",
+  "implant"
+];
   const current = data.teeth[toothNumber] || "healthy";
 
   const next = prompt(
-    `Tooth ${toothNumber} status:\n\n${options.join("\n")}\n\nCurrent: ${current}`,
-    current
-  );
+  `Tooth ${toothNumber} status:
+
+1 healthy
+2 caries
+3 filling
+4 rct
+5 crown
+6 missing
+7 extraction
+8 implant
+
+Type number or word.
+Current: ${current}`,
+  current
+);
 
   if (!next) return;
 
-  const clean = next.toLowerCase();
+  const map = {
+  "1": "healthy",
+  "2": "caries",
+  "3": "filling",
+  "4": "rct",
+  "5": "crown",
+  "6": "missing",
+  "7": "extraction",
+  "8": "implant"
+};
+
+const clean = map[next.trim()] || next.toLowerCase().trim();
 
   if (!options.includes(clean)) {
     alert("Invalid tooth status");
