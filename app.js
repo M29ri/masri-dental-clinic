@@ -368,6 +368,7 @@ async function loadPatients() {
     }
 
     renderPatients();
+    renderDashboard();
     $("status").textContent = "Cloud connected â";
 
     const match = location.hash.match(/patient=([^&]+)/);
