@@ -1361,70 +1361,33 @@ window.showBeforeAfter = function(id) {
     const clinicName =
       $("clinicName")?.value?.trim();
 
-    const logoFile =
-      $("clinicLogo")?.files?.[0];
+    await api(
+      `clinic_users?id=eq.${currentUser.id}`,
+      {
+        method: "PATCH",
+        body: JSON.stringify({
+          clinic_name: clinicName || "",
+          clinic_logo: ""
+        })
+      }
+    );
 
-    let logoUrl =
-      currentUser.clinic_logo || "";
-
-    if (logoFile) {
-      const fileName =
-        `logo-${currentUser.id}-${Date.now()}`;
-
-      const upload = await supabase.storage
-        .from("clinic-logos")
-        .upload(fileName, logoFile, {
-          upsert: true
-        });
-
-      if (upload.error)
-        throw upload.error;
-
-      const publicUrl =
-        supabase.storage
-          .from("clinic-logos")
-          .getPublicUrl(fileName);
-
-      logoUrl =
-        publicUrl.data.publicUrl;
-    }
-
-    const updatedUser =
-      await api(
-        `clinic_users?id=eq.${currentUser.id}`,
-        {
-          method: "PATCH",
-          body: JSON.stringify({
-            clinic_name:
-              clinicName || "",
-            clinic_logo:
-              logoUrl
-          })
-        }
-      );
-
-    currentUser.clinic_name =
-      clinicName;
-
-    currentUser.clinic_logo =
-      logoUrl;
+    currentUser.clinic_name = clinicName || "";
+    currentUser.clinic_logo = "";
 
     localStorage.setItem(
       "clinicUser",
       JSON.stringify(currentUser)
     );
 
-    alert(
-      "Clinic branding saved."
-    );
+    applyUserBar();
 
+    alert("Clinic branding saved.");
   } catch (err) {
-    alert(
-      "Save failed: " +
-      err.message
-    );
+    alert("Save failed: " + err.message);
   }
 };
+
 window.exportPDF = function(id) {
   const p = patients.find(x => x.id === id);
 
