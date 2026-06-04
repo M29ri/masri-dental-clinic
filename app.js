@@ -1425,26 +1425,34 @@ $("stopScan")?.addEventListener("click", stopScan);
 document.querySelectorAll(".tab").forEach(tab => {
   tab.addEventListener("click", () =>
     showPage(tab.dataset.page)
-  );
-window.addEventListener("load", async () => {
-  injectExtraStyles();
+  );window.addEventListener("load", async () => {
+  try {
+    injectExtraStyles();
 
-  currentUser = getSavedUser();
+    if (location.search.includes("logout=1")) {
+      localStorage.removeItem("clinicUser");
+      showLoginScreen();
+      return;
+    }
 
-  if (!currentUser) {
-    showLoginScreen();
-    return;
-  applyUserBar();
-if (!canEdit()) {
-  document.querySelectorAll(".editBtn,.deleteBtn")
-    .forEach(el => el.style.display = "none");
-}
-  await loadPatients();
+    currentUser = getSavedUser();
 
-  const match = location.hash.match(/patient=([^&]+)/);
+    if (!currentUser || !currentUser.id || !currentUser.role) {
+      localStorage.removeItem("clinicUser");
+      showLoginScreen();
+      return;
+    }
 
-  if (match) {
-    openPatient(match[1]);
+    applyUserBar();
+    await loadPatients();
+
+    const match = location.hash.match(/patient=([^&]+)/);
+    if (match) openPatient(match[1]);
+
+  } catch (err) {
+    document.body.innerHTML =
+      "<pre style='padding:20px;color:red;white-space:pre-wrap'>" +
+      err.message +
+      "</pre>";
   }
 });
-                                          
