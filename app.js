@@ -1,3 +1,185 @@
+let currentUser = null;
+
+function getSavedUser() {
+  try {
+    return JSON.parse(localStorage.getItem("clinicUser"));
+  } catch {
+    return null;
+  }
+}
+
+function saveUser(user) {
+  localStorage.setItem("clinicUser", JSON.stringify(user));
+  currentUser = user;
+}
+
+function logout() {
+  localStorage.removeItem("clinicUser");
+  location.reload();
+}
+
+async function login(username, password) {
+  const users = await api(
+    `clinic_users?username=eq.${encodeURIComponent(username)}&password=eq.${encodeURIComponent(password)}&select=*`
+  );
+
+  if (!users.length) {
+    alert("Wrong username or password");
+    return;
+  }
+
+  saveUser(users[0]);
+  location.reload();
+}
+
+function showLoginScreen() {
+  document.body.innerHTML = `
+    <div style="
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:linear-gradient(160deg,#070b10,#111827);
+      padding:24px;
+      color:white;
+      font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif;
+    ">
+      <div style="
+        width:100%;
+        max-width:420px;
+        background:#121821;
+        border:1px solid #263241;
+        border-radius:32px;
+        padding:28px;
+        box-shadow:0 20px 50px rgba(0,0,0,.45);
+      ">
+        <h1 style="font-size:30px;margin-bottom:8px;">Masri Dental Clinic</h1>
+        <p style="color:#9ca9b8;margin-bottom:24px;">Secure login</p>
+
+        <label style="display:block;margin-bottom:14px;">
+          Username
+          <input id="loginUsername" style="
+            width:100%;
+            margin-top:8px;
+            padding:16px;
+            border-radius:18px;
+            border:1px solid #263241;
+            background:#0f1620;
+            color:white;
+            font-size:16px;
+          ">
+        </label>
+
+        <label style="display:block;margin-bottom:20px;">
+          Password
+          <input id="loginPassword" type="password" style="
+            width:100%;
+            margin-top:8px;
+            padding:16px;
+            border-radius:18px;
+            border:1px solid #263241;
+            background:#0f1620;
+            color:white;
+            font-size:16px;
+          ">
+        </label>
+
+        <button id="loginBtn" style="
+          width:100%;
+          padding:16px;
+          border:none;
+          border-radius:18px;
+          background:linear-gradient(135deg,#d4af37,#8f6b10);
+          color:black;
+          font-weight:900;
+          font-size:17px;
+        ">
+          Login
+        </button>
+
+        <p style="margin-top:18px;color:#9ca9b8;font-size:13px;">
+          Default admin: admin / 1234
+        </p>
+      </div>
+    </div>
+  `;
+
+  document.getElementById("loginBtn").onclick = () => {
+    login(
+      document.getElementById("loginUsername").value.trim(),
+      document.getElementById("loginPassword").value.trim()
+    );
+  };
+}
+
+async function addUser() {
+  if (!currentUser || currentUser.role !== "admin") {
+    alert("Only admin can add users");
+    return;
+  }
+
+  const username = prompt("New username:");
+  if (!username) return;
+
+  const password = prompt("Password:");
+  if (!password) return;
+
+  const full_name = prompt("Full name:") || username;
+
+  const role = prompt("Role: admin / doctor / assistant", "doctor");
+  if (!["admin", "doctor", "assistant"].includes(role)) {
+    alert("Invalid role");
+    return;
+  }
+
+  await api("clinic_users", {
+    method: "POST",
+    body: JSON.stringify({
+      username,
+      password,
+      full_name,
+      role
+    })
+  });
+
+  alert("User added successfully");
+}
+
+function applyUserBar() {
+  const topbar = document.querySelector(".topbar") || document.querySelector("header");
+  if (!topbar || !currentUser) return;
+
+  const userBox = document.createElement("div");
+  userBox.style.cssText = `
+    margin-top:10px;
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    align-items:center;
+  `;
+
+  userBox.innerHTML = `
+    <span class="pill">
+      ${currentUser.full_name || currentUser.username} (${currentUser.role})
+    </span>
+    ${
+      currentUser.role === "admin"
+        ? `<button class="secondary" onclick="addUser()">+ User</button>`
+        : ""
+    }
+    <button class="danger" onclick="logout()">Logout</button>
+  `;
+
+  topbar.appendChild(userBox);
+}
+
+function canEdit() {
+  return currentUser && ["admin", "doctor"].includes(currentUser.role);
+}
+
+function canDelete() {
+  return currentUser && currentUser.role === "admin";
+}
 const SUPABASE_URL = "https://vstfquvvtsmgmztmnnaq.supabase.co";
 const SUPABASE_KEY = "sb_publishable_9sp5XCEbqCNk0CQNyoE8SA_3a-rXoDn";
 const BUCKET = "patient-photos";
@@ -982,15 +1164,13 @@ window.exportPDF = function(id) {
   win.document.close();
 };
 
-window.editPatient = function(id) {
-  const p = patients.find(x => x.id === id);
-
-  fillForm(p);
-
-  showPage("form");
-};
-
 window.deletePatient = async function(id) {
+
+  if (!currentUser || currentUser.role !== "admin") {
+    alert("Only admin can delete patients");
+    return;
+  }
+
   if (!confirm("Delete this patient?")) return;
 
   await api(`patients?id=eq.${id}`, {
@@ -998,7 +1178,6 @@ window.deletePatient = async function(id) {
   });
 
   await loadPatients();
-
   showPage("patients");
 };
 
@@ -1190,11 +1369,19 @@ document.querySelectorAll(".tab").forEach(tab => {
   tab.addEventListener("click", () =>
     showPage(tab.dataset.page)
   );
-});
-
 window.addEventListener("load", async () => {
   injectExtraStyles();
 
+  currentUser = getSavedUser();
+
+  if (!currentUser) {
+    showLoginScreen();
+    return;
+  applyUserBar();
+if (!canEdit()) {
+  document.querySelectorAll(".editBtn,.deleteBtn")
+    .forEach(el => el.style.display = "none");
+}
   await loadPatients();
 
   const match = location.hash.match(/patient=([^&]+)/);
@@ -1203,3 +1390,4 @@ window.addEventListener("load", async () => {
     openPatient(match[1]);
   }
 });
+                                          
