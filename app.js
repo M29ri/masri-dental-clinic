@@ -1003,7 +1003,20 @@ $("patientForm")?.addEventListener("submit", async e => {
     const oldPatient = patients.find(p => p.id === id);
     let data = getFormData(oldPatient);
     let saved;
+    if (!id) {
+  const duplicate = patients.find(p =>
+    p.phone &&
+    data.phone &&
+    p.phone.trim() === data.phone.trim()
+  );
 
+  if (duplicate) {
+    alert("Patient with this phone number already exists.");
+    $("saveBtn").disabled = false;
+    $("saveBtn").textContent = "Save Patient";
+    return;
+  }
+}
     if (id) {
       saved = await api(`patients?id=eq.${id}`, {
         method: "PATCH",
