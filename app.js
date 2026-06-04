@@ -228,37 +228,29 @@ function showLoginScreen() {
 function applyUserBar() {
   if (!currentUser) return;
 
-  const old = document.getElementById("userBar");
-  if (old) old.remove();
+  const doctorName =
+    document.getElementById("doctorName");
 
-  const userBox = document.createElement("div");
-  userBox.id = "userBar";
-  userBox.style.cssText = `
-    position:sticky;
-    top:0;
-    z-index:999;
-    background:#0b1118;
-    padding:10px;
-    display:flex;
-    gap:8px;
-    flex-wrap:wrap;
-    align-items:center;
-    border-bottom:1px solid #263241;
-  `;
+  const doctorRole =
+    document.getElementById("doctorRole");
 
-  userBox.innerHTML = `
-    <span class="pill">
-      ${safeText(currentUser.full_name || currentUser.username)} (${safeText(currentUser.role)})
-    </span>
-    ${
-      currentUser.role === "admin"
-        ? `<button class="secondary" onclick="addUser()">+ User</button>`
-        : ""
-    }
-    <button class="danger" onclick="logout()">Logout</button>
-  `;
+  const logoutBtn =
+    document.getElementById("logoutBtn");
 
-  document.body.prepend(userBox);
+  if (doctorName) {
+    doctorName.textContent =
+      currentUser.full_name ||
+      currentUser.username;
+  }
+
+  if (doctorRole) {
+    doctorRole.textContent =
+      currentUser.role.toUpperCase();
+  }
+
+  if (logoutBtn) {
+    logoutBtn.onclick = logout;
+  }
 }
 
 function canEdit() {
