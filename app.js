@@ -1273,6 +1273,60 @@ window.showBeforeAfter = function(id) {
   const details = document.getElementById("details");
   details.prepend(box);
 };
+ window.restoreBackup = function() {
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = ".json,application/json";
+
+  input.onchange = async e => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!confirm("Restore backup? This will upload patients from the backup file.")) {
+      return;
+    }
+
+    try {
+      const text = await file.text();
+      const backup = JSON.parse(text);
+
+      if (!backup.patients || !Array.isArray(backup.patients)) {
+        alert("Invalid backup file.");
+        return;
+      }
+
+      for (const p of backup.patients) {
+        const newPatient = {
+          owner_id: currentUser.role === "admin" ? (p.owner_id || currentUser.id) : currentUser.id,
+          case_id: p.case_id || makeId(),
+          name: p.name || "",
+          phone: p.phone || "",
+          age: p.age || "",
+          gender: p.gender || "",
+          chief_complaint: p.chief_complaint || "",
+          medical_alerts: p.medical_alerts || "",
+          diagnosis: p.diagnosis || "",
+          treatment_plan: p.treatment_plan || "",
+          progress_notes: p.progress_notes || "",
+          photos: p.photos || []
+        };
+
+        await api("patients", {
+          method: "POST",
+          body: JSON.stringify(newPatient)
+        });
+      }
+
+      alert("Backup restored successfully.");
+      await loadPatients();
+      showPage("patients");
+    } catch (err) {
+      alert("Restore failed: " + err.message);
+    }
+  };
+
+  input.click();
+}; 
  window.backupData = function() {
   const backup = {
     exported_at: new Date().toISOString(),
