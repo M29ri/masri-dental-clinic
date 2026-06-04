@@ -404,7 +404,11 @@ function paymentTotals(data) {
 async function loadPatients() {
   try {
     $("status").textContent = "Loading cloud...";
-    patients = await api("patients?select=*&order=created_at.desc");
+    if (currentUser.role === "admin") {
+  patients = await api("patients?select=*&order=created_at.desc");
+} else {
+  patients = await api(`patients?owner_id=eq.${currentUser.id}&select=*&order=created_at.desc`);
+}
     renderPatients();
     $("status").textContent = "Cloud connected ✅";
 
@@ -472,6 +476,7 @@ function getFormData(oldPatient = null) {
   }
 
   return {
+    owner_id: oldPatient?.owner_id || currentUser.id,
     case_id: $("caseId").value || oldPatient?.case_id || makeId(),
     name: $("name").value,
     phone: $("phone").value,
