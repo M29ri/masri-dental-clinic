@@ -416,6 +416,33 @@ function injectExtraStyles() {
   font-size:15px;
   font-weight:800;
 }
+.compareBox{
+  background:#111827;
+  border:1px solid #263241;
+  border-radius:24px;
+  padding:16px;
+  margin-top:16px;
+}
+
+.compareGrid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+
+.compareGrid img{
+  width:100%;
+  aspect-ratio:1/1;
+  object-fit:cover;
+  border-radius:18px;
+  border:1px solid #263241;
+}
+
+.compareLabel{
+  color:#d4af37;
+  font-weight:900;
+  margin-bottom:8px;
+}
   `;
   document.head.appendChild(style);
 }
@@ -987,6 +1014,9 @@ function patientDetailsHTML(p) {
       }
 
       <h3 class="sectionTitle">Photos / X-rays</h3>
+      <button class="secondary" onclick="showBeforeAfter('${p.id}')">
+  Before / After
+</button>
       <div class="grid">
         ${
           (p.photos || []).map((ph, i) => `
@@ -1189,7 +1219,60 @@ window.exportPDF = function(id) {
   const money = paymentTotals(data);
 
   const win = window.open("", "_blank");
+window.showBeforeAfter = function(id) {
+  const p = patients.find(x => x.id === id);
 
+  if (!p || !(p.photos || []).length) {
+    alert("No photos available for comparison.");
+    return;
+  }
+
+  const photos = p.photos || [];
+
+  if (photos.length < 2) {
+    alert("You need at least 2 photos for before / after comparison.");
+    return;
+  }
+
+  const beforeIndex = prompt(
+    `Choose BEFORE photo number: 1 to ${photos.length}`,
+    "1"
+  );
+
+  const afterIndex = prompt(
+    `Choose AFTER photo number: 1 to ${photos.length}`,
+    String(photos.length)
+  );
+
+  const before = photos[Number(beforeIndex) - 1];
+  const after = photos[Number(afterIndex) - 1];
+
+  if (!before || !after) {
+    alert("Invalid photo number.");
+    return;
+  }
+
+  const box = document.createElement("div");
+  box.className = "compareBox";
+  box.innerHTML = `
+    <h3 class="sectionTitle">Before / After Comparison</h3>
+
+    <div class="compareGrid">
+      <div>
+        <div class="compareLabel">Before</div>
+        <img src="${before.url}">
+      </div>
+
+      <div>
+        <div class="compareLabel">After</div>
+        <img src="${after.url}">
+      </div>
+    </div>
+  `;
+
+  const details = document.getElementById("details");
+  details.prepend(box);
+};
 window.exportPDF = function(id) {
   const p = patients.find(x => x.id === id);
 
