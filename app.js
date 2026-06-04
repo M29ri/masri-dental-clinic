@@ -96,7 +96,19 @@ function showLoginScreen() {
         ">
           Login
         </button>
-
+<button id="registerBtn" style="
+  width:100%;
+  margin-top:12px;
+  padding:16px;
+  border:none;
+  border-radius:18px;
+  background:#1f2937;
+  color:white;
+  font-weight:900;
+  font-size:17px;
+">
+  Create doctor account
+</button>
         <p style="margin-top:18px;color:#9ca9b8;font-size:13px;">
           Default admin: admin / 1234
         </p>
@@ -110,8 +122,34 @@ function showLoginScreen() {
       document.getElementById("loginPassword").value.trim()
     );
   };
-}
+document.getElementById("registerBtn").onclick = registerDoctor;
+async function registerDoctor() {
+  const full_name = prompt("Your full name:");
+  if (!full_name) return;
 
+  const username = prompt("Choose username:");
+  if (!username) return;
+
+  const password = prompt("Choose password:");
+  if (!password) return;
+
+  try {
+    await api("clinic_users", {
+      method: "POST",
+      body: JSON.stringify({
+        username: username.trim(),
+        password: password.trim(),
+        full_name: full_name.trim(),
+        role: "doctor"
+      })
+    });
+
+    alert("Account created successfully. Login now.");
+
+  } catch (err) {
+    alert("Username already exists or account creation failed");
+  }
+}
 async function addUser() {
   if (!currentUser || currentUser.role !== "admin") {
     alert("Only admin can add users");
