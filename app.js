@@ -1425,7 +1425,10 @@ $("stopScan")?.addEventListener("click", stopScan);
 document.querySelectorAll(".tab").forEach(tab => {
   tab.addEventListener("click", () =>
     showPage(tab.dataset.page)
-  );window.addEventListener("load", async () => {
+  );
+});
+
+window.addEventListener("load", async () => {
   try {
     injectExtraStyles();
 
