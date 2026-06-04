@@ -123,6 +123,8 @@ function showLoginScreen() {
     );
   };
 document.getElementById("registerBtn").onclick = registerDoctor;
+  }
+
 async function registerDoctor() {
   const full_name = prompt("Your full name:");
   if (!full_name) return;
