@@ -371,8 +371,12 @@ async function loadPatients() {
     renderDashboard();
     $("status").textContent = "Cloud connected â";
 
-    const match = location.hash.match(/patient=([^&]+)/);
-    if (match) openPatient(match[1]);
+    const params = new URLSearchParams(location.search);
+const patientId = params.get("patient");
+
+if (patientId) {
+  openPatient(patientId);
+}
   } catch (err) {
     console.error(err);
     $("status").textContent = "Cloud error â";
