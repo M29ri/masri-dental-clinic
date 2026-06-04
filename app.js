@@ -928,10 +928,20 @@ window.viewPhoto = function(url) {
 };
 
 window.showQR = function(id) {
+  const p = patients.find(x => x.id === id);
+
+  if (!p) {
+    alert("Patient not found or you do not have access.");
+    return;
+  }
+
   $("qrcode").innerHTML = "";
 
+  const patientLink =
+    location.origin + location.pathname + "?patient=" + encodeURIComponent(id);
+
   new QRCode($("qrcode"), {
-    text: location.origin + location.pathname + "#patient=" + id,
+    text: patientLink,
     width: 220,
     height: 220
   });
@@ -1089,8 +1099,12 @@ window.addEventListener("load", async () => {
     applyUserBar();
     await loadPatients();
 
-    const match = location.hash.match(/patient=([^&]+)/);
-    if (match) openPatient(match[1]);
+    const params = new URLSearchParams(location.search);
+const patientId = params.get("patient");
+
+if (patientId) {
+  openPatient(patientId);
+}
   } catch (err) {
     document.body.innerHTML =
       "<pre style='padding:20px;color:red;white-space:pre-wrap'>" +
