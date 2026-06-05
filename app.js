@@ -213,8 +213,8 @@ function injectExtraStyles() {
   max-width:none!important;
   height:620px!important;
   margin:20px 0!important;
-  left:-14px!important;
-  padding:0 52px!important;
+  left:-18px!important;
+  padding:0 70px!important;
   box-sizing:border-box!important;
   border-radius:34px!important;
   background:radial-gradient(circle at center,#111827,#070b10)!important;
