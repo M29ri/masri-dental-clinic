@@ -857,6 +857,60 @@ function injectExtraStyles() {
   text-anchor:middle !important;
   opacity:.65 !important;
 }
+.finalToothChart{
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  gap:16px!important;
+  width:100%!important;
+  margin-top:18px!important;
+}
+
+.finalQuadrant{
+  background:#0b111a!important;
+  border:1px solid #263241!important;
+  border-radius:24px!important;
+  padding:16px!important;
+}
+
+.finalQuadrant h4{
+  color:#d4af37!important;
+  margin:0 0 12px!important;
+  font-size:20px!important;
+  font-weight:1000!important;
+}
+
+.finalGrid{
+  display:grid!important;
+  grid-template-columns:repeat(4,1fr)!important;
+  gap:12px!important;
+}
+
+.finalTooth{
+  min-height:86px!important;
+  border-radius:18px!important;
+  border:1px solid #263241!important;
+  background:#101722!important;
+  color:white!important;
+  font-size:34px!important;
+  font-weight:900!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+}
+
+.finalTooth span{
+  font-size:14px!important;
+  margin-top:6px!important;
+}
+
+.finalTooth.caries{background:#3b1111!important}
+.finalTooth.filling{background:#102544!important}
+.finalTooth.rct{background:#26164d!important}
+.finalTooth.crown{background:#4a3710!important}
+.finalTooth.missing{background:#111827!important;opacity:.55!important}
+.finalTooth.extraction{background:#4a1420!important}
+.finalTooth.implant{background:#103c37!important}
   `;
   document.head.appendChild(style);
 }
@@ -1006,41 +1060,32 @@ function renderToothChart(p) {
   const data = parseClinicData(p.progress_notes);
   const teeth = data.teeth || {};
 
-  const teethData = [
-    [18,170,420,-75],[17,185,335,-68],[16,225,260,-55],[15,285,200,-42],
-    [14,360,155,-28],[13,440,120,-16],[12,505,100,-6],[11,560,95,0],
-    [21,625,95,0],[22,680,100,6],[23,745,120,16],[24,825,155,28],
-    [25,900,210,42],[26,950,290,55],[27,975,380,68],[28,970,470,75],
-
-    [48,170,560,-105],[47,190,650,-112],[46,235,735,-125],[45,305,805,-140],
-    [44,385,855,-154],[43,465,890,-166],[42,530,910,-174],[41,585,915,180],
-    [31,645,915,180],[32,700,910,174],[33,765,890,166],[34,845,855,154],
-    [35,920,800,140],[36,965,710,125],[37,980,620,112],[38,975,530,105]
+  const rows = [
+    { title: "Upper Right", nums: [18,17,16,15,14,13,12,11] },
+    { title: "Upper Left", nums: [21,22,23,24,25,26,27,28] },
+    { title: "Lower Right", nums: [48,47,46,45,44,43,42,41] },
+    { title: "Lower Left", nums: [31,32,33,34,35,36,37,38] }
   ];
 
   return `
-    <div class="svgMouthBox">
-      <svg class="svgMouthChart" viewBox="0 0 1150 980" preserveAspectRatio="xMidYMid meet">
-        <line x1="575" y1="135" x2="575" y2="880" class="chartLine"/>
-        <line x1="150" y1="500" x2="1000" y2="500" class="chartLine"/>
-        <text x="575" y="420" class="chartLabel">UPPER</text>
-        <text x="575" y="610" class="chartLabel">LOWER</text>
-
-        ${teethData.map(([n,x,y,r]) => {
-          const status = teeth[n] || "healthy";
-          const type = getToothType(n);
-          const scale = type === "molar" ? 1.15 : 1.05;
-
-          return `
-            <g class="svgTooth ${safeText(status)} ${type}"
-               transform="translate(${x},${y}) rotate(${r}) scale(${scale})"
-               onclick="openToothPopup('${p.id}', '${n}')">
-              ${toothShape(type)}
-            </g>
-            <text x="${x}" y="${y + 58}" class="toothNumber">${n}</text>
-          `;
-        }).join("")}
-      </svg>
+    <div class="finalToothChart">
+      ${rows.map(row => `
+        <div class="finalQuadrant">
+          <h4>${row.title}</h4>
+          <div class="finalGrid">
+            ${row.nums.map(n => {
+              const status = teeth[n] || "healthy";
+              return `
+                <button class="finalTooth ${safeText(status)}"
+                  onclick="openToothPopup('${p.id}', '${n}')">
+                  🦷
+                  <span>${n}</span>
+                </button>
+              `;
+            }).join("")}
+          </div>
+        </div>
+      `).join("")}
     </div>
   `;
 }
