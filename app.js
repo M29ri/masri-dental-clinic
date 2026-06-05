@@ -155,6 +155,149 @@ function injectExtraStyles() {
     .photoViewer{position:fixed;inset:0;background:rgba(0,0,0,.96);z-index:99999;display:flex;align-items:center;justify-content:center;flex-direction:column;backdrop-filter:blur(10px)}.photoViewer.hidden{display:none!important}.photoViewer img{max-width:95vw;max-height:82vh;border-radius:26px;object-fit:contain;box-shadow:0 20px 60px rgba(0,0,0,.5)}.photoControls{display:flex;gap:12px;margin-top:18px;flex-wrap:wrap}.photoControls button{border:none;border-radius:18px;padding:14px 18px;background:#121821;color:white;font-weight:800}.photoClose{position:absolute;top:22px;right:22px;width:56px;height:56px;border:none;border-radius:50%;background:#111827;color:white;font-size:22px}
     .timelineItem{border-left:3px solid #d4af37;padding:12px 16px;margin-bottom:14px;background:#111827;border-radius:18px}.timelineDate{color:#9ca3af;font-size:12px;font-weight:800;margin-bottom:6px}.timelineText{color:white;font-size:15px;font-weight:800}
     .compareBox{background:#111827;border:1px solid #263241;border-radius:24px;padding:16px;margin-top:16px}.compareGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.compareGrid img{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:18px;border:1px solid #263241}.compareLabel{color:#d4af37;font-weight:900;margin-bottom:8px}
+    .mouthChart{
+  position:relative;
+  width:100%;
+  max-width:520px;
+  height:640px;
+  margin:22px auto;
+  border-radius:36px;
+  background:
+    radial-gradient(circle at center,#111827 0%,#0b111a 58%,#070b10 100%);
+  border:1px solid #263241;
+  overflow:hidden;
+}
+
+.mouthArch{
+  position:absolute;
+  left:50%;
+  transform:translateX(-50%);
+  width:92%;
+  height:45%;
+}
+
+.upperArch{
+  top:7%;
+}
+
+.lowerArch{
+  bottom:7%;
+}
+
+.mouthTooth{
+  position:absolute;
+  transform:translate(-50%,-50%);
+  width:54px;
+  height:54px;
+  border-radius:18px;
+  border:2px solid #22c55e;
+  background:linear-gradient(180deg,#12351f,#0f2417);
+  color:#86efac;
+  font-weight:1000;
+  font-size:15px;
+  box-shadow:0 10px 22px rgba(0,0,0,.35);
+}
+
+.mouthTooth span{
+  display:block;
+}
+
+.mouthTooth.healthy{
+  border-color:#22c55e;
+  background:linear-gradient(180deg,#12351f,#0f2417);
+  color:#86efac;
+}
+
+.mouthTooth.caries{
+  border-color:#ef4444;
+  background:linear-gradient(180deg,#4a1d1d,#210b0b);
+  color:#fecaca;
+}
+
+.mouthTooth.filling{
+  border-color:#60a5fa;
+  background:linear-gradient(180deg,#1e3a5f,#0b1f35);
+  color:#bfdbfe;
+}
+
+.mouthTooth.rct{
+  border-color:#facc15;
+  background:linear-gradient(180deg,#3b2f13,#1f1605);
+  color:#fde68a;
+}
+
+.mouthTooth.crown{
+  border-color:#f5d76e;
+  background:linear-gradient(135deg,#d4af37,#8f6b10);
+  color:#111;
+}
+
+.mouthTooth.missing{
+  border-color:#374151;
+  background:#05070a;
+  color:#6b7280;
+  text-decoration:line-through;
+  opacity:.75;
+}
+
+.mouthTooth.extraction{
+  border-color:#fb7185;
+  background:linear-gradient(180deg,#3f1111,#170505);
+  color:#fecdd3;
+}
+
+.mouthTooth.implant{
+  border-color:#2dd4bf;
+  background:linear-gradient(180deg,#12352b,#062019);
+  color:#99f6e4;
+}
+
+.mouthCenter{
+  position:absolute;
+  inset:22% 15%;
+  border-radius:50%;
+  border:1px dashed rgba(212,175,55,.22);
+  pointer-events:none;
+}
+
+.mouthLine{
+  position:absolute;
+  left:50%;
+  top:10%;
+  bottom:10%;
+  border-left:1px dashed rgba(255,255,255,.18);
+}
+
+.archLabel{
+  position:absolute;
+  left:50%;
+  transform:translateX(-50%);
+  color:#9ca3af;
+  font-weight:1000;
+  letter-spacing:2px;
+  opacity:.65;
+}
+
+.upperLabel{
+  top:43%;
+}
+
+.lowerLabel{
+  bottom:43%;
+}
+
+@media(max-width:520px){
+  .mouthChart{
+    height:560px;
+  }
+
+  .mouthTooth{
+    width:46px;
+    height:46px;
+    border-radius:15px;
+    font-size:13px;
+  }
+}
   `;
   document.head.appendChild(style);
 }
@@ -276,8 +419,74 @@ async function uploadPhotos(patientId) {
 }
 
 function renderToothChart(p) {
-  const data = parseClinicData(p.progress_notes); const teeth = data.teeth || {}; const numbers = [18,17,16,15,14,13,12,11,21,22,23,24,25,26,27,28,48,47,46,45,44,43,42,41,31,32,33,34,35,36,37,38];
-  return numbers.map(n => { const status = teeth[n] || "healthy"; return `<button class="tooth ${safeText(status)}" onclick="changeTooth('${p.id}', '${n}')">${n}</button>`; }).join("");
+  const data = parseClinicData(p.progress_notes);
+  const teeth = data.teeth || {};
+
+  const upper = [
+    18,17,16,15,14,13,12,11,
+    21,22,23,24,25,26,27,28
+  ];
+
+  const lower = [
+    48,47,46,45,44,43,42,41,
+    31,32,33,34,35,36,37,38
+  ];
+
+  const makeTooth = (n, i, total, arch) => {
+    const status = teeth[n] || "healthy";
+    const angle =
+      arch === "upper"
+        ? -160 + (320 / (total - 1)) * i
+        : 160 - (320 / (total - 1)) * i;
+
+    const radiusX = 42;
+    const radiusY = arch === "upper" ? 32 : 32;
+
+    const x = 50 + radiusX * Math.cos(angle * Math.PI / 180);
+    const y =
+      arch === "upper"
+        ? 56 + radiusY * Math.sin(angle * Math.PI / 180)
+        : 44 - radiusY * Math.sin(angle * Math.PI / 180);
+
+    return `
+      <button
+        class="mouthTooth ${safeText(status)}"
+        style="left:${x}%;top:${y}%"
+        onclick="changeTooth('${p.id}', '${n}')"
+        title="Tooth ${n} - ${safeText(status)}"
+      >
+        <span>${n}</span>
+      </button>
+    `;
+  };
+
+  return `
+    <div class="mouthChart">
+      <div class="archLabel upperLabel">UPPER</div>
+
+      <div class="mouthArch upperArch">
+        ${
+          upper.map((n, i) =>
+            makeTooth(n, i, upper.length, "upper")
+          ).join("")
+        }
+      </div>
+
+      <div class="mouthCenter">
+        <div class="mouthLine"></div>
+      </div>
+
+      <div class="mouthArch lowerArch">
+        ${
+          lower.map((n, i) =>
+            makeTooth(n, i, lower.length, "lower")
+          ).join("")
+        }
+      </div>
+
+      <div class="archLabel lowerLabel">LOWER</div>
+    </div>
+  `;
 }
 function patientDetailsHTML(p) {
   const data = parseClinicData(p.progress_notes); const money = paymentTotals(data);
