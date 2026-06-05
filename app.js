@@ -301,13 +301,13 @@ align-items:center!important;
 
     /* ===== Center lines ===== */
 
-    .proMidLine{
-      position:absolute!important;
-      left:50%!important;
-      top:20%!important;
-      height:66%!important;
-      border-left:1px dashed rgba(212,175,55,.28)!important;
-    }
+ .proMidLine{
+  position:absolute!important;
+  left:61%!important;
+  top:20%!important;
+  height:66%!important;
+  border-left:1px dashed rgba(212,175,55,.28)!important;
+}
 
     .proHorizontalLine{
       position:absolute!important;
@@ -320,14 +320,14 @@ align-items:center!important;
     /* ===== Labels ===== */
 
     .proMouthLabel{
-      position:absolute!important;
-      left:50%!important;
-      transform:translateX(-50%)!important;
-      color:#9ca3af!important;
-      font-weight:1000!important;
-      letter-spacing:5px!important;
-      opacity:.65!important;
-    }
+  position:absolute!important;
+  left:61%!important;
+  transform:translateX(-50%)!important;
+  color:#9ca3af!important;
+  font-weight:1000!important;
+  letter-spacing:5px!important;
+  opacity:.65!important;
+}
 
     .proMouthLabel.upper{
       top:43%!important;
@@ -459,6 +459,56 @@ border-radius:20px!important;
   width:46px!important;
   height:46px!important;
   font-size:22px!important;
+}
+.photoViewer,
+#photoViewer,
+#photoModal{
+  position:fixed!important;
+  inset:0!important;
+  background:rgba(0,0,0,.96)!important;
+  z-index:9999!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+}
+
+.photoViewer.hidden,
+#photoViewer.hidden,
+#photoModal.hidden{
+  display:none!important;
+}
+
+#viewerImage,
+#bigPhoto{
+  max-width:94vw!important;
+  max-height:82vh!important;
+  width:auto!important;
+  height:auto!important;
+  object-fit:contain!important;
+  border-radius:18px!important;
+}
+.beforeAfterPage img,
+.beforeAfterComparison img,
+.beforeAfter img,
+#beforeAfter img,
+#beforeAfterPage img{
+  width:100%!important;
+  max-width:360px!important;
+  max-height:360px!important;
+  object-fit:contain!important;
+  border-radius:16px!important;
+  display:block!important;
+  margin:10px auto!important;
+}
+
+.beforeAfterPage,
+.beforeAfterComparison,
+.beforeAfter,
+#beforeAfter,
+#beforeAfterPage{
+  max-width:420px!important;
+  margin:0 auto!important;
+  padding:14px!important;
 }
   `;
 
