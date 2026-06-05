@@ -208,109 +208,81 @@ function injectExtraStyles() {
     }
 
     .proMouthChart{
-      position:relative!important;
-      width:100%!important;
-      height:560px!important;
-      margin:18px 0!important;
-      border-radius:34px!important;
-      background:radial-gradient(circle at center,#111827,#070b10)!important;
-      border:1px solid #263241!important;
-      overflow:hidden!important;
-    }
-
-    /* ===== Teeth ===== */
-
-    .proTooth{
-      position:absolute!important;
-      background:transparent!important;
-      border:none!important;
-      padding:0!important;
-      width:38px!important;
-      height:46px!important;
-      display:flex!important;
-      flex-direction:column!important;
-      align-items:center!important;
-      justify-content:center!important;
-      transform-origin:center!important;
-    }
-
-    .proTooth.molar{
-      width:48px!important;
-      height:52px!important;
-    }
-
-    .proTooth.premolar{
-      width:44px!important;
-      height:50px!important;
-    }
-
-    .proToothSvg{
-  width:34px!important;
-  height:38px!important;
+  position:relative!important;
+  width:100%!important;
+  height:560px!important;
+  margin:18px 0!important;
+  border-radius:34px!important;
+  background:radial-gradient(circle at center,#111827,#070b10)!important;
+  border:1px solid #263241!important;
+  overflow:hidden!important;
 }
 
-    .proTooth.molar .proToothSvg{
-      width:46px!important;
-      height:46px!important;
-    }
+.proTooth{
+  position:absolute!important;
+  transform:translate(-50%,-50%)!important;
+  background:transparent!important;
+  border:none!important;
+  padding:0!important;
+  width:42px!important;
+  height:54px!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+}
 
-    .proToothSvg path:first-child{
-      fill:#f7f1e5!important;
-      stroke:#d8cfbf!important;
-      stroke-width:2!important;
-    }
+.toothArt{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+}
 
-    .shine{
-      fill:none!important;
-      stroke:rgba(255,255,255,.35)!important;
-      stroke-width:2.5!important;
-      stroke-linecap:round!important;
-    }
+.proToothSvg{
+  width:36px!important;
+  height:40px!important;
+  filter:drop-shadow(0 6px 8px rgba(0,0,0,.35))!important;
+}
 
-    .groove{
-      fill:none!important;
-      stroke:rgba(145,130,105,.38)!important;
-      stroke-width:2.2!important;
-      stroke-linecap:round!important;
-    }
+.proTooth.molar .proToothSvg{
+  width:40px!important;
+  height:40px!important;
+}
 
-    .proTooth span{
-      color:#eef2f7!important;
-      font-size:11px!important;
-      font-weight:900!important;
-      margin-top:1px!important;
-      text-shadow:0 1px 2px rgba(0,0,0,.4);
-    }
+.proToothSvg path:first-child{
+  fill:#f7f1e5!important;
+  stroke:#d8cfbf!important;
+  stroke-width:2!important;
+}
 
-    /* ===== Status Colors ===== */
+.shine{
+  fill:none!important;
+  stroke:rgba(255,255,255,.35)!important;
+  stroke-width:2.5!important;
+  stroke-linecap:round!important;
+}
 
-    .proTooth.caries path:first-child{
-      fill:#ef4444!important;
-    }
+.groove{
+  fill:none!important;
+  stroke:rgba(145,130,105,.38)!important;
+  stroke-width:2.2!important;
+  stroke-linecap:round!important;
+}
 
-    .proTooth.filling path:first-child{
-      fill:#60a5fa!important;
-    }
+.toothNo{
+  color:#eef2f7!important;
+  font-size:10px!important;
+  font-weight:900!important;
+  margin-top:1px!important;
+}
 
-    .proTooth.rct path:first-child{
-      fill:#8b5cf6!important;
-    }
-
-    .proTooth.crown path:first-child{
-      fill:#d4af37!important;
-    }
-
-    .proTooth.missing path:first-child{
-      fill:#4b5563!important;
-    }
-
-    .proTooth.extraction path:first-child{
-      fill:#fb7185!important;
-    }
-
-    .proTooth.implant path:first-child{
-      fill:#2dd4bf!important;
-    }
+.proTooth.caries path:first-child{fill:#ef4444!important}
+.proTooth.filling path:first-child{fill:#60a5fa!important}
+.proTooth.rct path:first-child{fill:#8b5cf6!important}
+.proTooth.crown path:first-child{fill:#d4af37!important}
+.proTooth.missing path:first-child{fill:#4b5563!important}
+.proTooth.extraction path:first-child{fill:#fb7185!important}
+.proTooth.implant path:first-child{fill:#2dd4bf!important}
 
     /* ===== Center lines ===== */
 
@@ -388,7 +360,7 @@ function renderTimeline(patient) {
   (data.appointments || []).forEach(a => timeline.push({ type: "appointment", date: a.date || "", text: a.note || "Appointment" }));
   (patient.photos || []).forEach(ph => timeline.push({ type: "photo", date: ph.date || "", text: "Photo added" }));
   timeline.sort((a, b) => new Date(b.date) - new Date(a.date));
-  return timeline.length ? timeline.map(item => `<div class="timelineItem"><div class="timelineDate">${safeText(item.date)}</div><div class="timelineText">${item.type === "payment" ? "ð°" : item.type === "visit" ? "ð" : item.type === "appointment" ? "ð" : "ð·"} ${safeText(item.text)}</div></div>`).join("") : `<p style="color:var(--muted);font-weight:800">No timeline yet</p>`;
+  return timeline.length ? timeline.map(item => `<div class="timelineItem"><div class="timelineDate">${safeText(item.date)}</div><div class="timelineText">${item.type === "payment" ? "Ã°ÂÂÂ°" : item.type === "visit" ? "Ã°ÂÂÂ" : item.type === "appointment" ? "Ã°ÂÂÂ" : "Ã°ÂÂÂ·"} ${safeText(item.text)}</div></div>`).join("") : `<p style="color:var(--muted);font-weight:800">No timeline yet</p>`;
 }
 
 async function loadPatients() {
@@ -397,13 +369,13 @@ async function loadPatients() {
     if (currentUser.role === "admin") patients = await api("patients?select=*&order=created_at.desc");
     else patients = await api(`patients?owner_id=eq.${currentUser.id}&select=*&order=created_at.desc`);
     renderPatients(); renderDashboard();
-    if ($("status")) $("status").textContent = "Cloud connected â";
+    if ($("status")) $("status").textContent = "Cloud connected Ã¢ÂÂ";
     const params = new URLSearchParams(location.search);
     const patientId = params.get("patient");
     if (patientId) openPatient(patientId);
   } catch (err) {
     console.error(err);
-    if ($("status")) $("status").textContent = "Cloud error â";
+    if ($("status")) $("status").textContent = "Cloud error Ã¢ÂÂ";
     if ($("list")) $("list").innerHTML = `<div class="card"><h3>Cloud error</h3><p>${safeText(err.message)}</p></div>`;
   }
 }
@@ -434,50 +406,13 @@ function dashboardPanel(title, arr, empty) { return `<div class="dashboardPanel"
 
 function renderPatients() {
   const q = ($("search")?.value || "").toLowerCase();
-
-  const filtered = patients.filter(p =>
-    (p.name || "").toLowerCase().includes(q) ||
-    (p.phone || "").includes(q) ||
-    (p.case_id || "").toLowerCase().includes(q) ||
-    (p.diagnosis || "").toLowerCase().includes(q)
-  );
-
-  if ($("list")) {
-    $("list").innerHTML = filtered.length
-      ? ""
-      : `<div class="card"><h3>No patients yet</h3></div>`;
-  }
-
+  const filtered = patients.filter(p => (p.name || "").toLowerCase().includes(q) || (p.phone || "").includes(q) || (p.case_id || "").toLowerCase().includes(q) || (p.diagnosis || "").toLowerCase().includes(q) || (p.chief_complaint || "").toLowerCase().includes(q));
+  if ($("list")) $("list").innerHTML = filtered.length ? "" : `<div class="card"><h3>No patients yet</h3></div>`;
   filtered.forEach(p => {
-    const data = parseClinicData(p.progress_notes);
-    const money = paymentTotals(data);
-
-    const card = document.createElement("div");
-    card.className = "patientCard";
-
-    card.innerHTML = `
-      <h3>${safeText(p.name || "No name")}</h3>
-
-      <span class="pill">ID: ${safeText(p.case_id || "")}</span>
-      <span class="pill">${safeText(p.phone || "")}</span>
-      <span class="pill">${(p.photos || []).length} photos</span>
-      <span class="pill">${data.visits.length} visits</span>
-      <span class="pill">Remaining: ${money.remaining}</span>
-
-      <p>${safeText(p.diagnosis || p.chief_complaint || "")}</p>
-
-      <div class="actions">
-        <button class="primary" onclick="openPatient('${p.id}')">Open</button>
-        ${
-          canEdit()
-            ? `<button class="secondary" onclick="editPatient('${p.id}')">Edit</button>`
-            : ""
-        }
-        <button class="secondary" onclick="showQR('${p.id}')">QR</button>
-      </div>
-    `;
-
-    $("list")?.appendChild(card);
+    const data = parseClinicData(p.progress_notes); const money = paymentTotals(data);
+    const card = document.createElement("div"); card.className = "patientCard";
+    card.innerHTML = `<h3>${safeText(p.name || "No name")}</h3><span class="pill">ID: ${safeText(p.case_id || "-")}</span><span class="pill">${safeText(p.phone || "No phone")}</span><span class="pill">${(p.photos || []).length} photos</span><span class="pill">${data.visits.length} visits</span><span class="pill">Remaining: ${money.remaining}</span><p style="color:var(--muted);margin-top:8px">${safeText(p.chief_complaint || p.diagnosis || "")}</p><div class="actions"><button class="primary" onclick="openPatient('${p.id}')">Open</button>${canEdit() ? `<button class="secondary" onclick="editPatient('${p.id}')">Edit</button>` : ""}<button class="secondary" onclick="showQR('${p.id}')">QR</button></div>`;
+    $("list").appendChild(card);
   });
 }
 
@@ -535,14 +470,6 @@ function toothSvg(type = "molar") {
     </svg>`;
   }
 
-  if (type === "premolar") {
-    return `<svg viewBox="-48 -48 96 96" class="proToothSvg">
-      <path d="M-22,-22 C-14,-38 -3,-35 1,-25 C7,-38 20,-36 25,-21 C32,-4 24,21 12,34 C4,42 -4,34 0,23 C-6,37 -18,42 -25,27 C-33,10 -31,-8 -22,-22 Z"/>
-      <path class="groove" d="M-12,-5 C-2,3 9,3 17,-5"/>
-      <path class="groove" d="M-15,14 C-4,8 9,8 18,16"/>
-    </svg>`;
-  }
-
   return `<svg viewBox="-52 -48 104 96" class="proToothSvg">
     <path d="M-28,-22 C-20,-40 -6,-37 0,-28 C8,-39 24,-38 30,-20 C38,2 29,25 15,38 C5,47 -5,38 0,25 C-8,41 -23,47 -31,28 C-39,10 -38,-8 -28,-22 Z"/>
     <path class="groove" d="M-15,-7 C-3,3 12,3 23,-7"/>
@@ -555,7 +482,6 @@ function getToothType(n) {
   n = Number(n);
   if ([11,12,21,22,31,32,41,42].includes(n)) return "incisor";
   if ([13,23,33,43].includes(n)) return "canine";
-  if ([14,15,24,25,34,35,44,45].includes(n)) return "premolar";
   return "molar";
 }
 
@@ -564,22 +490,18 @@ function renderToothChart(p) {
   const teeth = data.teeth || {};
 
   const toothData = [
-  // Upper Right
-  [18,18,48,-26],[17,22,40,-20],[16,28,33,-14],[15,35,27,-10],
-  [14,42,21,-6],[13,49,16,-3],[12,55,12,-1],[11,60,11,0],
+    [18,16,43,-25],[17,20,35,-20],[16,26,29,-15],[15,33,23,-10],
+    [14,40,18,-6],[13,47,14,-3],[12,53,11,0],[11,58,10,0],
 
-  // Upper Left
-  [21,64,11,0],[22,69,12,1],[23,75,16,3],[24,82,21,6],
-  [25,89,27,10],[26,96,33,14],[27,102,40,20],[28,106,48,26],
+    [21,62,10,0],[22,67,11,0],[23,73,14,3],[24,80,18,6],
+    [25,87,23,10],[26,94,29,15],[27,100,35,20],[28,104,43,25],
 
-  // Lower Right
-  [48,18,73,-154],[47,22,81,-160],[46,28,88,-166],[45,35,94,-171],
-  [44,42,99,-176],[43,49,103,-179],[42,55,106,180],[41,60,107,180],
+    [48,16,59,25],[47,20,67,20],[46,26,75,15],[45,33,82,10],
+    [44,40,88,6],[43,47,92,3],[42,53,95,0],[41,58,96,0],
 
-  // Lower Left
-  [31,64,107,180],[32,69,106,180],[33,75,103,179],[34,82,99,176],
-  [35,89,94,171],[36,96,88,166],[37,102,81,160],[38,106,73,154]
-];
+    [31,62,96,0],[32,67,95,0],[33,73,92,-3],[34,80,88,-6],
+    [35,87,82,-10],[36,94,75,-15],[37,100,67,-20],[38,104,59,-25]
+  ];
 
   return `
     <div class="proMouthChart">
@@ -588,18 +510,21 @@ function renderToothChart(p) {
       <div class="proMidLine"></div>
       <div class="proHorizontalLine"></div>
 
-      ${teethData.map(([n,x,y,r]) => {
+      ${toothData.map(([n,x,y,r]) => {
         const status = teeth[n] || "healthy";
         const type = getToothType(n);
 
         return `
           <button
+            type="button"
             class="proTooth ${safeText(status)} ${type}"
-            style="left:${x}%;top:${y}%;transform:translate(-50%,-50%) rotate(${r}deg)"
-            onclick="openToothPopup('${p.id}', '${n}')"
+            style="left:${x}%;top:${y}%"
+            onclick="window.openToothPopup('${p.id}', '${n}')"
           >
-            ${toothSvg(type)}
-            <span>${n}</span>
+            <span class="toothArt" style="transform:rotate(${r}deg)">
+              ${toothSvg(type)}
+            </span>
+            <span class="toothNo">${n}</span>
           </button>
         `;
       }).join("")}
@@ -608,7 +533,7 @@ function renderToothChart(p) {
 }
 function patientDetailsHTML(p) {
   const data = parseClinicData(p.progress_notes); const money = paymentTotals(data);
-  return `<div class="card"><h2>${safeText(p.name || "No name")}</h2><span class="pill">ID: ${safeText(p.case_id || "-")}</span><span class="pill">${safeText(p.phone || "No phone")}</span><span class="pill">${safeText(p.age || "-")} yrs</span><span class="pill">${safeText(p.gender || "-")}</span><div class="kv"><b>Chief complaint</b><span>${safeText(p.chief_complaint || "-")}</span></div><div class="kv"><b>Medical alerts</b><span>${safeText(p.medical_alerts || "-")}</span></div><div class="kv"><b>Diagnosis</b><span>${safeText(p.diagnosis || "-")}</span></div><div class="kv"><b>Treatment plan</b><span>${safeText(p.treatment_plan || "-")}</span></div><h3 class="sectionTitle">Visits History</h3>${data.visits.length ? data.visits.map((v, i) => `<div class="kv"><b>Visit ${data.visits.length - i}</b><div class="visitDate">${safeText(v.date || "")}</div><span>${safeText(v.note || "-")}</span></div>`).join("") : `<div class="kv"><span>No visits yet</span></div>`}<h3 class="sectionTitle">Tooth Chart</h3><div class="toothChartBox"><span class="legendItem">Healthy</span><span class="legendItem">Caries</span><span class="legendItem">Filling</span><span class="legendItem">RCT</span><span class="legendItem">Crown</span><span class="legendItem">Missing</span><span class="legendItem">Extraction</span><span class="legendItem">Implant</span></div><div class="toothChart">${renderToothChart(p)}</div><h3 class="sectionTitle">Appointments</h3><div class="actions"><button class="primary" onclick="addAppointment('${p.id}')">+ Add Appointment</button></div>${data.appointments.length ? data.appointments.map((a, i) => `<div class="appointment"><b>${safeText(a.date || "-")}</b><p>${safeText(a.note || "")}</p><button class="danger" onclick="deleteAppointment('${p.id}', ${i})">Delete</button></div>`).join("") : `<div class="kv"><span>No appointments yet</span></div>`}<h3 class="sectionTitle">Payments</h3><div class="miniGrid"><div class="miniCard"><b>Total</b><span class="money">${money.total}</span></div><div class="miniCard"><b>Paid</b><span class="money">${money.paid}</span></div><div class="miniCard"><b>Remaining</b><span class="money unpaid">${money.remaining}</span></div></div><div class="actions"><button class="primary" onclick="addPayment('${p.id}')">+ Add Payment</button></div>${data.payments.length ? data.payments.map((pay, i) => `<div class="appointment"><b>${safeText(pay.date || "")}</b><p>Total: ${Number(pay.total || 0)} | Paid: ${Number(pay.paid || 0)} | Remaining: ${Number(pay.total || 0) - Number(pay.paid || 0)}</p><button class="danger" onclick="deletePayment('${p.id}', ${i})">Delete</button></div>`).join("") : `<div class="kv"><span>No payments yet</span></div>`}<h3 class="sectionTitle">Photos / X-rays</h3><button class="secondary" onclick="showBeforeAfter('${p.id}')">Before / After</button><div class="grid">${(p.photos || []).map((ph, i) => `<div class="thumbWrap"><img class="thumb" src="${ph.url}" onclick="viewPhoto('${ph.url}')"><button class="x" onclick="deletePhoto('${p.id}', ${i})">Ã</button></div>`).join("") || "<p>No photos</p>"}</div><h3 class="sectionTitle">Patient Timeline</h3><div class="patientCard">${renderTimeline(p)}</div><div class="actions">${canEdit() ? `<button class="primary" onclick="editPatient('${p.id}')">Edit</button>` : ""}<button class="secondary" onclick="showQR('${p.id}')">QR</button><button class="secondary" onclick="exportPDF('${p.id}')">PDF</button>${canDelete() ? `<button class="danger" onclick="deletePatient('${p.id}')">Delete</button>` : ""}</div></div>`;
+  return `<div class="card"><h2>${safeText(p.name || "No name")}</h2><span class="pill">ID: ${safeText(p.case_id || "-")}</span><span class="pill">${safeText(p.phone || "No phone")}</span><span class="pill">${safeText(p.age || "-")} yrs</span><span class="pill">${safeText(p.gender || "-")}</span><div class="kv"><b>Chief complaint</b><span>${safeText(p.chief_complaint || "-")}</span></div><div class="kv"><b>Medical alerts</b><span>${safeText(p.medical_alerts || "-")}</span></div><div class="kv"><b>Diagnosis</b><span>${safeText(p.diagnosis || "-")}</span></div><div class="kv"><b>Treatment plan</b><span>${safeText(p.treatment_plan || "-")}</span></div><h3 class="sectionTitle">Visits History</h3>${data.visits.length ? data.visits.map((v, i) => `<div class="kv"><b>Visit ${data.visits.length - i}</b><div class="visitDate">${safeText(v.date || "")}</div><span>${safeText(v.note || "-")}</span></div>`).join("") : `<div class="kv"><span>No visits yet</span></div>`}<h3 class="sectionTitle">Tooth Chart</h3><div class="toothChartBox"><span class="legendItem">Healthy</span><span class="legendItem">Caries</span><span class="legendItem">Filling</span><span class="legendItem">RCT</span><span class="legendItem">Crown</span><span class="legendItem">Missing</span><span class="legendItem">Extraction</span><span class="legendItem">Implant</span></div><div class="toothChart">${renderToothChart(p)}</div><h3 class="sectionTitle">Appointments</h3><div class="actions"><button class="primary" onclick="addAppointment('${p.id}')">+ Add Appointment</button></div>${data.appointments.length ? data.appointments.map((a, i) => `<div class="appointment"><b>${safeText(a.date || "-")}</b><p>${safeText(a.note || "")}</p><button class="danger" onclick="deleteAppointment('${p.id}', ${i})">Delete</button></div>`).join("") : `<div class="kv"><span>No appointments yet</span></div>`}<h3 class="sectionTitle">Payments</h3><div class="miniGrid"><div class="miniCard"><b>Total</b><span class="money">${money.total}</span></div><div class="miniCard"><b>Paid</b><span class="money">${money.paid}</span></div><div class="miniCard"><b>Remaining</b><span class="money unpaid">${money.remaining}</span></div></div><div class="actions"><button class="primary" onclick="addPayment('${p.id}')">+ Add Payment</button></div>${data.payments.length ? data.payments.map((pay, i) => `<div class="appointment"><b>${safeText(pay.date || "")}</b><p>Total: ${Number(pay.total || 0)} | Paid: ${Number(pay.paid || 0)} | Remaining: ${Number(pay.total || 0) - Number(pay.paid || 0)}</p><button class="danger" onclick="deletePayment('${p.id}', ${i})">Delete</button></div>`).join("") : `<div class="kv"><span>No payments yet</span></div>`}<h3 class="sectionTitle">Photos / X-rays</h3><button class="secondary" onclick="showBeforeAfter('${p.id}')">Before / After</button><div class="grid">${(p.photos || []).map((ph, i) => `<div class="thumbWrap"><img class="thumb" src="${ph.url}" onclick="viewPhoto('${ph.url}')"><button class="x" onclick="deletePhoto('${p.id}', ${i})">ÃÂ</button></div>`).join("") || "<p>No photos</p>"}</div><h3 class="sectionTitle">Patient Timeline</h3><div class="patientCard">${renderTimeline(p)}</div><div class="actions">${canEdit() ? `<button class="primary" onclick="editPatient('${p.id}')">Edit</button>` : ""}<button class="secondary" onclick="showQR('${p.id}')">QR</button><button class="secondary" onclick="exportPDF('${p.id}')">PDF</button>${canDelete() ? `<button class="danger" onclick="deletePatient('${p.id}')">Delete</button>` : ""}</div></div>`;
 }
 
 window.openPatient = function(id) { const p = patients.find(x => x.id === id); if (!p) return alert("Patient not found or you do not have access."); $("details").innerHTML = patientDetailsHTML(p); showPage("detail"); };
