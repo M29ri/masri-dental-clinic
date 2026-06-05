@@ -478,6 +478,66 @@ function patientDetailsHTML(p) {
 }
 
 window.openPatient = function(id) { const p = patients.find(x => x.id === id); if (!p) return alert("Patient not found or you do not have access."); $("details").innerHTML = patientDetailsHTML(p); showPage("detail"); };
+window.showQR = function(id) {
+  const p = patients.find(x => x.id === id);
+  if (!p) return alert("Patient not found");
+
+  const old = document.getElementById("qrModal");
+  if (old) old.remove();
+
+  const modal = document.createElement("div");
+  modal.id = "qrModal";
+  modal.innerHTML = `
+    <div style="
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.92);
+      z-index:999999;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+    ">
+      <div style="
+        background:#111827;
+        border:1px solid #334155;
+        border-radius:28px;
+        padding:28px;
+        text-align:center;
+        max-width:360px;
+        width:100%;
+      ">
+        <button onclick="document.getElementById('qrModal').remove()" style="
+          float:right;
+          background:#ef4444;
+          color:white;
+          border:none;
+          border-radius:50%;
+          width:44px;
+          height:44px;
+          font-size:22px;
+          font-weight:900;
+        ">X</button>
+
+        <h2 style="color:#d4af37;margin:20px 0;">Patient QR</h2>
+        <div id="qrCodeBox" style="
+          background:white;
+          padding:16px;
+          border-radius:18px;
+          display:inline-block;
+        "></div>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  new QRCode(document.getElementById("qrCodeBox"), {
+    text: `${location.origin}${location.pathname}?patient=${p.id}`,
+    width: 220,
+    height: 220
+  });
+};
 window.editPatient = function(id) { const p = patients.find(x => x.id === id); if (!p) return alert("Patient not found or you do not have access."); fillForm(p); showPage("form"); };
 window.deletePatient = async function(id) { if (!canDelete()) return alert("Only admin can delete patients"); if (!confirm("Delete this patient?")) return; await api(`patients?id=eq.${id}`, { method: "DELETE" }); await loadPatients(); showPage("patients"); };
 let selectedToothPatientId = null;
