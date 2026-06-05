@@ -655,6 +655,26 @@
     </div>
   </div>
 </section>
+  <div id="toothModal" class="modal hidden">
+  <div class="qrBox" style="max-width:420px;width:100%">
+    <h2 id="toothModalTitle">Tooth</h2>
+
+    <div class="actions" style="grid-template-columns:1fr 1fr">
+      <button class="secondary" onclick="setToothStatus('healthy')">Healthy</button>
+      <button class="secondary" onclick="setToothStatus('caries')">Caries</button>
+      <button class="secondary" onclick="setToothStatus('filling')">Filling</button>
+      <button class="secondary" onclick="setToothStatus('rct')">RCT</button>
+      <button class="secondary" onclick="setToothStatus('crown')">Crown</button>
+      <button class="secondary" onclick="setToothStatus('missing')">Missing</button>
+      <button class="secondary" onclick="setToothStatus('extraction')">Extraction</button>
+      <button class="secondary" onclick="setToothStatus('implant')">Implant</button>
+    </div>
+
+    <button class="danger" style="width:100%;margin-top:14px" onclick="closeToothPopup()">
+      Cancel
+    </button>
+  </div>
+</div>
   <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
   <script src="https://unpkg.com/html5-qrcode"></script>
   <script src="app.js"></script>
