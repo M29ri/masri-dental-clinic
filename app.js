@@ -346,6 +346,99 @@ function injectExtraStyles() {
     font-size:10px;
   }
 }
+/* FINAL TOOTH CHART FIX */
+.realMouthChart{
+  position:relative !important;
+  display:block !important;
+  width:100% !important;
+  max-width:none !important;
+  min-width:0 !important;
+  height:560px !important;
+  margin:20px 0 !important;
+  padding:0 !important;
+  border-radius:32px !important;
+  background:radial-gradient(circle at center,#111827,#070b10) !important;
+  border:1px solid #263241 !important;
+  overflow:hidden !important;
+}
+
+.proMouthChart{
+  position:relative !important;
+  width:100% !important;
+  max-width:none !important;
+  min-width:0 !important;
+  height:560px !important;
+  margin:20px 0 !important;
+  border-radius:32px !important;
+  background:radial-gradient(circle at center,#111827,#070b10) !important;
+  border:1px solid #263241 !important;
+  overflow:hidden !important;
+}
+
+.proTooth{
+  position:absolute !important;
+  transform:translate(-50%,-50%) !important;
+  width:34px !important;
+  height:52px !important;
+  background:transparent !important;
+  border:none !important;
+  padding:0 !important;
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  justify-content:center !important;
+}
+
+.proToothSvg{
+  width:32px !important;
+  height:44px !important;
+}
+
+.proTooth span{
+  color:#e5e7eb !important;
+  font-size:9px !important;
+  font-weight:900 !important;
+  margin-top:0 !important;
+}
+
+.proMidLine{
+  position:absolute !important;
+  left:50% !important;
+  top:25% !important;
+  height:55% !important;
+  border-left:1px dashed rgba(212,175,55,.35) !important;
+}
+
+.proHorizontalLine{
+  position:absolute !important;
+  left:12% !important;
+  right:12% !important;
+  top:55% !important;
+  border-top:1px dashed rgba(212,175,55,.35) !important;
+}
+
+.proMouthLabel{
+  position:absolute !important;
+  left:50% !important;
+  transform:translateX(-50%) !important;
+  color:#9ca3af !important;
+  font-weight:1000 !important;
+  letter-spacing:4px !important;
+  opacity:.65 !important;
+}
+
+.proMouthLabel.upper{top:43% !important}
+.proMouthLabel.lower{top:61% !important}
+
+.toothRow,
+.jawRow,
+.mouthArch{
+  display:contents !important;
+}
+
+.realTooth{
+  background:transparent !important;
+}
   `;
   document.head.appendChild(style);
 }
