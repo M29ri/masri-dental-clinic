@@ -911,6 +911,89 @@ function injectExtraStyles() {
 .finalTooth.missing{background:#111827!important;opacity:.55!important}
 .finalTooth.extraction{background:#4a1420!important}
 .finalTooth.implant{background:#103c37!important}
+.toothLegend{
+  display:grid!important;
+  grid-template-columns:repeat(2,1fr)!important;
+  gap:10px!important;
+  margin-bottom:18px!important;
+}
+
+.legendItem{
+  display:flex!important;
+  align-items:center!important;
+  gap:10px!important;
+  padding:11px 12px!important;
+  border-radius:18px!important;
+  min-height:48px!important;
+}
+
+.archChartBox{
+  width:100%!important;
+  margin-top:18px!important;
+  border-radius:34px!important;
+  background:radial-gradient(circle at center,#111827,#070b10)!important;
+  border:1px solid #263241!important;
+  overflow:hidden!important;
+  padding:6px!important;
+}
+
+.archChartSvg{
+  width:100%!important;
+  height:auto!important;
+  display:block!important;
+}
+
+.archTooth{cursor:pointer!important}
+
+.toothBody{
+  fill:#f8f1df!important;
+  stroke:#d8d0bd!important;
+  stroke-width:3!important;
+}
+
+.shine{
+  fill:none!important;
+  stroke:rgba(255,255,255,.55)!important;
+  stroke-width:4!important;
+  stroke-linecap:round!important;
+}
+
+.groove{
+  fill:none!important;
+  stroke:rgba(120,105,80,.38)!important;
+  stroke-width:4!important;
+  stroke-linecap:round!important;
+}
+
+.archTooth.caries .toothBody{fill:#ef4444!important}
+.archTooth.filling .toothBody{fill:#60a5fa!important}
+.archTooth.rct .toothBody{fill:#8b5cf6!important}
+.archTooth.crown .toothBody{fill:#d4af37!important}
+.archTooth.missing .toothBody{fill:#4b5563!important}
+.archTooth.extraction .toothBody{fill:#fb7185!important}
+.archTooth.implant .toothBody{fill:#2dd4bf!important}
+
+.archNumber{
+  fill:#e5e7eb!important;
+  font-size:25px!important;
+  font-weight:900!important;
+  text-anchor:middle!important;
+}
+
+.chartLine{
+  stroke:rgba(212,175,55,.32)!important;
+  stroke-width:2!important;
+  stroke-dasharray:8 8!important;
+}
+
+.chartLabel{
+  fill:#9ca3af!important;
+  font-size:40px!important;
+  font-weight:1000!important;
+  letter-spacing:12px!important;
+  text-anchor:middle!important;
+  opacity:.65!important;
+}
   `;
   document.head.appendChild(style);
 }
@@ -1039,53 +1122,83 @@ function getToothType(n) {
   return "molar";
 }
 
-function toothShape(type) {
-  if (type === "incisor") {
-    return `<path class="toothBody" d="M-18,-32 C-12,-43 12,-43 18,-32 C22,-14 19,7 12,25 C8,38 4,46 0,46 C-4,46 -8,38 -12,25 C-19,7 -22,-14 -18,-32 Z"/>
-            <path class="toothShine" d="M-8,-27 C-13,-12 -12,7 -7,20"/>`;
-  }
+function toothSvg(type = "molar") {
+  const shapes = {
+    incisor: `
+      <path class="toothBody" d="M-15 -34 C-8 -44 8 -44 15 -34 C19 -20 17 4 11 24 C7 38 4 48 0 48 C-4 48 -7 38 -11 24 C-17 4 -19 -20 -15 -34 Z"/>
+      <path class="shine" d="M-6 -25 C-10 -8 -9 10 -5 24"/>
+    `,
+    canine: `
+      <path class="toothBody" d="M-18 -32 C-9 -46 10 -46 18 -32 C25 -12 15 18 6 34 C2 44 1 50 -3 50 C-8 50 -9 38 -13 28 C-22 8 -25 -15 -18 -32 Z"/>
+      <path class="shine" d="M-7 -24 C-12 -6 -11 12 -5 27"/>
+    `,
+    premolar: `
+      <path class="toothBody" d="M-22 -24 C-15 -38 -4 -35 0 -26 C6 -37 18 -37 24 -23 C31 -6 24 20 12 33 C4 42 -3 34 0 22 C-5 36 -17 42 -24 27 C-32 10 -31 -8 -22 -24 Z"/>
+      <path class="groove" d="M-11 -6 C-2 2 8 2 16 -6"/>
+      <path class="groove" d="M-14 15 C-3 8 9 8 18 16"/>
+    `,
+    molar: `
+      <path class="toothBody" d="M-28 -22 C-20 -40 -6 -37 0 -28 C8 -39 24 -38 30 -20 C38 2 29 25 15 38 C5 47 -5 38 0 25 C-8 41 -23 47 -31 28 C-39 10 -38 -8 -28 -22 Z"/>
+      <path class="groove" d="M-15 -7 C-3 3 12 3 23 -7"/>
+      <path class="groove" d="M-20 16 C-5 8 12 9 24 17"/>
+      <path class="groove" d="M0 -23 C-3 -4 -3 14 0 29"/>
+    `
+  };
 
-  if (type === "canine") {
-    return `<path class="toothBody" d="M-20,-32 C-10,-46 12,-46 21,-31 C27,-13 16,14 7,32 C3,42 1,49 -3,49 C-8,49 -8,38 -12,29 C-20,12 -28,-12 -20,-32 Z"/>
-            <path class="toothShine" d="M-9,-27 C-14,-10 -13,8 -7,23"/>`;
-  }
+  return `
+    <svg viewBox="-45 -55 90 110" class="archToothSvg">
+      ${shapes[type] || shapes.molar}
+    </svg>
+  `;
+}
 
-  return `<path class="toothBody" d="M-26,-24 C-18,-39 -4,-35 0,-27 C7,-38 22,-37 28,-21 C34,-3 27,23 14,35 C5,43 -4,35 0,24 C-7,38 -20,43 -28,26 C-36,8 -34,-10 -26,-24 Z"/>
-          <path class="toothGroove" d="M-13,-8 C-2,2 10,2 20,-8"/>
-          <path class="toothGroove" d="M-18,15 C-4,7 10,8 22,16"/>
-          <path class="toothGroove" d="M0,-22 C-3,-5 -3,11 0,28"/>`;
+function getToothType(n) {
+  n = Number(n);
+  if ([11,12,21,22,31,32,41,42].includes(n)) return "incisor";
+  if ([13,23,33,43].includes(n)) return "canine";
+  if ([14,15,24,25,34,35,44,45].includes(n)) return "premolar";
+  return "molar";
 }
 
 function renderToothChart(p) {
   const data = parseClinicData(p.progress_notes);
   const teeth = data.teeth || {};
 
-  const rows = [
-    { title: "Upper Right", nums: [18,17,16,15,14,13,12,11] },
-    { title: "Upper Left", nums: [21,22,23,24,25,26,27,28] },
-    { title: "Lower Right", nums: [48,47,46,45,44,43,42,41] },
-    { title: "Lower Left", nums: [31,32,33,34,35,36,37,38] }
+  const teethData = [
+    [18,145,430,-70],[17,165,350,-62],[16,210,280,-50],[15,275,225,-38],
+    [14,350,180,-25],[13,430,145,-12],[12,505,125,-5],[11,565,118,0],
+    [21,625,118,0],[22,685,125,5],[23,760,145,12],[24,840,180,25],
+    [25,915,225,38],[26,980,280,50],[27,1025,350,62],[28,1045,430,70],
+
+    [48,145,550,-110],[47,165,630,-118],[46,210,705,-130],[45,275,765,-142],
+    [44,355,815,-155],[43,435,850,-168],[42,510,870,-176],[41,570,878,180],
+    [31,630,878,180],[32,690,870,176],[33,765,850,168],[34,845,815,155],
+    [35,925,765,142],[36,990,705,130],[37,1030,630,118],[38,1045,550,110]
   ];
 
   return `
-    <div class="finalToothChart">
-      ${rows.map(row => `
-        <div class="finalQuadrant">
-          <h4>${row.title}</h4>
-          <div class="finalGrid">
-            ${row.nums.map(n => {
-              const status = teeth[n] || "healthy";
-              return `
-                <button class="finalTooth ${safeText(status)}"
-                  onclick="openToothPopup('${p.id}', '${n}')">
-                  🦷
-                  <span>${n}</span>
-                </button>
-              `;
-            }).join("")}
-          </div>
-        </div>
-      `).join("")}
+    <div class="archChartBox">
+      <svg class="archChartSvg" viewBox="0 0 1190 980" preserveAspectRatio="xMidYMid meet">
+        <line x1="595" y1="140" x2="595" y2="870" class="chartLine"/>
+        <line x1="150" y1="500" x2="1040" y2="500" class="chartLine"/>
+        <text x="595" y="425" class="chartLabel">UPPER</text>
+        <text x="595" y="620" class="chartLabel">LOWER</text>
+
+        ${teethData.map(([n,x,y,r]) => {
+          const status = teeth[n] || "healthy";
+          const type = getToothType(n);
+          const scale = type === "molar" ? 1.15 : type === "premolar" ? 1.05 : 1;
+
+          return `
+            <g class="archTooth ${safeText(status)} ${type}"
+               transform="translate(${x},${y}) rotate(${r}) scale(${scale})"
+               onclick="openToothPopup('${p.id}', '${n}')">
+              ${toothSvg(type)}
+            </g>
+            <text x="${x}" y="${y + 62}" class="archNumber">${n}</text>
+          `;
+        }).join("")}
+      </svg>
     </div>
   `;
 }
