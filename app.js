@@ -372,6 +372,40 @@ max-height:85vh!important;
 object-fit:contain!important;
 border-radius:20px!important;
 }
+.photoGrid,
+.photosGrid,
+.patientPhotos{
+  display:grid!important;
+  grid-template-columns:repeat(3,1fr)!important;
+  gap:10px!important;
+  margin-top:12px!important;
+}
+
+.photoGrid img,
+.photosGrid img,
+.patientPhotos img,
+.photoItem img{
+  width:100%!important;
+  height:110px!important;
+  object-fit:cover!important;
+  border-radius:14px!important;
+  display:block!important;
+}
+
+.photoItem{
+  overflow:hidden!important;
+  border-radius:14px!important;
+  background:#0f1620!important;
+}
+
+#bigPhoto,
+#viewerImage{
+  max-width:92vw!important;
+  max-height:85vh!important;
+  width:auto!important;
+  height:auto!important;
+  object-fit:contain!important;
+}
   `;
 
   document.head.appendChild(style);
@@ -535,48 +569,18 @@ function renderToothChart(p) {
   const data = parseClinicData(p.progress_notes);
   const teeth = data.teeth || {};
 
-  const toothData = [
+ const toothData = [
+  [18,18,44,-28],[17,24,37,-22],[16,30,31,-16],[15,36,25,-10],
+  [14,42,19,-5],[13,48,14,-2],[12,54,10,0],[11,59,9,0],
 
-  // UPPER RIGHT
-  [18,18,44,-28],
-  [17,24,37,-22],
-  [16,30,31,-16],
-  [15,36,25,-10],
-  [14,42,19,-5],
-  [13,48,14,-2],
-  [12,54,10,0],
-  [11,59,9,0],
+  [21,63,9,0],[22,68,10,0],[23,73,14,2],[24,78,19,5],
+  [25,84,25,10],[26,89,31,16],[27,93,37,22],[28,95,44,28],
 
-  // UPPER LEFT
-  [21,63,9,0],
-  [22,68,10,0],
-  [23,74,14,2],
-  [24,80,19,5],
-  [25,86,25,10],
-  [26,88,23,14],
-  [27,94,28,19],
-  [28,98,35,24],
+  [48,18,60,-152],[47,24,67,-158],[46,30,74,-164],[45,36,81,-170],
+  [44,43,88,-176],[43,49,92,180],[42,54,95,180],[41,58,96,180],
 
-  // LOWER RIGHT
-  [48,18,60,-152],
-  [47,24,67,-158],
-  [46,30,74,-164],
-  [45,36,81,-170],
-  [44,43,88,-176],
-  [43,49,92,180],
-  [42,54,95,180],
-  [41,58,96,180],
-
-  // LOWER LEFT
-  [31,62,96,180],
-  [32,66,95,180],
-  [33,71,92,180],
-  [34,77,88,176],
-  [35,84,81,170],
-  [36,88,77,-14],
-  [37,94,72,-19],
-  [38,98,65,-24],
-
+  [31,62,96,180],[32,66,95,180],[33,71,92,180],[34,77,88,176],
+  [35,83,81,170],[36,88,74,164],[37,93,67,158],[38,95,60,152]
 ];
 
   return `
