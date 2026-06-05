@@ -167,64 +167,84 @@ function injectExtraStyles() {
   border:1px solid #263241;
   overflow:hidden;
 }
-
-.mouthChart{
+.realMouthChart{
   width:100%;
   margin:22px auto;
-  padding:20px 10px;
+  padding:22px 12px;
   border-radius:32px;
   background:radial-gradient(circle at center,#111827,#070b10);
   border:1px solid #263241;
+  overflow-x:auto;
 }
 
-.mouthArch{
+.toothRow{
   display:grid;
-  grid-template-columns:repeat(8,1fr);
-  gap:10px;
-  margin:16px 0;
+  grid-template-columns:repeat(8,52px) 14px repeat(8,52px);
+  gap:8px;
+  align-items:center;
+  justify-content:center;
+  min-width:920px;
 }
 
-.mouthTooth{
-  width:100%;
-  min-height:52px;
-  border-radius:16px;
-  border:2px solid #22c55e;
-  background:linear-gradient(180deg,#12351f,#0f2417);
-  color:#86efac;
-  font-weight:1000;
-  font-size:15px;
+.realTooth{
+  width:52px;
+  height:82px;
+  border:none;
+  background:transparent;
+  padding:0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:4px;
 }
 
-.mouthCenter{
-  height:40px;
-  border-top:1px dashed rgba(212,175,55,.25);
-  border-bottom:1px dashed rgba(212,175,55,.25);
-  margin:14px 0;
+.toothSvg{
+  width:46px;
+  height:62px;
+  filter:drop-shadow(0 8px 12px rgba(0,0,0,.35));
 }
 
-.archLabel{
+.toothSvg path{
+  fill:#f8f1df;
+  stroke:#d8d0bd;
+  stroke-width:2;
+}
+
+.realTooth small{
+  color:#cbd5e1;
+  font-size:12px;
+  font-weight:900;
+}
+
+.realTooth.healthy .toothSvg path{fill:#f8f1df;stroke:#d8d0bd}
+.realTooth.caries .toothSvg path{fill:#ef4444;stroke:#7f1d1d}
+.realTooth.filling .toothSvg path{fill:#60a5fa;stroke:#1e3a8a}
+.realTooth.rct .toothSvg path{fill:#8b5cf6;stroke:#4c1d95}
+.realTooth.crown .toothSvg path{fill:#d4af37;stroke:#8f6b10}
+.realTooth.missing .toothSvg path{fill:#374151;stroke:#111827;opacity:.55}
+.realTooth.extraction .toothSvg path{fill:#fb7185;stroke:#881337}
+.realTooth.implant .toothSvg path{fill:#2dd4bf;stroke:#115e59}
+
+.mouthDivider{
+  height:34px;
+  border-top:1px dashed rgba(212,175,55,.35);
+  border-bottom:1px dashed rgba(212,175,55,.18);
+  margin:18px 0;
+  min-width:920px;
+}
+
+.midLine{
+  height:80px;
+  border-left:2px dashed rgba(212,175,55,.45);
+}
+
+.mouthTitle{
   text-align:center;
   color:#9ca3af;
   font-weight:1000;
-  letter-spacing:2px;
-  opacity:.7;
-}
-
-.upperLabel,.lowerLabel{
-  position:static;
-  transform:none;
-}
-
-.mouthLine{
-  display:none;
-}
-
-  .mouthTooth{
-    width:46px;
-    height:46px;
-    border-radius:15px;
-    font-size:13px;
-  }
+  letter-spacing:3px;
+  margin:10px 0;
 }
   `;
   document.head.appendChild(style);
@@ -346,73 +366,68 @@ async function uploadPhotos(patientId) {
   return uploaded;
 }
 
+function toothSvg(status) {
+  return `
+    <svg viewBox="0 0 64 90" class="toothSvg" aria-hidden="true">
+      <path d="M32 5
+        C20 5 12 13 12 28
+        C12 42 17 54 20 68
+        C22 78 25 86 30 86
+        C34 86 34 70 38 70
+        C42 70 42 86 47 86
+        C53 86 56 76 58 65
+        C61 50 62 42 62 30
+        C62 14 49 5 38 5
+        C35 5 34 6 32 8
+        C30 6 27 5 24 5
+        Z" />
+    </svg>
+  `;
+}
+
 function renderToothChart(p) {
   const data = parseClinicData(p.progress_notes);
   const teeth = data.teeth || {};
 
-  const upper = [
-    18,17,16,15,14,13,12,11,
-    21,22,23,24,25,26,27,28
-  ];
+  const upperRight = [18,17,16,15,14,13,12,11];
+  const upperLeft  = [21,22,23,24,25,26,27,28];
+  const lowerRight = [48,47,46,45,44,43,42,41];
+  const lowerLeft  = [31,32,33,34,35,36,37,38];
 
-  const lower = [
-    48,47,46,45,44,43,42,41,
-    31,32,33,34,35,36,37,38
-  ];
-
-  const makeTooth = (n, i, total, arch) => {
+  const makeTooth = (n) => {
     const status = teeth[n] || "healthy";
-    const angle =
-      arch === "upper"
-        ? -160 + (320 / (total - 1)) * i
-        : 160 - (320 / (total - 1)) * i;
-
-    const radiusX = 42;
-    const radiusY = arch === "upper" ? 32 : 32;
-
-    const x = 50 + radiusX * Math.cos(angle * Math.PI / 180);
-    const y =
-      arch === "upper"
-        ? 56 + radiusY * Math.sin(angle * Math.PI / 180)
-        : 44 - radiusY * Math.sin(angle * Math.PI / 180);
 
     return `
       <button
-        class="mouthTooth ${safeText(status)}"
-        style="left:${x}%;top:${y}%"
+        class="realTooth ${safeText(status)}"
         onclick="openToothPopup('${p.id}', '${n}')"
         title="Tooth ${n} - ${safeText(status)}"
       >
-        <span>${n}</span>
+        ${toothSvg(status)}
+        <small>${n}</small>
       </button>
     `;
   };
 
   return `
-    <div class="mouthChart">
-      <div class="archLabel upperLabel">UPPER</div>
+    <div class="realMouthChart">
+      <div class="mouthTitle">UPPER</div>
 
-      <div class="mouthArch upperArch">
-        ${
-          upper.map((n, i) =>
-            makeTooth(n, i, upper.length, "upper")
-          ).join("")
-        }
+      <div class="toothRow upperRow">
+        ${upperRight.map(makeTooth).join("")}
+        <div class="midLine"></div>
+        ${upperLeft.map(makeTooth).join("")}
       </div>
 
-      <div class="mouthCenter">
-        <div class="mouthLine"></div>
+      <div class="mouthDivider"></div>
+
+      <div class="toothRow lowerRow">
+        ${lowerRight.map(makeTooth).join("")}
+        <div class="midLine"></div>
+        ${lowerLeft.map(makeTooth).join("")}
       </div>
 
-      <div class="mouthArch lowerArch">
-        ${
-          lower.map((n, i) =>
-            makeTooth(n, i, lower.length, "lower")
-          ).join("")
-        }
-      </div>
-
-      <div class="archLabel lowerLabel">LOWER</div>
+      <div class="mouthTitle">LOWER</div>
     </div>
   `;
 }
