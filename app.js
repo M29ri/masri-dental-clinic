@@ -217,7 +217,7 @@ function injectExtraStyles() {
   margin:20px auto!important;
 
   /* move slightly left */
-  left:0px!important;
+  left:4px!important;
 
   border-radius:34px!important;
   background:radial-gradient(circle at center,#111827,#070b10)!important;
@@ -236,8 +236,8 @@ function injectExtraStyles() {
   border:none!important;
   padding:0!important;
 
-  width:48px!important;
-  height:58px!important;
+  width:40px!important;
+  height:50px!important;
 
   display:flex!important;
   flex-direction:column!important;
@@ -248,8 +248,8 @@ function injectExtraStyles() {
 }
 
 .toothArt{
-  width:46px!important;
-  height:46px!important;
+  width:38px!important;
+  height:38px!important;
   display:flex!important;
   justify-content:center!important;
   align-items:center!important;
@@ -515,15 +515,15 @@ function renderToothChart(p) {
     [25,87,23,10],[26,94,29,15],[27,100,35,20],[28,104,43,25],
 
     [48,16,59,25],[47,20,67,20],[46,26,75,15],[45,33,82,10],
-    [44,41,88,-170],
-    [43,46,91,-175],
-    [42,50,94,180],
-    [41,54,95,180],
+    [44,42,88,-165],
+    [43,47,91,-170],
+    [42,51,94,180],
+    [41,55,95,180],
 
-    [31,58,95,180],
-    [32,62,94,180],
-    [33,67,91,175],
-    [34,74,88,170],
+    [31,59,95,180],
+    [32,63,94,180],
+    [33,68,91,170],
+    [34,75,88,165],
     [35,87,82,-10],[36,94,75,-15],[37,100,67,-20],[38,104,59,-25]
   ];
 
