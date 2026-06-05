@@ -321,6 +321,10 @@ function injectExtraStyles() {
   font-weight:900!important;
   margin-bottom:20px!important;
 }
+#photoModal.hidden,
+.photoModal.hidden{
+  display:none!important;
+}
 `;
 
   document.head.appendChild(style);
@@ -693,7 +697,11 @@ function openPhotoViewer(index = 0) {
 }
 
 function closePhotoViewer() {
-  document.getElementById("photoModal")?.remove();
+  const modal = document.getElementById("photoModal");
+  if (modal) {
+    modal.classList.add("hidden");
+    modal.remove();
+  }
 }
 
 function nextPhoto() {
