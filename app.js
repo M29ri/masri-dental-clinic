@@ -455,6 +455,76 @@ function injectExtraStyles() {
   display:block !important;
   grid-template-columns:none !important;
 }
+.toothLegend{
+  display:grid !important;
+  grid-template-columns:repeat(2,1fr) !important;
+  gap:10px !important;
+  margin-bottom:18px !important;
+}
+
+.legendItem{
+  display:flex !important;
+  align-items:center !important;
+  gap:8px !important;
+  justify-content:flex-start !important;
+  font-size:14px !important;
+  padding:10px 12px !important;
+}
+
+.proMouthChart{
+  height:620px !important;
+  padding:12px !important;
+}
+
+.proTooth{
+  width:38px !important;
+  height:56px !important;
+}
+
+.proToothSvg{
+  width:34px !important;
+  height:48px !important;
+}
+
+.proToothSvg path{
+  stroke-width:2.4 !important;
+}
+
+.proToothSvg .shine{
+  fill:none !important;
+  stroke:rgba(255,255,255,.45) !important;
+  stroke-width:3 !important;
+  stroke-linecap:round !important;
+}
+
+.proTooth span{
+  font-size:10px !important;
+  margin-top:1px !important;
+}
+
+@media(max-width:520px){
+  .toothLegend{
+    grid-template-columns:repeat(2,1fr) !important;
+  }
+
+  .proMouthChart{
+    height:620px !important;
+  }
+
+  .proTooth{
+    width:34px !important;
+    height:52px !important;
+  }
+
+  .proToothSvg{
+    width:31px !important;
+    height:45px !important;
+  }
+
+  .proTooth span{
+    font-size:9px !important;
+  }
+}
   `;
   document.head.appendChild(style);
 }
@@ -575,52 +645,44 @@ async function uploadPhotos(patientId) {
   return uploaded;
 }
 
-function toothSvg(status) {
+function toothSvg() {
   return `
-    <svg viewBox="0 0 64 90" class="toothSvg" aria-hidden="true">
-      <path d="M32 5
-        C20 5 12 13 12 28
-        C12 42 17 54 20 68
-        C22 78 25 86 30 86
-        C34 86 34 70 38 70
-        C42 70 42 86 47 86
-        C53 86 56 76 58 65
-        C61 50 62 42 62 30
-        C62 14 49 5 38 5
-        C35 5 34 6 32 8
-        C30 6 27 5 24 5
-        Z" />
+    <svg viewBox="0 0 80 110" class="proToothSvg">
+      <path d="
+        M40 8
+        C25 8 15 20 15 38
+        C15 52 21 65 24 78
+        C27 94 31 104 37 104
+        C43 104 42 82 48 82
+        C54 82 54 104 61 104
+        C68 104 72 90 74 76
+        C77 60 78 48 76 36
+        C73 18 60 8 48 8
+        C45 8 42 10 40 13
+        C37 10 34 8 30 8
+        Z
+      "/>
+
+      <path
+        class="shine"
+        d="M28 18 C22 28 22 44 26 56"
+      />
     </svg>
   `;
 }
-
-function toothSvg() {
-  return `
-    <svg viewBox="0 0 64 90" class="toothSvg">
-      <path d="M32 5 C20 5 12 14 12 29 C12 43 17 55 20 69 C22 79 25 86 30 86 C35 86 35 70 39 70 C43 70 43 86 49 86 C55 86 58 76 60 65 C63 50 62 42 62 30 C62 14 50 5 38 5 C35 5 34 7 32 9 C30 7 27 5 24 5 Z"/>
-    </svg>
-  `;
-}
-
-function toothSvg() {
-  return `
-    <svg viewBox="0 0 64 90" class="proToothSvg">
-      <path d="M32 5 C20 5 12 14 12 29 C12 43 17 55 20 69 C22 79 25 86 30 86 C35 86 35 70 39 70 C43 70 43 86 49 86 C55 86 58 76 60 65 C63 50 62 42 62 30 C62 14 50 5 38 5 C35 5 34 7 32 9 C30 7 27 5 24 5 Z"/>
-    </svg>
-  `;
 }
 
 function renderToothChart(p) {
   const data = parseClinicData(p.progress_notes);
   const teeth = data.teeth || {};
 
-  const toothPositions = [
-    [18,10,44],[17,12,35],[16,16,27],[15,22,20],[14,29,15],[13,37,11],[12,45,9],[11,50,8],
-    [21,55,8],[22,63,11],[23,71,15],[24,78,20],[25,84,27],[26,88,35],[27,90,44],[28,90,53],
+ const toothPositions = [
+  [18,11,47],[17,13,38],[16,17,30],[15,23,23],[14,31,18],[13,39,14],[12,47,12],[11,52,12],
+  [21,58,12],[22,66,14],[23,74,18],[24,82,23],[25,88,30],[26,92,38],[27,94,47],[28,94,56],
 
-    [48,10,58],[47,12,67],[46,16,75],[45,22,82],[44,29,87],[43,37,91],[42,45,93],[41,50,94],
-    [31,55,94],[32,63,91],[33,71,87],[34,78,82],[35,84,75],[36,88,67],[37,90,58],[38,90,49]
-  ];
+  [48,11,61],[47,13,70],[46,18,78],[45,25,84],[44,33,89],[43,41,92],[42,48,94],[41,53,94],
+  [31,59,94],[32,66,92],[33,74,89],[34,82,84],[35,89,78],[36,94,70],[37,96,61],[38,96,52]
+];
 
   return `
     <div class="proMouthChart">
