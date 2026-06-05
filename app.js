@@ -671,6 +671,123 @@ function injectExtraStyles() {
 .cleanTooth.missing .proToothSvg path:first-child{fill:#4b5563!important}
 .cleanTooth.extraction .proToothSvg path:first-child{fill:#fb7185!important}
 .cleanTooth.implant .proToothSvg path:first-child{fill:#2dd4bf!important}
+.toothLegend{
+  display:grid!important;
+  grid-template-columns:repeat(2,1fr)!important;
+  gap:10px!important;
+  margin-bottom:18px!important;
+}
+
+.legendItem{
+  display:flex!important;
+  align-items:center!important;
+  gap:10px!important;
+  padding:12px 14px!important;
+  border-radius:18px!important;
+}
+
+.proMouthChart{
+  position:relative!important;
+  width:100%!important;
+  height:650px!important;
+  border-radius:34px!important;
+  background:radial-gradient(circle at center,#111827,#070b10)!important;
+  border:1px solid #263241!important;
+  overflow:hidden!important;
+  margin-top:18px!important;
+}
+
+.proTooth{
+  position:absolute!important;
+  transform:translate(-50%,-50%)!important;
+  background:transparent!important;
+  border:none!important;
+  padding:0!important;
+  width:46px!important;
+  height:62px!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+}
+
+.proTooth.molar{
+  width:54px!important;
+}
+
+.proToothSvg{
+  width:42px!important;
+  height:54px!important;
+  filter:drop-shadow(0 8px 10px rgba(0,0,0,.45))!important;
+}
+
+.proTooth.molar .proToothSvg{
+  width:52px!important;
+  height:52px!important;
+}
+
+.proToothSvg path{
+  fill:#f8f1df!important;
+  stroke:#d8d0bd!important;
+  stroke-width:2.2!important;
+}
+
+.proToothSvg .shine{
+  fill:none!important;
+  stroke:rgba(255,255,255,.45)!important;
+  stroke-width:3!important;
+  stroke-linecap:round!important;
+}
+
+.proToothSvg .groove{
+  fill:none!important;
+  stroke:rgba(120,105,80,.35)!important;
+  stroke-width:3!important;
+  stroke-linecap:round!important;
+}
+
+.proTooth span{
+  color:#e5e7eb!important;
+  font-size:11px!important;
+  font-weight:900!important;
+  margin-top:2px!important;
+}
+
+.proTooth.caries .proToothSvg path:first-child{fill:#ef4444!important}
+.proTooth.filling .proToothSvg path:first-child{fill:#60a5fa!important}
+.proTooth.rct .proToothSvg path:first-child{fill:#8b5cf6!important}
+.proTooth.crown .proToothSvg path:first-child{fill:#d4af37!important}
+.proTooth.missing .proToothSvg path:first-child{fill:#4b5563!important}
+.proTooth.extraction .proToothSvg path:first-child{fill:#fb7185!important}
+.proTooth.implant .proToothSvg path:first-child{fill:#2dd4bf!important}
+
+.proMidLine{
+  position:absolute!important;
+  left:50%!important;
+  top:18%!important;
+  height:70%!important;
+  border-left:1px dashed rgba(212,175,55,.35)!important;
+}
+
+.proHorizontalLine{
+  position:absolute!important;
+  left:12%!important;
+  right:12%!important;
+  top:54%!important;
+  border-top:1px dashed rgba(212,175,55,.35)!important;
+}
+
+.proMouthLabel{
+  position:absolute!important;
+  left:50%!important;
+  transform:translateX(-50%)!important;
+  color:#9ca3af!important;
+  font-weight:1000!important;
+  letter-spacing:5px!important;
+  opacity:.65!important;
+}
+
+.proMouthLabel.upper{top:43%!important}
+.proMouthLabel.lower{top:61%!important}
   `;
   document.head.appendChild(style);
 }
@@ -830,52 +947,47 @@ function getToothType(n) {
   return "molar";
 }
 
-function getToothType(n) {
-  const incisors = [11,12,21,22,31,32,41,42];
-  const canines = [13,23,33,43];
-  if (incisors.includes(Number(n))) return "incisor";
-  if (canines.includes(Number(n))) return "canine";
-  return "molar";
-}
-
 function renderToothChart(p) {
   const data = parseClinicData(p.progress_notes);
   const teeth = data.teeth || {};
 
-  const groups = [
-    { title: "Upper Right", nums: [18,17,16,15,14,13,12,11] },
-    { title: "Upper Left", nums: [21,22,23,24,25,26,27,28] },
-    { title: "Lower Right", nums: [48,47,46,45,44,43,42,41] },
-    { title: "Lower Left", nums: [31,32,33,34,35,36,37,38] }
+  const pos = [
+    [18,14,42],[17,16,34],[16,20,27],[15,26,21],
+    [14,33,17],[13,41,13],[12,48,10],[11,53,9],
+    [21,59,9],[22,66,10],[23,74,13],[24,82,18],
+    [25,88,25],[26,92,33],[27,94,42],[28,93,50],
+
+    [48,14,58],[47,16,66],[46,20,74],[45,27,81],
+    [44,35,87],[43,43,91],[42,49,94],[41,54,95],
+    [31,59,95],[32,65,94],[33,73,91],[34,81,86],
+    [35,88,79],[36,92,71],[37,94,62],[38,93,54]
   ];
 
   return `
-    <div class="cleanToothChart">
-      ${groups.map(g => `
-        <div class="cleanQuadrant">
-          <h4>${g.title}</h4>
-          <div class="cleanToothGrid">
-            ${g.nums.map(n => {
-              const status = teeth[n] || "healthy";
-              const type = getToothType(n);
+    <div class="proMouthChart">
+      <div class="proMouthLabel upper">UPPER</div>
+      <div class="proMouthLabel lower">LOWER</div>
+      <div class="proMidLine"></div>
+      <div class="proHorizontalLine"></div>
 
-              return `
-                <button
-                  class="cleanTooth ${safeText(status)} ${type}"
-                  onclick="openToothPopup('${p.id}', '${n}')"
-                >
-                  ${toothSvg(type)}
-                  <span>${n}</span>
-                </button>
-              `;
-            }).join("")}
-          </div>
-        </div>
-      `).join("")}
+      ${pos.map(([n,x,y]) => {
+        const status = teeth[n] || "healthy";
+        const type = getToothType(n);
+
+        return `
+          <button
+            class="proTooth ${safeText(status)} ${type}"
+            style="left:${x}%;top:${y}%"
+            onclick="openToothPopup('${p.id}', '${n}')"
+          >
+            ${toothSvg(type)}
+            <span>${n}</span>
+          </button>
+        `;
+      }).join("")}
     </div>
   `;
 }
-
 function patientDetailsHTML(p) {
   const data = parseClinicData(p.progress_notes); const money = paymentTotals(data);
   return `<div class="card"><h2>${safeText(p.name || "No name")}</h2><span class="pill">ID: ${safeText(p.case_id || "-")}</span><span class="pill">${safeText(p.phone || "No phone")}</span><span class="pill">${safeText(p.age || "-")} yrs</span><span class="pill">${safeText(p.gender || "-")}</span><div class="kv"><b>Chief complaint</b><span>${safeText(p.chief_complaint || "-")}</span></div><div class="kv"><b>Medical alerts</b><span>${safeText(p.medical_alerts || "-")}</span></div><div class="kv"><b>Diagnosis</b><span>${safeText(p.diagnosis || "-")}</span></div><div class="kv"><b>Treatment plan</b><span>${safeText(p.treatment_plan || "-")}</span></div><h3 class="sectionTitle">Visits History</h3>${data.visits.length ? data.visits.map((v, i) => `<div class="kv"><b>Visit ${data.visits.length - i}</b><div class="visitDate">${safeText(v.date || "")}</div><span>${safeText(v.note || "-")}</span></div>`).join("") : `<div class="kv"><span>No visits yet</span></div>`}<h3 class="sectionTitle">Tooth Chart</h3><div class="toothChartBox"><span class="legendItem">Healthy</span><span class="legendItem">Caries</span><span class="legendItem">Filling</span><span class="legendItem">RCT</span><span class="legendItem">Crown</span><span class="legendItem">Missing</span><span class="legendItem">Extraction</span><span class="legendItem">Implant</span></div><div class="toothChart">${renderToothChart(p)}</div><h3 class="sectionTitle">Appointments</h3><div class="actions"><button class="primary" onclick="addAppointment('${p.id}')">+ Add Appointment</button></div>${data.appointments.length ? data.appointments.map((a, i) => `<div class="appointment"><b>${safeText(a.date || "-")}</b><p>${safeText(a.note || "")}</p><button class="danger" onclick="deleteAppointment('${p.id}', ${i})">Delete</button></div>`).join("") : `<div class="kv"><span>No appointments yet</span></div>`}<h3 class="sectionTitle">Payments</h3><div class="miniGrid"><div class="miniCard"><b>Total</b><span class="money">${money.total}</span></div><div class="miniCard"><b>Paid</b><span class="money">${money.paid}</span></div><div class="miniCard"><b>Remaining</b><span class="money unpaid">${money.remaining}</span></div></div><div class="actions"><button class="primary" onclick="addPayment('${p.id}')">+ Add Payment</button></div>${data.payments.length ? data.payments.map((pay, i) => `<div class="appointment"><b>${safeText(pay.date || "")}</b><p>Total: ${Number(pay.total || 0)} | Paid: ${Number(pay.paid || 0)} | Remaining: ${Number(pay.total || 0) - Number(pay.paid || 0)}</p><button class="danger" onclick="deletePayment('${p.id}', ${i})">Delete</button></div>`).join("") : `<div class="kv"><span>No payments yet</span></div>`}<h3 class="sectionTitle">Photos / X-rays</h3><button class="secondary" onclick="showBeforeAfter('${p.id}')">Before / After</button><div class="grid">${(p.photos || []).map((ph, i) => `<div class="thumbWrap"><img class="thumb" src="${ph.url}" onclick="viewPhoto('${ph.url}')"><button class="x" onclick="deletePhoto('${p.id}', ${i})">Ã</button></div>`).join("") || "<p>No photos</p>"}</div><h3 class="sectionTitle">Patient Timeline</h3><div class="patientCard">${renderTimeline(p)}</div><div class="actions">${canEdit() ? `<button class="primary" onclick="editPatient('${p.id}')">Edit</button>` : ""}<button class="secondary" onclick="showQR('${p.id}')">QR</button><button class="secondary" onclick="exportPDF('${p.id}')">PDF</button>${canDelete() ? `<button class="danger" onclick="deletePatient('${p.id}')">Delete</button>` : ""}</div></div>`;
