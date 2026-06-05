@@ -162,8 +162,29 @@ function injectExtraStyles() {
   border:1px solid #263241!important;
   overflow:hidden!important;
 }
-    .proMidLine{position:absolute!important;left:50%!important;top:18%!important;height:70%!important;border-left:1px dashed rgba(212,175,55,.30)!important;z-index:1!important}.proHorizontalLine{position:absolute!important;left:12%!important;right:12%!important;top:50%!important;border-top:1px dashed rgba(212,175,55,.30)!important;z-index:1!important}
-    .proMouthLabel{position:absolute!important;left:50%!important;transform:translateX(-50%)!important;color:#9ca3af!important;font-weight:1000!important;letter-spacing:6px!important;opacity:.65!important;font-size:22px!important;z-index:1!important}.proMouthLabel.upper{top:42%!important}.proMouthLabel.lower{top:56%!important}
+    .proMidLine{
+  position:absolute!important;
+  left:56%!important;
+  top:22%!important;
+  height:66%!important;
+  border-left:1px dashed rgba(212,175,55,.28)!important;
+}.proMouthLabel{
+  position:absolute!important;
+  left:56%!important;
+  transform:translateX(-50%)!important;
+  color:#9ca3af!important;
+  font-weight:1000!important;
+  letter-spacing:5px!important;
+  opacity:.65!important;
+}
+.proHorizontalLine{
+  position:absolute!important;
+  left:14%!important;
+  right:14%!important;
+  top:50%!important;
+  border-top:1px dashed rgba(212,175,55,.28)!important;
+  z-index:1!important;
+}
     .proTooth{position:absolute!important;transform:translate(-50%,-50%)!important;background:transparent!important;border:none!important;padding:0!important;width:42px!important;height:54px!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;z-index:2!important;cursor:pointer!important}.toothArt{width:40px!important;height:40px!important;display:flex!important;align-items:center!important;justify-content:center!important}.proToothSvg{width:36px!important;height:40px!important;filter:drop-shadow(0 6px 8px rgba(0,0,0,.35))!important}.proTooth.molar .proToothSvg{width:40px!important;height:40px!important}.proToothSvg path:first-child{fill:#fff7e6!important;stroke:rgba(255,255,255,.35)!important;stroke-width:2.5!important;stroke-linecap:round!important}.groove{fill:none!important;stroke:rgba(145,130,105,.38)!important;stroke-width:2.2!important;stroke-linecap:round!important}.shine{fill:none!important;stroke:rgba(255,255,255,.35)!important;stroke-width:2.5!important;stroke-linecap:round!important}.toothNo{color:#eef2f7!important;font-size:11px!important;font-weight:900!important;margin-top:1px!important;line-height:1!important}.proTooth.caries path:first-child{fill:#ef4444!important}.proTooth.filling path:first-child{fill:#60a5fa!important}.proTooth.rct path:first-child{fill:#8b5cf6!important}.proTooth.crown path:first-child{fill:#d4af37!important}.proTooth.missing path:first-child{fill:#4b5563!important}.proTooth.extraction path:first-child{fill:#fb7185!important}.proTooth.implant path:first-child{fill:#2dd4bf!important}
     @media (min-width:768px){.proMouthChart{max-width:760px!important;height:640px!important}.proTooth{width:40px!important;height:50px!important}.toothArt{width:36px!important;height:36px!important}.proToothSvg{width:34px!important;height:38px!important}.proTooth.molar .proToothSvg{width:38px!important;height:38px!important}}
 
