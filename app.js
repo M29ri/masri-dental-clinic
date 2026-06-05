@@ -525,6 +525,88 @@ function injectExtraStyles() {
     font-size:9px !important;
   }
 }
+.toothLegend{
+  display:grid !important;
+  grid-template-columns:repeat(2,1fr) !important;
+  gap:10px !important;
+  margin-bottom:18px !important;
+}
+
+.legendItem{
+  display:flex !important;
+  align-items:center !important;
+  gap:8px !important;
+  font-size:14px !important;
+  padding:10px 12px !important;
+  border-radius:18px !important;
+}
+
+.proMouthChart{
+  height:640px !important;
+  position:relative !important;
+  width:100% !important;
+}
+
+.proTooth{
+  width:42px !important;
+  height:60px !important;
+}
+
+.proTooth.molar{
+  width:48px !important;
+  height:58px !important;
+}
+
+.proToothSvg{
+  width:40px !important;
+  height:52px !important;
+}
+
+.proTooth.molar .proToothSvg{
+  width:46px !important;
+  height:46px !important;
+}
+
+.proToothSvg path{
+  fill:#f8f1df !important;
+  stroke:#d8d0bd !important;
+  stroke-width:2.2 !important;
+}
+
+.proToothSvg .shine{
+  fill:none !important;
+  stroke:rgba(255,255,255,.45) !important;
+  stroke-width:3 !important;
+  stroke-linecap:round !important;
+}
+
+.proToothSvg .groove{
+  fill:none !important;
+  stroke:rgba(120,105,80,.35) !important;
+  stroke-width:3 !important;
+  stroke-linecap:round !important;
+}
+
+.proTooth.caries .proToothSvg path:first-child{fill:#ef4444 !important}
+.proTooth.filling .proToothSvg path:first-child{fill:#60a5fa !important}
+.proTooth.rct .proToothSvg path:first-child{fill:#8b5cf6 !important}
+.proTooth.crown .proToothSvg path:first-child{fill:#d4af37 !important}
+.proTooth.missing .proToothSvg path:first-child{fill:#4b5563 !important}
+.proTooth.extraction .proToothSvg path:first-child{fill:#fb7185 !important}
+.proTooth.implant .proToothSvg path:first-child{fill:#2dd4bf !important}
+
+.proTooth span{
+  font-size:10px !important;
+  margin-top:2px !important;
+}
+
+.proMouthLabel.upper{
+  top:43% !important;
+}
+
+.proMouthLabel.lower{
+  top:60% !important;
+}
   `;
   document.head.appendChild(style);
 }
@@ -645,43 +727,56 @@ async function uploadPhotos(patientId) {
   return uploaded;
 }
 
-function toothSvg() {
-  return `
-    <svg viewBox="0 0 80 110" class="proToothSvg">
-      <path d="
-        M40 8
-        C25 8 15 20 15 38
-        C15 52 21 65 24 78
-        C27 94 31 104 37 104
-        C43 104 42 82 48 82
-        C54 82 54 104 61 104
-        C68 104 72 90 74 76
-        C77 60 78 48 76 36
-        C73 18 60 8 48 8
-        C45 8 42 10 40 13
-        C37 10 34 8 30 8
-        Z
-      "/>
+function toothSvg(type = "molar") {
+  if (type === "incisor") {
+    return `
+      <svg viewBox="0 0 80 110" class="proToothSvg">
+        <path d="M22 12 C25 6 55 6 58 12 C64 24 62 48 57 63 C53 78 51 104 43 104 C38 104 38 83 40 74 C37 83 36 104 30 104 C22 104 24 78 21 63 C16 46 15 24 22 12 Z"/>
+        <path class="shine" d="M30 18 C25 34 25 50 30 64"/>
+      </svg>
+    `;
+  }
 
-      <path
-        class="shine"
-        d="M28 18 C22 28 22 44 26 56"
-      />
+  if (type === "canine") {
+    return `
+      <svg viewBox="0 0 80 110" class="proToothSvg">
+        <path d="M20 14 C28 5 52 5 60 14 C68 26 63 54 56 70 C50 84 48 104 42 104 C37 104 39 79 40 70 C36 82 34 104 29 104 C22 104 25 82 20 70 C14 52 12 27 20 14 Z"/>
+        <path class="shine" d="M29 19 C23 37 24 53 30 68"/>
+      </svg>
+    `;
+  }
+
+  return `
+    <svg viewBox="0 0 90 90" class="proToothSvg molarSvg">
+      <path d="M18 18 C25 8 38 10 45 16 C53 9 67 8 74 20 C83 34 77 57 67 72 C58 86 45 78 45 68 C43 79 29 86 21 72 C12 56 9 32 18 18 Z"/>
+      <path class="groove" d="M30 30 C40 38 50 38 61 30"/>
+      <path class="groove" d="M27 56 C38 48 52 48 64 57"/>
+      <path class="groove" d="M45 18 C43 34 43 52 45 69"/>
     </svg>
   `;
+}
+
+function getToothType(n) {
+  const incisors = [11,12,21,22,31,32,41,42];
+  const canines = [13,23,33,43];
+
+  if (incisors.includes(Number(n))) return "incisor";
+  if (canines.includes(Number(n))) return "canine";
+
+  return "molar";
 }
 
 function renderToothChart(p) {
   const data = parseClinicData(p.progress_notes);
   const teeth = data.teeth || {};
 
- const toothPositions = [
-  [18,11,47],[17,13,38],[16,17,30],[15,23,23],[14,31,18],[13,39,14],[12,47,12],[11,52,12],
-  [21,58,12],[22,66,14],[23,74,18],[24,82,23],[25,88,30],[26,92,38],[27,94,47],[28,94,56],
+  const toothPositions = [
+    [18,13,45],[17,15,37],[16,19,30],[15,25,24],[14,32,19],[13,40,15],[12,47,12],[11,52,11],
+    [21,58,11],[22,64,12],[23,72,15],[24,80,20],[25,86,27],[26,90,35],[27,92,44],[28,91,53],
 
-  [48,11,61],[47,13,70],[46,18,78],[45,25,84],[44,33,89],[43,41,92],[42,48,94],[41,53,94],
-  [31,59,94],[32,66,92],[33,74,89],[34,82,84],[35,89,78],[36,94,70],[37,96,61],[38,96,52]
-];
+    [48,13,59],[47,15,67],[46,20,75],[45,27,82],[44,35,88],[43,43,92],[42,49,94],[41,54,95],
+    [31,59,95],[32,65,94],[33,73,91],[34,81,86],[35,88,78],[36,92,70],[37,94,61],[38,94,52]
+  ];
 
   return `
     <div class="proMouthChart">
@@ -692,13 +787,15 @@ function renderToothChart(p) {
 
       ${toothPositions.map(([n,x,y]) => {
         const status = teeth[n] || "healthy";
+        const type = getToothType(n);
+
         return `
           <button
-            class="proTooth ${safeText(status)}"
+            class="proTooth ${safeText(status)} ${type}"
             style="left:${x}%;top:${y}%"
             onclick="openToothPopup('${p.id}', '${n}')"
           >
-            ${toothSvg()}
+            ${toothSvg(type)}
             <span>${n}</span>
           </button>
         `;
