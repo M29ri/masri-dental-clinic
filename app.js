@@ -207,15 +207,26 @@ function injectExtraStyles() {
       max-width:100%!important;
     }
 
-    .proMouthChart{
+   .proMouthChart{
   position:relative!important;
   width:100%!important;
-  height:560px!important;
-  margin:18px 0!important;
+  max-width:720px!important;
+  height:620px!important;
+
+  /* centers whole chart */
+  margin:20px auto!important;
+
+  /* move slightly left */
+  left:-28px!important;
+
   border-radius:34px!important;
   background:radial-gradient(circle at center,#111827,#070b10)!important;
   border:1px solid #263241!important;
   overflow:hidden!important;
+
+  display:flex!important;
+  justify-content:center!important;
+  align-items:center!important;
 }
 
 .proTooth{
@@ -224,24 +235,31 @@ function injectExtraStyles() {
   background:transparent!important;
   border:none!important;
   padding:0!important;
-  width:42px!important;
-  height:54px!important;
+
+  width:48px!important;
+  height:58px!important;
+
   display:flex!important;
   flex-direction:column!important;
   align-items:center!important;
   justify-content:center!important;
+
+  z-index:2!important;
 }
 
 .toothArt{
+  width:46px!important;
+  height:46px!important;
   display:flex!important;
-  align-items:center!important;
   justify-content:center!important;
+  align-items:center!important;
 }
 
-.proToothSvg{
-  width:36px!important;
-  height:40px!important;
-  filter:drop-shadow(0 6px 8px rgba(0,0,0,.35))!important;
+.proTooth span{
+  color:#f8fafc!important;
+  font-size:12px!important;
+  font-weight:800!important;
+  margin-top:2px!important;
 }
 
 .proTooth.molar .proToothSvg{
