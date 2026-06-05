@@ -169,111 +169,64 @@ function injectExtraStyles() {
 }
 .realMouthChart{
   width:100%;
-  overflow-x:auto;
-  padding:20px 0;
+  margin:20px auto;
+  padding:16px;
+  border-radius:28px;
+  background:radial-gradient(circle at center,#111827,#070b10);
+  border:1px solid #263241;
 }
 
-.toothRow{
-  display:flex;
-  justify-content:center;
-  align-items:flex-end;
-  gap:6px;
-  min-width:760px;
+.jawLabel{
+  color:#d4af37;
+  font-weight:1000;
+  margin:18px 0 10px;
+  letter-spacing:1px;
 }
 
-.upperRow{
-  margin-bottom:20px;
-}
-
-.lowerRow{
-  margin-top:20px;
+.jawRow{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:12px;
+  margin-bottom:14px;
 }
 
 .realTooth{
-  background:none;
-  border:none;
-  width:42px;
+  background:#0f1620;
+  border:1px solid #263241;
+  border-radius:18px;
+  padding:8px 4px;
+  min-height:92px;
   display:flex;
   flex-direction:column;
   align-items:center;
-  cursor:pointer;
-  padding:0;
+  justify-content:center;
 }
 
 .toothSvg{
-  width:40px;
-  height:58px;
-  transition:.2s;
-}
-
-.realTooth:hover .toothSvg{
-  transform:scale(1.08);
+  width:38px;
+  height:54px;
 }
 
 .toothSvg path{
   fill:#f8f1df;
-  stroke:#d9d1be;
+  stroke:#d8d0bd;
   stroke-width:2;
 }
 
 .realTooth small{
-  color:#d1d5db;
-  font-size:11px;
-  font-weight:800;
-  margin-top:4px;
-}
-
-.realTooth.healthy .toothSvg path{
-  fill:#f8f1df;
-}
-
-.realTooth.caries .toothSvg path{
-  fill:#ef4444;
-}
-
-.realTooth.filling .toothSvg path{
-  fill:#3b82f6;
-}
-
-.realTooth.rct .toothSvg path{
-  fill:#8b5cf6;
-}
-
-.realTooth.crown .toothSvg path{
-  fill:#d4af37;
-}
-
-.realTooth.missing .toothSvg path{
-  fill:#4b5563;
-}
-
-.realTooth.extraction .toothSvg path{
-  fill:#fb7185;
-}
-
-.realTooth.implant .toothSvg path{
-  fill:#2dd4bf;
-}
-
-.midLine{
-  width:20px;
-}
-
-.mouthDivider{
-  height:25px;
-  border-top:2px dashed rgba(212,175,55,.25);
-  margin:14px auto;
-  width:90%;
-}
-
-.mouthTitle{
-  text-align:center;
-  color:#9ca3af;
-  font-size:14px;
+  color:#e5e7eb;
+  font-size:12px;
   font-weight:900;
-  letter-spacing:4px;
-  margin:8px 0;
+  margin-top:5px;
 }
+
+.realTooth.caries .toothSvg path{fill:#ef4444}
+.realTooth.filling .toothSvg path{fill:#60a5fa}
+.realTooth.rct .toothSvg path{fill:#8b5cf6}
+.realTooth.crown .toothSvg path{fill:#d4af37}
+.realTooth.missing .toothSvg path{fill:#4b5563}
+.realTooth.extraction .toothSvg path{fill:#fb7185}
+.realTooth.implant .toothSvg path{fill:#2dd4bf}
   `;
   document.head.appendChild(style);
 }
@@ -413,49 +366,42 @@ function toothSvg(status) {
   `;
 }
 
+function toothSvg() {
+  return `
+    <svg viewBox="0 0 64 90" class="toothSvg">
+      <path d="M32 5 C20 5 12 14 12 29 C12 43 17 55 20 69 C22 79 25 86 30 86 C35 86 35 70 39 70 C43 70 43 86 49 86 C55 86 58 76 60 65 C63 50 62 42 62 30 C62 14 50 5 38 5 C35 5 34 7 32 9 C30 7 27 5 24 5 Z"/>
+    </svg>
+  `;
+}
+
 function renderToothChart(p) {
   const data = parseClinicData(p.progress_notes);
   const teeth = data.teeth || {};
 
-  const upperRight = [18,17,16,15,14,13,12,11];
-  const upperLeft  = [21,22,23,24,25,26,27,28];
-  const lowerRight = [48,47,46,45,44,43,42,41];
-  const lowerLeft  = [31,32,33,34,35,36,37,38];
-
-  const makeTooth = (n) => {
-    const status = teeth[n] || "healthy";
-
-    return `
-      <button
-        class="realTooth ${safeText(status)}"
-        onclick="openToothPopup('${p.id}', '${n}')"
-        title="Tooth ${n} - ${safeText(status)}"
-      >
-        ${toothSvg(status)}
-        <small>${n}</small>
-      </button>
-    `;
-  };
+  const rows = [
+    { label: "Upper Right", nums: [18,17,16,15,14,13,12,11] },
+    { label: "Upper Left", nums: [21,22,23,24,25,26,27,28] },
+    { label: "Lower Right", nums: [48,47,46,45,44,43,42,41] },
+    { label: "Lower Left", nums: [31,32,33,34,35,36,37,38] }
+  ];
 
   return `
     <div class="realMouthChart">
-      <div class="mouthTitle">UPPER</div>
-
-      <div class="toothRow upperRow">
-        ${upperRight.map(makeTooth).join("")}
-        <div class="midLine"></div>
-        ${upperLeft.map(makeTooth).join("")}
-      </div>
-
-      <div class="mouthDivider"></div>
-
-      <div class="toothRow lowerRow">
-        ${lowerRight.map(makeTooth).join("")}
-        <div class="midLine"></div>
-        ${lowerLeft.map(makeTooth).join("")}
-      </div>
-
-      <div class="mouthTitle">LOWER</div>
+      ${rows.map(row => `
+        <div class="jawLabel">${row.label}</div>
+        <div class="jawRow">
+          ${row.nums.map(n => {
+            const status = teeth[n] || "healthy";
+            return `
+              <button class="realTooth ${safeText(status)}"
+                onclick="openToothPopup('${p.id}', '${n}')">
+                ${toothSvg()}
+                <small>${n}</small>
+              </button>
+            `;
+          }).join("")}
+        </div>
+      `).join("")}
     </div>
   `;
 }
