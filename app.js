@@ -164,14 +164,14 @@ function injectExtraStyles() {
 }
     .proMidLine{
   position:absolute!important;
-  left:60%!important;
+  left:61%!important;
   top:22%!important;
   height:58%!important;
   border-left:1px dashed rgba(212,175,55,.28)!important;
 }
 .proMouthLabel{
   position:absolute!important;
-  left:60%!important;
+  left:61%!important;
   transform:translateX(-50%)!important;
   color:#9ca3af!important;
   font-weight:1000!important;
