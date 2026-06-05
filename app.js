@@ -670,7 +670,6 @@ function toothSvg() {
     </svg>
   `;
 }
-}
 
 function renderToothChart(p) {
   const data = parseClinicData(p.progress_notes);
