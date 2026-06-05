@@ -775,7 +775,7 @@ function renderToothChart(p) {
   [44,43,88,-176],[43,49,92,180],[42,54,95,180],[41,58,96,180],
 
   [31,62,96,180],[32,66,95,180],[33,71,92,180],[34,77,88,176],
-  [35,83,81,170],[36,88,74,164],[37,93,67,158],[38,95,60,152]
+  [35,83,81,170],[36,86,74,164],[37,91,67,158],[38,93,60,152]
 ];
 
   return `
@@ -1041,8 +1041,19 @@ function prevPhoto() {
 }
 
 window.viewPhoto = function(url) {
-  currentPhotoList = [url];
-  openPhotoViewer(0);
+  const p = patients.find(patient =>
+    (patient.photos || []).some(photo => {
+      const u = typeof photo === "string" ? photo : photo.url;
+      return u === url;
+    })
+  );
+
+  currentPhotoList = p
+    ? (p.photos || []).map(photo => typeof photo === "string" ? photo : photo.url).filter(Boolean)
+    : [url];
+
+  currentPhotoIndex = Math.max(0, currentPhotoList.indexOf(url));
+  openPhotoViewer(currentPhotoIndex);
 };
 
 window.openPhotoViewer = openPhotoViewer;
