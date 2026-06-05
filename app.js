@@ -140,7 +140,6 @@ function injectExtraStyles() {
 
   const style = document.createElement("style");
   style.id = "clinicExtraStyles";
-
   style.textContent = `
     .page{display:none}
     .page.active{display:block}
@@ -171,6 +170,7 @@ function injectExtraStyles() {
       color:#cbd5e1!important;
       font-size:14px!important;
       font-weight:800!important;
+      min-width:145px!important;
     }
 
     .legendItem::before{
@@ -190,22 +190,16 @@ function injectExtraStyles() {
     .legendItem:nth-child(7)::before{background:#fb7185}
     .legendItem:nth-child(8)::before{background:#2dd4bf}
 
-    .toothChartBox{
+    .toothChartBox,.toothChart{
+      display:block!important;
       width:100%!important;
-      display:block!important;
+      max-width:100%!important;
     }
 
-    .toothChart{
-      display:block!important;
-      grid-template-columns:none!important;
-    }
-
-    .svgMouthBox,
-    .archChartBox,
     .proMouthChart{
-      width:100%!important;
-      height:620px!important;
       position:relative!important;
+      width:100%!important;
+      height:720px!important;
       margin:18px 0!important;
       border-radius:34px!important;
       background:radial-gradient(circle at center,#111827,#070b10)!important;
@@ -215,51 +209,45 @@ function injectExtraStyles() {
 
     .proTooth{
       position:absolute!important;
-      transform:translate(-50%,-50%)!important;
       background:transparent!important;
       border:none!important;
       padding:0!important;
-      width:38px!important;
-      height:54px!important;
+      width:56px!important;
+      height:66px!important;
       display:flex!important;
       flex-direction:column!important;
       align-items:center!important;
       justify-content:center!important;
     }
 
-    .proTooth.molar{
-      width:46px!important;
-      height:54px!important;
-    }
+    .proTooth.molar{width:64px!important;height:64px!important}
+    .proTooth.premolar{width:58px!important;height:62px!important}
 
     .proToothSvg{
-      width:36px!important;
-      height:48px!important;
+      width:54px!important;
+      height:58px!important;
       filter:drop-shadow(0 8px 10px rgba(0,0,0,.45))!important;
     }
 
     .proTooth.molar .proToothSvg{
-      width:44px!important;
-      height:44px!important;
+      width:62px!important;
+      height:58px!important;
     }
 
-    .proToothSvg path,
-    .toothBody{
+    .proToothSvg path:first-child{
       fill:#f8f1df!important;
       stroke:#d8d0bd!important;
-      stroke-width:2.2!important;
+      stroke-width:2.5!important;
     }
 
-    .shine,
-    .toothShine{
+    .shine{
       fill:none!important;
       stroke:rgba(255,255,255,.45)!important;
       stroke-width:3!important;
       stroke-linecap:round!important;
     }
 
-    .groove,
-    .toothGroove{
+    .groove{
       fill:none!important;
       stroke:rgba(120,105,80,.38)!important;
       stroke-width:3!important;
@@ -268,31 +256,18 @@ function injectExtraStyles() {
 
     .proTooth span{
       color:#e5e7eb!important;
-      font-size:10px!important;
+      font-size:11px!important;
       font-weight:900!important;
       margin-top:2px!important;
     }
 
-    .proTooth.caries path:first-child,
-    .archTooth.caries .toothBody{fill:#ef4444!important}
-
-    .proTooth.filling path:first-child,
-    .archTooth.filling .toothBody{fill:#60a5fa!important}
-
-    .proTooth.rct path:first-child,
-    .archTooth.rct .toothBody{fill:#8b5cf6!important}
-
-    .proTooth.crown path:first-child,
-    .archTooth.crown .toothBody{fill:#d4af37!important}
-
-    .proTooth.missing path:first-child,
-    .archTooth.missing .toothBody{fill:#4b5563!important}
-
-    .proTooth.extraction path:first-child,
-    .archTooth.extraction .toothBody{fill:#fb7185!important}
-
-    .proTooth.implant path:first-child,
-    .archTooth.implant .toothBody{fill:#2dd4bf!important}
+    .proTooth.caries path:first-child{fill:#ef4444!important}
+    .proTooth.filling path:first-child{fill:#60a5fa!important}
+    .proTooth.rct path:first-child{fill:#8b5cf6!important}
+    .proTooth.crown path:first-child{fill:#d4af37!important}
+    .proTooth.missing path:first-child{fill:#4b5563!important}
+    .proTooth.extraction path:first-child{fill:#fb7185!important}
+    .proTooth.implant path:first-child{fill:#2dd4bf!important}
 
     .proMidLine{
       position:absolute!important;
@@ -306,7 +281,7 @@ function injectExtraStyles() {
       position:absolute!important;
       left:12%!important;
       right:12%!important;
-      top:54%!important;
+      top:55%!important;
       border-top:1px dashed rgba(212,175,55,.32)!important;
     }
 
@@ -323,47 +298,7 @@ function injectExtraStyles() {
     .proMouthLabel.upper{top:43%!important}
     .proMouthLabel.lower{top:61%!important}
 
-    .kv{
-      margin-top:18px;
-      padding:16px;
-      background:#0f1620;
-      border:1px solid #263241;
-      border-radius:20px;
-    }
-
-    .kv b{
-      display:block;
-      color:#d4af37;
-      margin-bottom:8px;
-      font-size:14px;
-    }
-
-    .kv span{
-      color:#e5edf6;
-      white-space:pre-wrap;
-      line-height:1.6;
-    }
-
-    .appointment{
-      background:#0f1620;
-      border:1px solid #263241;
-      border-radius:20px;
-      padding:14px;
-      margin-top:10px;
-    }
-
-    .money{
-      font-size:24px;
-      font-weight:1000;
-      color:#19c37d;
-    }
-
-    .unpaid{color:#ff7676}
-
-    .modal.hidden,
-    .photoViewer.hidden{
-      display:none!important;
-    }
+    .modal.hidden,.photoViewer.hidden{display:none!important}
   `;
 
   document.head.appendChild(style);
@@ -495,41 +430,33 @@ function getToothType(n) {
 
 function toothSvg(type = "molar") {
   if (type === "incisor") {
-    return `
-      <svg viewBox="-40 -55 80 110" class="proToothSvg">
-        <path d="M-14,-36 C-8,-46 8,-46 14,-36 C18,-18 16,10 10,30 C6,43 3,50 0,50 C-3,50 -6,43 -10,30 C-16,10 -18,-18 -14,-36 Z"/>
-        <path class="shine" d="M-5,-28 C-9,-10 -8,8 -4,24"/>
-      </svg>
-    `;
+    return `<svg viewBox="-40 -55 80 110" class="proToothSvg">
+      <path d="M-14,-36 C-8,-46 8,-46 14,-36 C18,-18 16,10 10,30 C6,43 3,50 0,50 C-3,50 -6,43 -10,30 C-16,10 -18,-18 -14,-36 Z"/>
+      <path class="shine" d="M-5,-28 C-9,-10 -8,8 -4,24"/>
+    </svg>`;
   }
 
   if (type === "canine") {
-    return `
-      <svg viewBox="-40 -55 80 110" class="proToothSvg">
-        <path d="M-17,-34 C-9,-48 10,-48 18,-34 C24,-15 15,18 6,36 C2,45 0,52 -4,52 C-9,52 -9,40 -13,30 C-22,10 -25,-15 -17,-34 Z"/>
-        <path class="shine" d="M-7,-26 C-12,-8 -10,12 -5,28"/>
-      </svg>
-    `;
+    return `<svg viewBox="-42 -55 84 110" class="proToothSvg">
+      <path d="M-17,-34 C-9,-48 10,-48 18,-34 C24,-15 15,18 6,36 C2,45 0,52 -4,52 C-9,52 -9,40 -13,30 C-22,10 -25,-15 -17,-34 Z"/>
+      <path class="shine" d="M-7,-26 C-12,-8 -10,12 -5,28"/>
+    </svg>`;
   }
 
   if (type === "premolar") {
-    return `
-      <svg viewBox="-45 -45 90 90" class="proToothSvg">
-        <path d="M-22,-22 C-14,-38 -3,-35 1,-25 C7,-38 20,-36 25,-21 C32,-4 24,21 12,34 C4,42 -4,34 0,23 C-6,37 -18,42 -25,27 C-33,10 -31,-8 -22,-22 Z"/>
-        <path class="groove" d="M-12,-5 C-2,3 9,3 17,-5"/>
-        <path class="groove" d="M-15,14 C-4,8 9,8 18,16"/>
-      </svg>
-    `;
+    return `<svg viewBox="-48 -48 96 96" class="proToothSvg">
+      <path d="M-22,-22 C-14,-38 -3,-35 1,-25 C7,-38 20,-36 25,-21 C32,-4 24,21 12,34 C4,42 -4,34 0,23 C-6,37 -18,42 -25,27 C-33,10 -31,-8 -22,-22 Z"/>
+      <path class="groove" d="M-12,-5 C-2,3 9,3 17,-5"/>
+      <path class="groove" d="M-15,14 C-4,8 9,8 18,16"/>
+    </svg>`;
   }
 
-  return `
-    <svg viewBox="-50 -45 100 90" class="proToothSvg">
-      <path d="M-28,-22 C-20,-40 -6,-37 0,-28 C8,-39 24,-38 30,-20 C38,2 29,25 15,38 C5,47 -5,38 0,25 C-8,41 -23,47 -31,28 C-39,10 -38,-8 -28,-22 Z"/>
-      <path class="groove" d="M-15,-7 C-3,3 12,3 23,-7"/>
-      <path class="groove" d="M-20,16 C-5,8 12,9 24,17"/>
-      <path class="groove" d="M0,-23 C-3,-4 -3,14 0,29"/>
-    </svg>
-  `;
+  return `<svg viewBox="-52 -48 104 96" class="proToothSvg">
+    <path d="M-28,-22 C-20,-40 -6,-37 0,-28 C8,-39 24,-38 30,-20 C38,2 29,25 15,38 C5,47 -5,38 0,25 C-8,41 -23,47 -31,28 C-39,10 -38,-8 -28,-22 Z"/>
+    <path class="groove" d="M-15,-7 C-3,3 12,3 23,-7"/>
+    <path class="groove" d="M-20,16 C-5,8 12,9 24,17"/>
+    <path class="groove" d="M0,-23 C-3,-4 -3,14 0,29"/>
+  </svg>`;
 }
 
 function getToothType(n) {
@@ -545,15 +472,15 @@ function renderToothChart(p) {
   const teeth = data.teeth || {};
 
   const teethData = [
-    [18,160,410,-58],[17,185,330,-50],[16,235,265,-38],[15,300,210,-28],
-    [14,375,170,-18],[13,455,140,-8],[12,520,125,-3],[11,570,120,0],
-    [21,620,120,0],[22,680,125,3],[23,745,140,8],[24,825,170,18],
-    [25,900,210,28],[26,965,265,38],[27,1015,330,50],[28,1040,410,58],
+    [18,12,48,-58],[17,15,39,-50],[16,20,31,-40],[15,27,24,-30],
+    [14,35,19,-18],[13,43,15,-8],[12,49,12,-3],[11,54,11,0],
+    [21,60,11,0],[22,66,12,3],[23,72,15,8],[24,80,19,18],
+    [25,88,24,30],[26,94,31,40],[27,99,39,50],[28,102,48,58],
 
-    [48,160,570,-122],[47,185,650,-130],[46,240,720,-142],[45,310,780,-152],
-    [44,390,830,-162],[43,470,860,-172],[42,535,880,-178],[41,585,888,180],
-    [31,635,888,180],[32,695,880,178],[33,760,860,172],[34,840,830,162],
-    [35,920,780,152],[36,990,720,142],[37,1030,650,130],[38,1040,570,122]
+    [48,12,62,-122],[47,15,71,-130],[46,21,79,-142],[45,29,86,-152],
+    [44,38,91,-162],[43,47,95,-172],[42,53,97,-178],[41,57,98,180],
+    [31,63,98,180],[32,68,97,178],[33,75,95,172],[34,84,91,162],
+    [35,93,86,152],[36,100,79,142],[37,104,71,130],[38,106,62,122]
   ];
 
   return `
@@ -570,7 +497,7 @@ function renderToothChart(p) {
         return `
           <button
             class="proTooth ${safeText(status)} ${type}"
-            style="left:${(x / 1150) * 100}%;top:${(y / 980) * 100}%;transform:translate(-50%,-50%) rotate(${r}deg)"
+            style="left:${x}%;top:${y}%;transform:translate(-50%,-50%) rotate(${r}deg)"
             onclick="openToothPopup('${p.id}', '${n}')"
           >
             ${toothSvg(type)}
