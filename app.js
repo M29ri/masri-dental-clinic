@@ -227,6 +227,125 @@ function injectExtraStyles() {
 .realTooth.missing .toothSvg path{fill:#4b5563}
 .realTooth.extraction .toothSvg path{fill:#fb7185}
 .realTooth.implant .toothSvg path{fill:#2dd4bf}
+.proMouthChart{
+  position:relative;
+  width:100%;
+  height:620px;
+  margin:22px auto;
+  border-radius:34px;
+  background:radial-gradient(circle at center,#111827,#070b10);
+  border:1px solid #263241;
+  overflow:hidden;
+}
+
+.proTooth{
+  position:absolute;
+  transform:translate(-50%,-50%);
+  width:46px;
+  height:70px;
+  background:transparent;
+  border:none;
+  padding:0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+}
+
+.proToothSvg{
+  width:42px;
+  height:58px;
+  filter:drop-shadow(0 8px 10px rgba(0,0,0,.45));
+}
+
+.proToothSvg path{
+  fill:#f8f1df;
+  stroke:#d8d0bd;
+  stroke-width:2;
+}
+
+.proTooth span{
+  color:#d1d5db;
+  font-size:11px;
+  font-weight:900;
+  margin-top:2px;
+}
+
+.proTooth.caries .proToothSvg path{fill:#ef4444;stroke:#7f1d1d}
+.proTooth.filling .proToothSvg path{fill:#60a5fa;stroke:#1e3a8a}
+.proTooth.rct .proToothSvg path{fill:#8b5cf6;stroke:#4c1d95}
+.proTooth.crown .proToothSvg path{fill:#d4af37;stroke:#8f6b10}
+.proTooth.missing .proToothSvg path{fill:#4b5563;stroke:#111827}
+.proTooth.extraction .proToothSvg path{fill:#fb7185;stroke:#881337}
+.proTooth.implant .proToothSvg path{fill:#2dd4bf;stroke:#115e59}
+
+.proMouthLabel{
+  position:absolute;
+  left:50%;
+  transform:translateX(-50%);
+  color:#9ca3af;
+  font-weight:1000;
+  letter-spacing:4px;
+  opacity:.65;
+}
+
+.proMouthLabel.upper{top:43%}
+.proMouthLabel.lower{top:61%}
+
+.proMidLine{
+  position:absolute;
+  left:50%;
+  top:25%;
+  height:55%;
+  border-left:1px dashed rgba(212,175,55,.35);
+}
+
+.proHorizontalLine{
+  position:absolute;
+  left:18%;
+  right:18%;
+  top:55%;
+  border-top:1px dashed rgba(212,175,55,.35);
+}
+
+.legendItem::before{
+  content:"";
+  display:inline-block;
+  width:14px;
+  height:14px;
+  border-radius:50%;
+  margin-right:8px;
+  vertical-align:-2px;
+}
+
+.legendItem:nth-child(1)::before{background:#22c55e}
+.legendItem:nth-child(2)::before{background:#ef4444}
+.legendItem:nth-child(3)::before{background:#60a5fa}
+.legendItem:nth-child(4)::before{background:#8b5cf6}
+.legendItem:nth-child(5)::before{background:#d4af37}
+.legendItem:nth-child(6)::before{background:#4b5563}
+.legendItem:nth-child(7)::before{background:#fb7185}
+.legendItem:nth-child(8)::before{background:#2dd4bf}
+
+@media(max-width:520px){
+  .proMouthChart{
+    height:560px;
+  }
+
+  .proTooth{
+    width:38px;
+    height:62px;
+  }
+
+  .proToothSvg{
+    width:34px;
+    height:50px;
+  }
+
+  .proTooth span{
+    font-size:10px;
+  }
+}
   `;
   document.head.appendChild(style);
 }
@@ -374,34 +493,46 @@ function toothSvg() {
   `;
 }
 
+function toothSvg() {
+  return `
+    <svg viewBox="0 0 64 90" class="proToothSvg">
+      <path d="M32 5 C20 5 12 14 12 29 C12 43 17 55 20 69 C22 79 25 86 30 86 C35 86 35 70 39 70 C43 70 43 86 49 86 C55 86 58 76 60 65 C63 50 62 42 62 30 C62 14 50 5 38 5 C35 5 34 7 32 9 C30 7 27 5 24 5 Z"/>
+    </svg>
+  `;
+}
+
 function renderToothChart(p) {
   const data = parseClinicData(p.progress_notes);
   const teeth = data.teeth || {};
 
-  const rows = [
-    { label: "Upper Right", nums: [18,17,16,15,14,13,12,11] },
-    { label: "Upper Left", nums: [21,22,23,24,25,26,27,28] },
-    { label: "Lower Right", nums: [48,47,46,45,44,43,42,41] },
-    { label: "Lower Left", nums: [31,32,33,34,35,36,37,38] }
+  const toothPositions = [
+    [18,10,44],[17,12,35],[16,16,27],[15,22,20],[14,29,15],[13,37,11],[12,45,9],[11,50,8],
+    [21,55,8],[22,63,11],[23,71,15],[24,78,20],[25,84,27],[26,88,35],[27,90,44],[28,90,53],
+
+    [48,10,58],[47,12,67],[46,16,75],[45,22,82],[44,29,87],[43,37,91],[42,45,93],[41,50,94],
+    [31,55,94],[32,63,91],[33,71,87],[34,78,82],[35,84,75],[36,88,67],[37,90,58],[38,90,49]
   ];
 
   return `
-    <div class="realMouthChart">
-      ${rows.map(row => `
-        <div class="jawLabel">${row.label}</div>
-        <div class="jawRow">
-          ${row.nums.map(n => {
-            const status = teeth[n] || "healthy";
-            return `
-              <button class="realTooth ${safeText(status)}"
-                onclick="openToothPopup('${p.id}', '${n}')">
-                ${toothSvg()}
-                <small>${n}</small>
-              </button>
-            `;
-          }).join("")}
-        </div>
-      `).join("")}
+    <div class="proMouthChart">
+      <div class="proMouthLabel upper">UPPER</div>
+      <div class="proMouthLabel lower">LOWER</div>
+      <div class="proMidLine"></div>
+      <div class="proHorizontalLine"></div>
+
+      ${toothPositions.map(([n,x,y]) => {
+        const status = teeth[n] || "healthy";
+        return `
+          <button
+            class="proTooth ${safeText(status)}"
+            style="left:${x}%;top:${y}%"
+            onclick="openToothPopup('${p.id}', '${n}')"
+          >
+            ${toothSvg()}
+            <span>${n}</span>
+          </button>
+        `;
+      }).join("")}
     </div>
   `;
 }
