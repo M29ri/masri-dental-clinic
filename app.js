@@ -607,6 +607,70 @@ function injectExtraStyles() {
 .proMouthLabel.lower{
   top:60% !important;
 }
+.cleanToothChart{
+  width:100%;
+  display:grid;
+  grid-template-columns:1fr;
+  gap:18px;
+  margin-top:18px;
+}
+
+.cleanQuadrant{
+  background:linear-gradient(180deg,#0b111a,#090d13);
+  border:1px solid #263241;
+  border-radius:26px;
+  padding:16px;
+}
+
+.cleanQuadrant h4{
+  margin:0 0 14px;
+  color:#d4af37;
+  font-size:20px;
+  font-weight:1000;
+}
+
+.cleanToothGrid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:12px;
+}
+
+.cleanTooth{
+  min-height:112px;
+  border-radius:20px;
+  border:1px solid #263241;
+  background:#101722;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:8px;
+}
+
+.cleanTooth .proToothSvg{
+  width:48px;
+  height:66px;
+}
+
+.cleanTooth.molar .proToothSvg{
+  width:58px;
+  height:58px;
+}
+
+.cleanTooth span{
+  margin-top:6px;
+  color:#f8fafc;
+  font-size:14px;
+  font-weight:1000;
+}
+
+.cleanTooth.caries .proToothSvg path:first-child{fill:#ef4444!important}
+.cleanTooth.filling .proToothSvg path:first-child{fill:#60a5fa!important}
+.cleanTooth.rct .proToothSvg path:first-child{fill:#8b5cf6!important}
+.cleanTooth.crown .proToothSvg path:first-child{fill:#d4af37!important}
+.cleanTooth.missing .proToothSvg path:first-child{fill:#4b5563!important}
+.cleanTooth.extraction .proToothSvg path:first-child{fill:#fb7185!important}
+.cleanTooth.implant .proToothSvg path:first-child{fill:#2dd4bf!important}
   `;
   document.head.appendChild(style);
 }
@@ -766,18 +830,51 @@ function getToothType(n) {
   return "molar";
 }
 
+function getToothType(n) {
+  const incisors = [11,12,21,22,31,32,41,42];
+  const canines = [13,23,33,43];
+  if (incisors.includes(Number(n))) return "incisor";
+  if (canines.includes(Number(n))) return "canine";
+  return "molar";
+}
+
 function renderToothChart(p) {
   const data = parseClinicData(p.progress_notes);
   const teeth = data.teeth || {};
 
-  const toothPositions = [
-    [18,13,45],[17,15,37],[16,19,30],[15,25,24],[14,32,19],[13,40,15],[12,47,12],[11,52,11],
-    [21,58,11],[22,64,12],[23,72,15],[24,80,20],[25,86,27],[26,90,35],[27,92,44],[28,91,53],
-
-    [48,13,59],[47,15,67],[46,20,75],[45,27,82],[44,35,88],[43,43,92],[42,49,94],[41,54,95],
-    [31,59,95],[32,65,94],[33,73,91],[34,81,86],[35,88,78],[36,92,70],[37,94,61],[38,94,52]
+  const groups = [
+    { title: "Upper Right", nums: [18,17,16,15,14,13,12,11] },
+    { title: "Upper Left", nums: [21,22,23,24,25,26,27,28] },
+    { title: "Lower Right", nums: [48,47,46,45,44,43,42,41] },
+    { title: "Lower Left", nums: [31,32,33,34,35,36,37,38] }
   ];
 
+  return `
+    <div class="cleanToothChart">
+      ${groups.map(g => `
+        <div class="cleanQuadrant">
+          <h4>${g.title}</h4>
+          <div class="cleanToothGrid">
+            ${g.nums.map(n => {
+              const status = teeth[n] || "healthy";
+              const type = getToothType(n);
+
+              return `
+                <button
+                  class="cleanTooth ${safeText(status)} ${type}"
+                  onclick="openToothPopup('${p.id}', '${n}')"
+                >
+                  ${toothSvg(type)}
+                  <span>${n}</span>
+                </button>
+              `;
+            }).join("")}
+          </div>
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
   return `
     <div class="proMouthChart">
       <div class="proMouthLabel upper">UPPER</div>
