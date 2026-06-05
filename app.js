@@ -141,12 +141,10 @@ function injectExtraStyles() {
 
   const style = document.createElement("style");
   style.id = "extraStyles";
-  style.innerHTML = `
-/* =========================
-   CLEAN EXTRA STYLES
-========================= */
+  style.textContent = `
+/* Clean stable UI fixes */
 
-/* Legends */
+/* Tooth legend */
 .toothChartBox{
   display:flex!important;
   flex-wrap:wrap!important;
@@ -189,19 +187,22 @@ function injectExtraStyles() {
 /* Tooth chart */
 .toothChart{
   width:100%!important;
-  display:block!important;
-  overflow:visible!important;
+  display:flex!important;
+  justify-content:center!important;
+  overflow:hidden!important;
 }
 .proMouthChart{
   position:relative!important;
-  width:100%!important;
+  width:calc(100% - 20px)!important;
   max-width:680px!important;
   height:620px!important;
   margin:18px auto!important;
+  left:0!important;
   border-radius:34px!important;
   background:radial-gradient(circle at center,#111827,#070b10)!important;
   border:1px solid #263241!important;
   overflow:hidden!important;
+  box-sizing:border-box!important;
 }
 .proMidLine{
   position:absolute!important;
@@ -285,7 +286,7 @@ function injectExtraStyles() {
   .proMouthChart{max-width:720px!important;height:620px!important}
 }
 
-/* Photos */
+/* Photo grid */
 .photoGrid{
   display:grid!important;
   grid-template-columns:repeat(2,minmax(0,1fr))!important;
@@ -330,44 +331,51 @@ function injectExtraStyles() {
 }
 
 /* Fullscreen photo viewer */
-.fullPhotoModal{
+body.photo-open{overflow:hidden!important}
+.fullPhotoModal,
+.beforeAfterModal{
   position:fixed!important;
   inset:0!important;
   background:rgba(0,0,0,.97)!important;
   z-index:999999!important;
+}
+.fullPhotoModal{
   display:flex!important;
   align-items:center!important;
   justify-content:center!important;
   flex-direction:column!important;
-  padding:84px 14px 112px!important;
 }
-.fullPhotoModal img{
+#viewerImage{
   max-width:94vw!important;
   max-height:76vh!important;
   width:auto!important;
   height:auto!important;
   object-fit:contain!important;
-  border-radius:20px!important;
+  border-radius:22px!important;
   box-shadow:0 0 40px rgba(0,0,0,.6)!important;
 }
 .photoCloseBtn{
   position:fixed!important;
   top:22px!important;
   right:22px!important;
-  width:60px!important;
-  height:60px!important;
+  width:62px!important;
+  height:62px!important;
   border-radius:50%!important;
   border:none!important;
   background:#ef4444!important;
-  color:white!important;
+  color:#fff!important;
   font-size:30px!important;
-  font-weight:1000!important;
+  line-height:1!important;
+  font-weight:900!important;
   z-index:1000000!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
 }
 .photoNavBtns{
   position:fixed!important;
-  left:50%!important;
   bottom:28px!important;
+  left:50%!important;
   transform:translateX(-50%)!important;
   display:flex!important;
   gap:16px!important;
@@ -378,27 +386,24 @@ function injectExtraStyles() {
   border-radius:20px!important;
   background:#d4af37!important;
   color:#000!important;
-  padding:14px 22px!important;
-  font-size:18px!important;
+  padding:14px 24px!important;
+  font-size:20px!important;
   font-weight:1000!important;
   box-shadow:0 10px 30px rgba(0,0,0,.45)!important;
+  min-width:115px!important;
 }
-body.photo-open{overflow:hidden!important}
 
-/* Before / After viewer */
+/* Before / After */
 .beforeAfterModal{
-  position:fixed!important;
-  inset:0!important;
-  background:rgba(0,0,0,.97)!important;
-  z-index:999999!important;
   overflow:auto!important;
-  padding:82px 16px 34px!important;
+  padding:80px 16px 40px!important;
+  box-sizing:border-box!important;
 }
 .beforeAfterTitle{
   color:#d4af37!important;
   text-align:center!important;
-  font-size:26px!important;
-  font-weight:1000!important;
+  font-size:28px!important;
+  font-weight:900!important;
   margin:0 0 20px!important;
 }
 .beforeAfterContainer{
@@ -406,21 +411,17 @@ body.photo-open{overflow:hidden!important}
   margin:0 auto!important;
   display:grid!important;
   grid-template-columns:1fr!important;
-  gap:18px!important;
+  gap:22px!important;
 }
-.beforeAfterCard{
-  background:#111827!important;
-  border:1px solid #263241!important;
-  border-radius:22px!important;
-  padding:12px!important;
-}
-.beforeAfterCard b{display:block!important;color:white!important;margin:0 0 8px!important}
+.beforeAfterCard b{display:block!important;color:#fff!important;margin-bottom:8px!important}
 .beforeAfterCard img{
   width:100%!important;
   max-height:360px!important;
+  height:auto!important;
   object-fit:contain!important;
+  border-radius:18px!important;
+  background:#111827!important;
   display:block!important;
-  border-radius:16px!important;
 }
 `;
   document.head.appendChild(style);
@@ -455,7 +456,9 @@ function renderTimeline(patient) {
   (data.appointments || []).forEach(a => timeline.push({ type: "appointment", date: a.date || "", text: a.note || "Appointment" }));
   (patient.photos || []).forEach(ph => timeline.push({ type: "photo", date: ph.date || "", text: "Photo added" }));
   timeline.sort((a, b) => new Date(b.date) - new Date(a.date));
-  return timeline.length ? timeline.map(item => `<div class="timelineItem"><div class="timelineDate">${safeText(item.date)}</div><div class="timelineText">${item.type === "payment" ? "ÃÂ°ÃÂÃÂÃÂ°" : item.type === "visit" ? "ÃÂ°ÃÂÃÂÃÂ" : item.type === "appointment" ? "ÃÂ°ÃÂÃÂÃÂ" : "ÃÂ°ÃÂÃÂÃÂ·"} ${safeText(item.text)}</div></div>`).join("") : `<p style="color:var(--muted);font-weight:800">No timeline yet</p>`;
+  return timeline.length
+    ? timeline.map(item => `<div class="timelineItem"><div class="timelineDate">${safeText(item.date)}</div><div class="timelineText">${safeText(item.text)}</div></div>`).join("")
+    : `<p style="color:var(--muted);font-weight:800">No timeline yet</p>`;
 }
 
 async function loadPatients() {
@@ -464,13 +467,13 @@ async function loadPatients() {
     if (currentUser.role === "admin") patients = await api("patients?select=*&order=created_at.desc");
     else patients = await api(`patients?owner_id=eq.${currentUser.id}&select=*&order=created_at.desc`);
     renderPatients(); renderDashboard();
-    if ($("status")) $("status").textContent = "Cloud connected ÃÂ¢ÃÂÃÂ";
+    if ($("status")) $("status").textContent = "Cloud connected";
     const params = new URLSearchParams(location.search);
     const patientId = params.get("patient");
     if (patientId) openPatient(patientId);
   } catch (err) {
     console.error(err);
-    if ($("status")) $("status").textContent = "Cloud error ÃÂ¢ÃÂÃÂ";
+    if ($("status")) $("status").textContent = "Cloud error";
     if ($("list")) $("list").innerHTML = `<div class="card"><h3>Cloud error</h3><p>${safeText(err.message)}</p></div>`;
   }
 }
@@ -626,7 +629,7 @@ function patientDetailsHTML(p) {
     if (!url) return "";
     return `<div class="photoItem">
       <img src="${safeText(url)}" onclick="viewPhoto('${safeText(url)}')" alt="Patient photo">
-      ${canEdit() ? `<button type="button" class="photoDeleteBtn" onclick="event.stopPropagation();deletePhoto('${p.id}', ${i})">Ã</button>` : ""}
+      ${canEdit() ? `<button type="button" class="photoDeleteBtn" onclick="event.stopPropagation();deletePhoto('${p.id}', ${i})">X</button>` : ""}
     </div>`;
   }).join("");
 
@@ -728,8 +731,9 @@ window.addAppointment = async function(id) { const p = patients.find(x => x.id =
 window.deleteAppointment = async function(id, index) { const p = patients.find(x => x.id === id); if (!p) return alert("Patient not found or you do not have access."); const data = parseClinicData(p.progress_notes); data.appointments.splice(index, 1); await api(`patients?id=eq.${id}`, { method:"PATCH", body: JSON.stringify({ progress_notes: saveClinicData(data) }) }); await loadPatients(); openPatient(id); };
 window.addPayment = async function(id) { const p = patients.find(x => x.id === id); if (!p) return alert("Patient not found or you do not have access."); const data = parseClinicData(p.progress_notes); const total = prompt("Total treatment cost:"); if (!total) return; const paid = prompt("Paid amount:") || "0"; data.payments.unshift({ date: new Date().toLocaleString(), total: Number(total || 0), paid: Number(paid || 0) }); await api(`patients?id=eq.${id}`, { method:"PATCH", body: JSON.stringify({ progress_notes: saveClinicData(data) }) }); await loadPatients(); openPatient(id); };
 window.deletePayment = async function(id, index) { const p = patients.find(x => x.id === id); if (!p) return alert("Patient not found or you do not have access."); const data = parseClinicData(p.progress_notes); data.payments.splice(index, 1); await api(`patients?id=eq.${id}`, { method:"PATCH", body: JSON.stringify({ progress_notes: saveClinicData(data) }) }); await loadPatients(); openPatient(id); };
-function photoUrl(photo){
-  return typeof photo === "string" ? photo : (photo?.url || "");
+function photoUrl(photo) {
+  if (!photo) return "";
+  return typeof photo === "string" ? photo : (photo.url || "");
 }
 
 window.showBeforeAfter = function(id) {
@@ -745,7 +749,7 @@ window.showBeforeAfter = function(id) {
   modal.id = "beforeAfterModal";
   modal.className = "beforeAfterModal";
   modal.innerHTML = `
-    <button type="button" class="photoCloseBtn" id="beforeAfterClose">â</button>
+    <button type="button" class="photoCloseBtn" id="beforeAfterClose">X</button>
     <h2 class="beforeAfterTitle">Before / After Comparison</h2>
     <div class="beforeAfterContainer">
       <div class="beforeAfterCard">
@@ -776,20 +780,20 @@ function openPhotoViewer(index = 0) {
   modal.id = "fullscreenPhotoModal";
   modal.className = "fullPhotoModal";
   modal.innerHTML = `
-    <button type="button" class="photoCloseBtn" id="photoCloseBtn">â</button>
+    <button type="button" class="photoCloseBtn" id="photoCloseBtn">X</button>
     <img id="viewerImage" src="${currentPhotoList[currentPhotoIndex]}" alt="Patient photo">
     <div class="photoNavBtns">
-      <button type="button" class="photoNavBtn" id="photoPrevBtn">â¬ Prev</button>
-      <button type="button" class="photoNavBtn" id="photoNextBtn">Next â¡</button>
+      <button type="button" class="photoNavBtn" id="photoPrevBtn">Prev</button>
+      <button type="button" class="photoNavBtn" id="photoNextBtn">Next</button>
     </div>
   `;
 
   document.body.appendChild(modal);
   document.body.classList.add("photo-open");
 
-  document.getElementById("photoCloseBtn").onclick = closePhotoViewer;
-  document.getElementById("photoPrevBtn").onclick = prevPhoto;
-  document.getElementById("photoNextBtn").onclick = nextPhoto;
+  document.getElementById("photoCloseBtn").addEventListener("click", closePhotoViewer);
+  document.getElementById("photoPrevBtn").addEventListener("click", prevPhoto);
+  document.getElementById("photoNextBtn").addEventListener("click", nextPhoto);
 }
 
 function closePhotoViewer() {
@@ -821,7 +825,7 @@ window.viewPhoto = function(url) {
 };
 
 window.deletePhoto = async function(patientId, index) {
-  if (!canEdit()) return alert("You don't have permission to delete photos");
+  if (!canEdit()) return alert("You do not have permission to delete photos");
   const p = patients.find(x => x.id === patientId);
   if (!p || !p.photos || !p.photos[index]) return alert("Photo not found.");
   if (!confirm("Delete this photo?")) return;
