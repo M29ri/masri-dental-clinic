@@ -157,27 +157,28 @@ function injectExtraStyles() {
     /* ===== Legend ===== */
 
     .toothLegend{
-      display:flex!important;
-      flex-wrap:wrap!important;
-      gap:10px!important;
-      margin:14px 0 22px!important;
-      justify-content:flex-start!important;
-    }
+  display:flex!important;
+  flex-wrap:wrap!important;
+  gap:10px!important;
+  margin:14px 0 22px!important;
+  justify-content:flex-start!important;
+  align-items:center!important;
+}
 
     .legendItem{
-      display:flex!important;
-      align-items:center!important;
-      gap:8px!important;
-      padding:10px 14px!important;
-      border-radius:18px!important;
-      background:#0f1620!important;
-      border:1px solid rgba(255,255,255,.08)!important;
-      color:#dbe2ea!important;
-      font-size:14px!important;
-      font-weight:800!important;
-      min-width:145px!important;
-      width:auto!important;
-    }
+  display:inline-flex!important;
+  align-items:center!important;
+  gap:8px!important;
+  padding:10px 14px!important;
+  border-radius:18px!important;
+  background:#0f1620!important;
+  border:1px solid rgba(255,255,255,.08)!important;
+  color:#dbe2ea!important;
+  font-size:14px!important;
+  font-weight:800!important;
+  width:auto!important;
+  flex:0 0 auto!important;
+}
 
     .legendItem::before{
       content:"";
@@ -209,7 +210,7 @@ function injectExtraStyles() {
     .proMouthChart{
       position:relative!important;
       width:100%!important;
-      height:620px!important;
+      height:580px!important;
       margin:18px 0!important;
       border-radius:34px!important;
       background:radial-gradient(circle at center,#111827,#070b10)!important;
@@ -244,10 +245,9 @@ function injectExtraStyles() {
     }
 
     .proToothSvg{
-      width:40px!important;
-      height:46px!important;
-      filter:drop-shadow(0 6px 8px rgba(0,0,0,.35))!important;
-    }
+  width:34px!important;
+  height:40px!important;
+}
 
     .proTooth.molar .proToothSvg{
       width:46px!important;
@@ -527,15 +527,17 @@ function renderToothChart(p) {
   const teeth = data.teeth || {};
 
   const teethData = [
-  [18,18,44,-48],[17,20,36,-42],[16,25,29,-34],[15,31,24,-25],
-  [14,38,20,-15],[13,45,17,-7],[12,50,15,-3],[11,55,14,0],
-  [21,61,14,0],[22,66,15,3],[23,71,17,7],[24,78,20,15],
-  [25,85,24,25],[26,91,29,34],[27,96,36,42],[28,98,44,48],
+[18,18,44,-30],[17,21,36,-24],[16,26,29,-18],[15,32,23,-12],
+[14,39,18,-8],[13,45,14,-4],[12,49,12,-2],[11,54,11,0],
 
-  [48,18,58,-132],[47,20,66,-138],[46,25,73,-146],[45,32,79,-155],
-  [44,39,84,-164],[43,46,88,-172],[42,51,90,-178],[41,56,91,180],
-  [31,61,91,180],[32,66,90,178],[33,71,88,172],[34,78,84,164],
-  [35,85,79,155],[36,92,73,146],[37,97,66,138],[38,98,58,132]
+[21,59,11,0],[22,64,12,2],[23,69,14,4],[24,75,18,8],
+[25,82,23,12],[26,88,29,18],[27,93,36,24],[28,96,44,30],
+
+[48,18,59,-150],[47,21,67,-156],[46,27,75,-164],[45,34,82,-170],
+[44,42,87,-176],[43,48,91,-179],[42,53,93,180],[41,57,94,180],
+
+[31,61,94,180],[32,66,93,180],[33,72,91,179],[34,79,87,176],
+[35,87,82,170],[36,93,75,164],[37,97,67,156],[38,99,59,150]
 ];
 
   return `
