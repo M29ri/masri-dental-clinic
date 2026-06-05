@@ -875,31 +875,7 @@ function renderToothChart(p) {
     </div>
   `;
 }
-  return `
-    <div class="proMouthChart">
-      <div class="proMouthLabel upper">UPPER</div>
-      <div class="proMouthLabel lower">LOWER</div>
-      <div class="proMidLine"></div>
-      <div class="proHorizontalLine"></div>
 
-      ${toothPositions.map(([n,x,y]) => {
-        const status = teeth[n] || "healthy";
-        const type = getToothType(n);
-
-        return `
-          <button
-            class="proTooth ${safeText(status)} ${type}"
-            style="left:${x}%;top:${y}%"
-            onclick="openToothPopup('${p.id}', '${n}')"
-          >
-            ${toothSvg(type)}
-            <span>${n}</span>
-          </button>
-        `;
-      }).join("")}
-    </div>
-  `;
-}
 function patientDetailsHTML(p) {
   const data = parseClinicData(p.progress_notes); const money = paymentTotals(data);
   return `<div class="card"><h2>${safeText(p.name || "No name")}</h2><span class="pill">ID: ${safeText(p.case_id || "-")}</span><span class="pill">${safeText(p.phone || "No phone")}</span><span class="pill">${safeText(p.age || "-")} yrs</span><span class="pill">${safeText(p.gender || "-")}</span><div class="kv"><b>Chief complaint</b><span>${safeText(p.chief_complaint || "-")}</span></div><div class="kv"><b>Medical alerts</b><span>${safeText(p.medical_alerts || "-")}</span></div><div class="kv"><b>Diagnosis</b><span>${safeText(p.diagnosis || "-")}</span></div><div class="kv"><b>Treatment plan</b><span>${safeText(p.treatment_plan || "-")}</span></div><h3 class="sectionTitle">Visits History</h3>${data.visits.length ? data.visits.map((v, i) => `<div class="kv"><b>Visit ${data.visits.length - i}</b><div class="visitDate">${safeText(v.date || "")}</div><span>${safeText(v.note || "-")}</span></div>`).join("") : `<div class="kv"><span>No visits yet</span></div>`}<h3 class="sectionTitle">Tooth Chart</h3><div class="toothChartBox"><span class="legendItem">Healthy</span><span class="legendItem">Caries</span><span class="legendItem">Filling</span><span class="legendItem">RCT</span><span class="legendItem">Crown</span><span class="legendItem">Missing</span><span class="legendItem">Extraction</span><span class="legendItem">Implant</span></div><div class="toothChart">${renderToothChart(p)}</div><h3 class="sectionTitle">Appointments</h3><div class="actions"><button class="primary" onclick="addAppointment('${p.id}')">+ Add Appointment</button></div>${data.appointments.length ? data.appointments.map((a, i) => `<div class="appointment"><b>${safeText(a.date || "-")}</b><p>${safeText(a.note || "")}</p><button class="danger" onclick="deleteAppointment('${p.id}', ${i})">Delete</button></div>`).join("") : `<div class="kv"><span>No appointments yet</span></div>`}<h3 class="sectionTitle">Payments</h3><div class="miniGrid"><div class="miniCard"><b>Total</b><span class="money">${money.total}</span></div><div class="miniCard"><b>Paid</b><span class="money">${money.paid}</span></div><div class="miniCard"><b>Remaining</b><span class="money unpaid">${money.remaining}</span></div></div><div class="actions"><button class="primary" onclick="addPayment('${p.id}')">+ Add Payment</button></div>${data.payments.length ? data.payments.map((pay, i) => `<div class="appointment"><b>${safeText(pay.date || "")}</b><p>Total: ${Number(pay.total || 0)} | Paid: ${Number(pay.paid || 0)} | Remaining: ${Number(pay.total || 0) - Number(pay.paid || 0)}</p><button class="danger" onclick="deletePayment('${p.id}', ${i})">Delete</button></div>`).join("") : `<div class="kv"><span>No payments yet</span></div>`}<h3 class="sectionTitle">Photos / X-rays</h3><button class="secondary" onclick="showBeforeAfter('${p.id}')">Before / After</button><div class="grid">${(p.photos || []).map((ph, i) => `<div class="thumbWrap"><img class="thumb" src="${ph.url}" onclick="viewPhoto('${ph.url}')"><button class="x" onclick="deletePhoto('${p.id}', ${i})">Ã</button></div>`).join("") || "<p>No photos</p>"}</div><h3 class="sectionTitle">Patient Timeline</h3><div class="patientCard">${renderTimeline(p)}</div><div class="actions">${canEdit() ? `<button class="primary" onclick="editPatient('${p.id}')">Edit</button>` : ""}<button class="secondary" onclick="showQR('${p.id}')">QR</button><button class="secondary" onclick="exportPDF('${p.id}')">PDF</button>${canDelete() ? `<button class="danger" onclick="deletePatient('${p.id}')">Delete</button>` : ""}</div></div>`;
