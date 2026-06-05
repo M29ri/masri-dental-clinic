@@ -215,7 +215,7 @@ height:620px!important;
 padding:0 42px!important;
 box-sizing:border-box!important;
 margin:20px auto!important;
-left:-8px!important;
+left:-4px!important;
 
 border-radius:34px!important;
 background:radial-gradient(circle at center,#111827,#070b10)!important;
@@ -405,6 +405,60 @@ border-radius:20px!important;
   width:auto!important;
   height:auto!important;
   object-fit:contain!important;
+}
+.beforeAfterPage img,
+.beforeAfter img,
+#beforeAfter img{
+  width:100%!important;
+  max-width:420px!important;
+  height:auto!important;
+  object-fit:contain!important;
+  border-radius:16px!important;
+  display:block!important;
+  margin:10px auto!important;
+}
+
+.beforeAfterPage,
+.beforeAfter,
+#beforeAfter{
+  max-width:520px!important;
+  margin:0 auto!important;
+  padding:16px!important;
+}
+.photoControls{
+  position:fixed!important;
+  bottom:24px!important;
+  left:50%!important;
+  transform:translateX(-50%)!important;
+  display:flex!important;
+  gap:14px!important;
+  z-index:9999!important;
+}
+
+.photoControls button,
+#prevPhoto,
+#nextPhoto{
+  background:linear-gradient(135deg,#d4af37,#b8860b)!important;
+  color:#000!important;
+  border:none!important;
+  border-radius:18px!important;
+  padding:12px 18px!important;
+  font-size:16px!important;
+  font-weight:1000!important;
+  box-shadow:0 10px 25px rgba(0,0,0,.45)!important;
+}
+
+#closeViewer{
+  position:fixed!important;
+  top:18px!important;
+  right:18px!important;
+  z-index:10000!important;
+  background:#ef4444!important;
+  color:white!important;
+  border-radius:50%!important;
+  width:46px!important;
+  height:46px!important;
+  font-size:22px!important;
 }
   `;
 
