@@ -164,14 +164,14 @@ function injectExtraStyles() {
 }
     .proMidLine{
   position:absolute!important;
-  left:50%!important;
+  left:56%!important;
   top:22%!important;
   height:58%!important;
   border-left:1px dashed rgba(212,175,55,.28)!important;
 }
 .proMouthLabel{
   position:absolute!important;
-  left:50%!important;
+  left:56%!important;
   transform:translateX(-50%)!important;
   color:#9ca3af!important;
   font-weight:1000!important;
@@ -189,8 +189,8 @@ function injectExtraStyles() {
 }
 .proHorizontalLine{
   position:absolute!important;
-  left:14%!important;
-  right:14%!important;
+  left:12%!important;
+  right:12%!important;
   top:50%!important;
   border-top:1px dashed rgba(212,175,55,.28)!important;
 }
