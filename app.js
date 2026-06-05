@@ -169,82 +169,110 @@ function injectExtraStyles() {
 }
 .realMouthChart{
   width:100%;
-  margin:22px auto;
-  padding:22px 12px;
-  border-radius:32px;
-  background:radial-gradient(circle at center,#111827,#070b10);
-  border:1px solid #263241;
   overflow-x:auto;
+  padding:20px 0;
 }
 
 .toothRow{
-  display:grid;
-  grid-template-columns:repeat(8,52px) 14px repeat(8,52px);
-  gap:8px;
-  align-items:center;
+  display:flex;
   justify-content:center;
-  min-width:920px;
+  align-items:flex-end;
+  gap:6px;
+  min-width:760px;
+}
+
+.upperRow{
+  margin-bottom:20px;
+}
+
+.lowerRow{
+  margin-top:20px;
 }
 
 .realTooth{
-  width:52px;
-  height:82px;
+  background:none;
   border:none;
-  background:transparent;
-  padding:0;
+  width:42px;
   display:flex;
   flex-direction:column;
   align-items:center;
-  justify-content:center;
-  gap:4px;
+  cursor:pointer;
+  padding:0;
 }
 
 .toothSvg{
-  width:46px;
-  height:62px;
-  filter:drop-shadow(0 8px 12px rgba(0,0,0,.35));
+  width:40px;
+  height:58px;
+  transition:.2s;
+}
+
+.realTooth:hover .toothSvg{
+  transform:scale(1.08);
 }
 
 .toothSvg path{
   fill:#f8f1df;
-  stroke:#d8d0bd;
+  stroke:#d9d1be;
   stroke-width:2;
 }
 
 .realTooth small{
-  color:#cbd5e1;
-  font-size:12px;
-  font-weight:900;
+  color:#d1d5db;
+  font-size:11px;
+  font-weight:800;
+  margin-top:4px;
 }
 
-.realTooth.healthy .toothSvg path{fill:#f8f1df;stroke:#d8d0bd}
-.realTooth.caries .toothSvg path{fill:#ef4444;stroke:#7f1d1d}
-.realTooth.filling .toothSvg path{fill:#60a5fa;stroke:#1e3a8a}
-.realTooth.rct .toothSvg path{fill:#8b5cf6;stroke:#4c1d95}
-.realTooth.crown .toothSvg path{fill:#d4af37;stroke:#8f6b10}
-.realTooth.missing .toothSvg path{fill:#374151;stroke:#111827;opacity:.55}
-.realTooth.extraction .toothSvg path{fill:#fb7185;stroke:#881337}
-.realTooth.implant .toothSvg path{fill:#2dd4bf;stroke:#115e59}
+.realTooth.healthy .toothSvg path{
+  fill:#f8f1df;
+}
 
-.mouthDivider{
-  height:34px;
-  border-top:1px dashed rgba(212,175,55,.35);
-  border-bottom:1px dashed rgba(212,175,55,.18);
-  margin:18px 0;
-  min-width:920px;
+.realTooth.caries .toothSvg path{
+  fill:#ef4444;
+}
+
+.realTooth.filling .toothSvg path{
+  fill:#3b82f6;
+}
+
+.realTooth.rct .toothSvg path{
+  fill:#8b5cf6;
+}
+
+.realTooth.crown .toothSvg path{
+  fill:#d4af37;
+}
+
+.realTooth.missing .toothSvg path{
+  fill:#4b5563;
+}
+
+.realTooth.extraction .toothSvg path{
+  fill:#fb7185;
+}
+
+.realTooth.implant .toothSvg path{
+  fill:#2dd4bf;
 }
 
 .midLine{
-  height:80px;
-  border-left:2px dashed rgba(212,175,55,.45);
+  width:20px;
+}
+
+.mouthDivider{
+  height:25px;
+  border-top:2px dashed rgba(212,175,55,.25);
+  margin:14px auto;
+  width:90%;
 }
 
 .mouthTitle{
   text-align:center;
   color:#9ca3af;
-  font-weight:1000;
-  letter-spacing:3px;
-  margin:10px 0;
+  font-size:14px;
+  font-weight:900;
+  letter-spacing:4px;
+  margin:8px 0;
 }
   `;
   document.head.appendChild(style);
