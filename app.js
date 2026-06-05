@@ -452,7 +452,7 @@ function renderToothChart(p) {
       <button
         class="mouthTooth ${safeText(status)}"
         style="left:${x}%;top:${y}%"
-        onclick="changeTooth('${p.id}', '${n}')"
+        onclick="openToothPopup('${p.id}', '${n}')"
         title="Tooth ${n} - ${safeText(status)}"
       >
         <span>${n}</span>
@@ -496,6 +496,52 @@ function patientDetailsHTML(p) {
 window.openPatient = function(id) { const p = patients.find(x => x.id === id); if (!p) return alert("Patient not found or you do not have access."); $("details").innerHTML = patientDetailsHTML(p); showPage("detail"); };
 window.editPatient = function(id) { const p = patients.find(x => x.id === id); if (!p) return alert("Patient not found or you do not have access."); fillForm(p); showPage("form"); };
 window.deletePatient = async function(id) { if (!canDelete()) return alert("Only admin can delete patients"); if (!confirm("Delete this patient?")) return; await api(`patients?id=eq.${id}`, { method: "DELETE" }); await loadPatients(); showPage("patients"); };
+let selectedToothPatientId = null;
+let selectedToothNumber = null;
+
+window.openToothPopup = function(patientId, toothNumber) {
+  selectedToothPatientId = patientId;
+  selectedToothNumber = toothNumber;
+
+  const modal = document.getElementById("toothModal");
+  const title = document.getElementById("toothModalTitle");
+
+  if (title) {
+    title.textContent = "Tooth " + toothNumber;
+  }
+
+  if (modal) {
+    modal.classList.remove("hidden");
+  }
+};
+
+window.closeToothPopup = function() {
+  const modal = document.getElementById("toothModal");
+  if (modal) modal.classList.add("hidden");
+};
+
+window.setToothStatus = async function(status) {
+  if (!selectedToothPatientId || !selectedToothNumber) return;
+
+  const p = patients.find(x => x.id === selectedToothPatientId);
+  if (!p) return alert("Patient not found.");
+
+  const data = parseClinicData(p.progress_notes);
+
+  data.teeth[selectedToothNumber] = status;
+
+  await api(`patients?id=eq.${selectedToothPatientId}`, {
+    method: "PATCH",
+    body: JSON.stringify({
+      progress_notes: saveClinicData(data)
+    })
+  });
+
+  closeToothPopup();
+
+  await loadPatients();
+  openPatient(selectedToothPatientId);
+};
 window.changeTooth = async function(patientId, toothNumber) { if (!canEdit()) return alert("You don't have permission to edit tooth chart"); const p = patients.find(x => x.id === patientId); if (!p) return alert("Patient not found or you do not have access."); const data = parseClinicData(p.progress_notes); const options = ["healthy","caries","filling","rct","crown","missing","extraction","implant"]; const current = data.teeth[toothNumber] || "healthy"; const next = prompt(`Tooth ${toothNumber} status:\n\n1 healthy\n2 caries\n3 filling\n4 rct\n5 crown\n6 missing\n7 extraction\n8 implant\n\nType number or word.\nCurrent: ${current}`, current); if (!next) return; const map = {"1":"healthy","2":"caries","3":"filling","4":"rct","5":"crown","6":"missing","7":"extraction","8":"implant"}; const clean = map[next.trim()] || next.toLowerCase().trim(); if (!options.includes(clean)) return alert("Invalid tooth status"); data.teeth[toothNumber] = clean; await api(`patients?id=eq.${patientId}`, { method:"PATCH", body: JSON.stringify({ progress_notes: saveClinicData(data) }) }); await loadPatients(); openPatient(patientId); };
 window.addAppointment = async function(id) { const p = patients.find(x => x.id === id); if (!p) return alert("Patient not found or you do not have access."); const data = parseClinicData(p.progress_notes); const date = prompt("Appointment date/time:"); if (!date) return; const note = prompt("Appointment note:") || ""; data.appointments.unshift({ date, note }); await api(`patients?id=eq.${id}`, { method: "PATCH", body: JSON.stringify({ progress_notes: saveClinicData(data) }) }); await loadPatients(); openPatient(id); };
 window.deleteAppointment = async function(id, index) { const p = patients.find(x => x.id === id); if (!p) return alert("Patient not found or you do not have access."); const data = parseClinicData(p.progress_notes); data.appointments.splice(index, 1); await api(`patients?id=eq.${id}`, { method:"PATCH", body: JSON.stringify({ progress_notes: saveClinicData(data) }) }); await loadPatients(); openPatient(id); };
