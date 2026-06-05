@@ -217,12 +217,12 @@ function injectExtraStyles() {
   margin:20px auto!important;
 
   /* move slightly left */
-  left:-8px!important;
+  left:0px!important;
 
   border-radius:34px!important;
   background:radial-gradient(circle at center,#111827,#070b10)!important;
   border:1px solid #263241!important;
-  overflow:hidden!important;
+  overflow:visible!important;
 
   display:flex!important;
   justify-content:center!important;
@@ -515,9 +515,15 @@ function renderToothChart(p) {
     [25,87,23,10],[26,94,29,15],[27,100,35,20],[28,104,43,25],
 
     [48,16,59,25],[47,20,67,20],[46,26,75,15],[45,33,82,10],
-    [44,42,89,-176],[43,48,93,-180],[42,52,95,180],[41,56,96,180],
+    [44,41,88,-170],
+    [43,46,91,-175],
+    [42,50,94,180],
+    [41,54,95,180],
 
-   [31,60,96,180],[32,64,95,180],[33,70,93,180],[34,78,89,178],
+    [31,58,95,180],
+    [32,62,94,180],
+    [33,67,91,175],
+    [34,74,88,170],
     [35,87,82,-10],[36,94,75,-15],[37,100,67,-20],[38,104,59,-25]
   ];
 
