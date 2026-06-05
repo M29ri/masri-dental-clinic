@@ -209,7 +209,9 @@ function injectExtraStyles() {
 
    .proMouthChart{
   position:relative!important;
-  width:calc(100% - 24px)!important;
+  width:100%!important;
+padding:0 16px!important;
+box-sizing:border-box!important;
   max-width:720px!important;
   height:620px!important;
 
@@ -217,7 +219,7 @@ function injectExtraStyles() {
   margin:20px auto!important;
 
   /* move slightly left */
-  left:12px!important;
+  left:-8px!important;
 
   border-radius:34px!important;
   background:radial-gradient(circle at center,#111827,#070b10)!important;
