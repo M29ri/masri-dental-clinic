@@ -141,289 +141,33 @@ function injectExtraStyles() {
 
   const style = document.createElement("style");
   style.id = "extraStyles";
-  style.textContent = `
-/* Clean stable UI fixes */
+  style.innerHTML = `
+    * { -webkit-tap-highlight-color: transparent; }
+    button, .tab, .primary, .secondary, .danger { user-select:none!important; -webkit-user-select:none!important; touch-action:manipulation!important; }
 
-/* Tooth legend */
-.toothChartBox{
-  display:flex!important;
-  flex-wrap:wrap!important;
-  gap:10px!important;
-  margin:12px 0 18px!important;
-  align-items:center!important;
-  justify-content:flex-start!important;
-  overflow:visible!important;
-}
-.legendItem{
-  display:inline-flex!important;
-  align-items:center!important;
-  gap:9px!important;
-  background:#0f1620!important;
-  border:1px solid #263241!important;
-  border-radius:999px!important;
-  padding:10px 16px!important;
-  color:#e5e7eb!important;
-  font-size:16px!important;
-  font-weight:900!important;
-  white-space:nowrap!important;
-}
-.legendItem::before{
-  content:""!important;
-  width:14px!important;
-  height:14px!important;
-  border-radius:50%!important;
-  display:inline-block!important;
-  flex:0 0 auto!important;
-  background:#22c55e!important;
-}
-.legendItem:nth-child(2)::before{background:#ef4444!important}
-.legendItem:nth-child(3)::before{background:#60a5fa!important}
-.legendItem:nth-child(4)::before{background:#8b5cf6!important}
-.legendItem:nth-child(5)::before{background:#d4af37!important}
-.legendItem:nth-child(6)::before{background:#4b5563!important}
-.legendItem:nth-child(7)::before{background:#fb7185!important}
-.legendItem:nth-child(8)::before{background:#2dd4bf!important}
+    .legendItem{display:inline-flex!important;align-items:center!important;gap:10px!important;padding:12px 18px!important;border-radius:22px!important;background:#0f1620!important;border:1px solid #263241!important;color:#e5edf6!important;font-weight:900!important;margin:0!important;white-space:nowrap!important}
+    .legendItem::before{content:"";width:14px;height:14px;border-radius:50%;display:inline-block;background:#22c55e;flex-shrink:0}
+    .legendItem:nth-child(2)::before{background:#ef4444}.legendItem:nth-child(3)::before{background:#60a5fa}.legendItem:nth-child(4)::before{background:#8b5cf6}.legendItem:nth-child(5)::before{background:#d4af37}.legendItem:nth-child(6)::before{background:#4b5563}.legendItem:nth-child(7)::before{background:#fb7185}.legendItem:nth-child(8)::before{background:#2dd4bf}
+    .toothChartBox{display:flex!important;flex-wrap:wrap!important;gap:10px!important;margin:10px 0 18px!important;justify-content:center!important;overflow:visible!important}
+    .toothChart{display:block!important;width:100%!important;overflow:visible!important}
 
-/* Tooth chart */
-.toothChart{
-  width:100%!important;
-  display:flex!important;
-  justify-content:center!important;
-  overflow:hidden!important;
-}
-.proMouthChart{
-  position:relative!important;
-  width:calc(100% - 20px)!important;
-  max-width:680px!important;
-  height:620px!important;
-  margin:18px auto!important;
-  left:0!important;
-  border-radius:34px!important;
-  background:radial-gradient(circle at center,#111827,#070b10)!important;
-  border:1px solid #263241!important;
-  overflow:hidden!important;
-  box-sizing:border-box!important;
-}
-.proMidLine{
-  position:absolute!important;
-  left:50%!important;
-  top:20%!important;
-  height:66%!important;
-  border-left:1px dashed rgba(212,175,55,.28)!important;
-}
-.proHorizontalLine{
-  position:absolute!important;
-  left:12%!important;
-  right:12%!important;
-  top:50%!important;
-  border-top:1px dashed rgba(212,175,55,.28)!important;
-}
-.proMouthLabel{
-  position:absolute!important;
-  left:50%!important;
-  transform:translateX(-50%)!important;
-  color:#9ca3af!important;
-  font-weight:1000!important;
-  letter-spacing:5px!important;
-  opacity:.65!important;
-  font-size:18px!important;
-  z-index:1!important;
-}
-.proMouthLabel.upper{top:41%!important}
-.proMouthLabel.lower{top:56%!important}
-.proTooth{
-  position:absolute!important;
-  transform:translate(-50%,-50%)!important;
-  background:transparent!important;
-  border:none!important;
-  padding:0!important;
-  width:40px!important;
-  height:50px!important;
-  display:flex!important;
-  flex-direction:column!important;
-  align-items:center!important;
-  justify-content:center!important;
-  z-index:2!important;
-  touch-action:manipulation!important;
-}
-.toothArt{
-  width:38px!important;
-  height:38px!important;
-  display:flex!important;
-  justify-content:center!important;
-  align-items:center!important;
-}
-.proToothSvg{
-  width:34px!important;
-  height:38px!important;
-  filter:drop-shadow(0 6px 8px rgba(0,0,0,.35))!important;
-  overflow:visible!important;
-}
-.proTooth.molar .proToothSvg{width:38px!important;height:38px!important}
-.proToothSvg path:first-child{
-  fill:#f7f1e5!important;
-  stroke:#d8cfbf!important;
-  stroke-width:2!important;
-}
-.shine{fill:none!important;stroke:rgba(255,255,255,.35)!important;stroke-width:2.4!important;stroke-linecap:round!important}
-.groove{fill:none!important;stroke:rgba(145,130,105,.38)!important;stroke-width:2.1!important;stroke-linecap:round!important}
-.toothNo{
-  color:#f8fafc!important;
-  font-size:11px!important;
-  line-height:1!important;
-  font-weight:1000!important;
-  margin-top:2px!important;
-  text-shadow:0 2px 4px rgba(0,0,0,.55)!important;
-}
-.proTooth.caries .proToothSvg path:first-child{fill:#ef4444!important}
-.proTooth.filling .proToothSvg path:first-child{fill:#60a5fa!important}
-.proTooth.rct .proToothSvg path:first-child{fill:#8b5cf6!important}
-.proTooth.crown .proToothSvg path:first-child{fill:#d4af37!important}
-.proTooth.missing .proToothSvg path:first-child{fill:#4b5563!important}
-.proTooth.extraction .proToothSvg path:first-child{fill:#fb7185!important}
-.proTooth.implant .proToothSvg path:first-child{fill:#2dd4bf!important}
-@media (min-width:768px){
-  .proMouthChart{max-width:720px!important;height:620px!important}
-}
+    .proMouthChart{position:relative!important;width:100%!important;max-width:680px!important;height:620px!important;margin:20px auto!important;border-radius:34px!important;background:radial-gradient(circle at center,#111827,#070b10)!important;border:1px solid #263241!important;overflow:hidden!important;box-sizing:border-box!important}
+    @media (min-width:768px){.proMouthChart{max-width:700px!important;height:640px!important}}
+    .proMidLine{position:absolute!important;left:50%!important;top:19%!important;height:66%!important;border-left:1px dashed rgba(212,175,55,.28)!important}
+    .proHorizontalLine{position:absolute!important;left:10%!important;right:10%!important;top:50%!important;border-top:1px dashed rgba(212,175,55,.28)!important}
+    .proMouthLabel{position:absolute!important;left:50%!important;transform:translateX(-50%)!important;color:#9ca3af!important;font-weight:1000!important;letter-spacing:5px!important;opacity:.65!important;font-size:20px!important;z-index:1!important}.proMouthLabel.upper{top:40%!important}.proMouthLabel.lower{top:54%!important}
 
-/* Photo grid */
-.photoGrid{
-  display:grid!important;
-  grid-template-columns:repeat(2,minmax(0,1fr))!important;
-  gap:12px!important;
-  margin-top:14px!important;
-}
-.photoItem{
-  position:relative!important;
-  overflow:hidden!important;
-  border-radius:18px!important;
-  background:#0f1620!important;
-  border:1px solid #263241!important;
-  min-height:150px!important;
-}
-.photoItem img{
-  width:100%!important;
-  height:160px!important;
-  object-fit:cover!important;
-  display:block!important;
-  border-radius:18px!important;
-  cursor:pointer!important;
-  -webkit-user-select:none!important;
-  user-select:none!important;
-}
-.photoDeleteBtn{
-  position:absolute!important;
-  top:8px!important;
-  right:8px!important;
-  z-index:5!important;
-  width:34px!important;
-  height:34px!important;
-  border-radius:50%!important;
-  border:2px solid rgba(255,255,255,.85)!important;
-  background:#ef4444!important;
-  color:#fff!important;
-  font-size:18px!important;
-  font-weight:1000!important;
-  display:flex!important;
-  align-items:center!important;
-  justify-content:center!important;
-  box-shadow:0 8px 20px rgba(0,0,0,.35)!important;
-}
+    .proTooth{position:absolute!important;transform:translate(-50%,-50%)!important;background:transparent!important;border:none!important;padding:0!important;width:42px!important;height:54px!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;z-index:2!important;cursor:pointer!important}
+    .toothArt{width:40px!important;height:40px!important;display:flex!important;align-items:center!important;justify-content:center!important}.proToothSvg{width:36px!important;height:40px!important;filter:drop-shadow(0 6px 8px rgba(0,0,0,.35))!important}.proTooth.molar .proToothSvg{width:40px!important;height:40px!important}
+    .proToothSvg path:first-child{fill:#f7f1e5!important;stroke:#d8cfbf!important;stroke-width:2!important}.shine{fill:none!important;stroke:rgba(255,255,255,.35)!important;stroke-width:2.5!important;stroke-linecap:round!important}.groove{fill:none!important;stroke:rgba(145,130,105,.38)!important;stroke-width:2.2!important;stroke-linecap:round!important}.toothNo{color:#eef2f7!important;font-size:11px!important;font-weight:900!important;margin-top:1px!important;line-height:1!important}
+    .proTooth.caries path:first-child{fill:#ef4444!important}.proTooth.filling path:first-child{fill:#60a5fa!important}.proTooth.rct path:first-child{fill:#8b5cf6!important}.proTooth.crown path:first-child{fill:#d4af37!important}.proTooth.missing path:first-child{fill:#4b5563!important}.proTooth.extraction path:first-child{fill:#fb7185!important}.proTooth.implant path:first-child{fill:#2dd4bf!important}
 
-/* Fullscreen photo viewer */
-body.photo-open{overflow:hidden!important}
-.fullPhotoModal,
-.beforeAfterModal{
-  position:fixed!important;
-  inset:0!important;
-  background:rgba(0,0,0,.97)!important;
-  z-index:999999!important;
-}
-.fullPhotoModal{
-  display:flex!important;
-  align-items:center!important;
-  justify-content:center!important;
-  flex-direction:column!important;
-}
-#viewerImage{
-  max-width:94vw!important;
-  max-height:76vh!important;
-  width:auto!important;
-  height:auto!important;
-  object-fit:contain!important;
-  border-radius:22px!important;
-  box-shadow:0 0 40px rgba(0,0,0,.6)!important;
-}
-.photoCloseBtn{
-  position:fixed!important;
-  top:22px!important;
-  right:22px!important;
-  width:62px!important;
-  height:62px!important;
-  border-radius:50%!important;
-  border:none!important;
-  background:#ef4444!important;
-  color:#fff!important;
-  font-size:30px!important;
-  line-height:1!important;
-  font-weight:900!important;
-  z-index:1000000!important;
-  display:flex!important;
-  align-items:center!important;
-  justify-content:center!important;
-}
-.photoNavBtns{
-  position:fixed!important;
-  bottom:28px!important;
-  left:50%!important;
-  transform:translateX(-50%)!important;
-  display:flex!important;
-  gap:16px!important;
-  z-index:1000000!important;
-}
-.photoNavBtn{
-  border:none!important;
-  border-radius:20px!important;
-  background:#d4af37!important;
-  color:#000!important;
-  padding:14px 24px!important;
-  font-size:20px!important;
-  font-weight:1000!important;
-  box-shadow:0 10px 30px rgba(0,0,0,.45)!important;
-  min-width:115px!important;
-}
+    .photoGrid{display:grid!important;grid-template-columns:repeat(2,1fr)!important;gap:12px!important;margin-top:14px!important}.photoItem{position:relative!important;overflow:hidden!important;border-radius:18px!important;background:#111827!important;border:1px solid #263241!important}.photoItem img{width:100%!important;height:170px!important;object-fit:cover!important;display:block!important;border-radius:18px!important;cursor:pointer!important;user-select:none!important;-webkit-user-select:none!important}.photoItem button{position:absolute!important;top:8px!important;right:8px!important;width:42px!important;height:42px!important;border-radius:50%!important;border:2px solid rgba(255,255,255,.85)!important;background:#ef4444!important;color:white!important;font-size:22px!important;font-weight:1000!important;z-index:5!important;padding:0!important;line-height:1!important}
 
-/* Before / After */
-.beforeAfterModal{
-  overflow:auto!important;
-  padding:80px 16px 40px!important;
-  box-sizing:border-box!important;
-}
-.beforeAfterTitle{
-  color:#d4af37!important;
-  text-align:center!important;
-  font-size:28px!important;
-  font-weight:900!important;
-  margin:0 0 20px!important;
-}
-.beforeAfterContainer{
-  max-width:520px!important;
-  margin:0 auto!important;
-  display:grid!important;
-  grid-template-columns:1fr!important;
-  gap:22px!important;
-}
-.beforeAfterCard b{display:block!important;color:#fff!important;margin-bottom:8px!important}
-.beforeAfterCard img{
-  width:100%!important;
-  max-height:360px!important;
-  height:auto!important;
-  object-fit:contain!important;
-  border-radius:18px!important;
-  background:#111827!important;
-  display:block!important;
-}
-`;
+    #photoViewer{position:fixed!important;inset:0!important;background:rgba(0,0,0,.96)!important;z-index:999999!important;display:flex!important;align-items:center!important;justify-content:center!important;flex-direction:column!important;padding:80px 14px 100px!important;box-sizing:border-box!important}#photoViewer.hidden{display:none!important}#viewerImage{max-width:94vw!important;max-height:76vh!important;width:auto!important;height:auto!important;object-fit:contain!important;border-radius:20px!important;box-shadow:0 0 40px rgba(0,0,0,.6)!important}.photoClose{position:fixed!important;top:22px!important;right:22px!important;width:60px!important;height:60px!important;border-radius:50%!important;border:none!important;background:#ef4444!important;color:white!important;font-size:28px!important;font-weight:1000!important;z-index:1000000!important}.photoControls{position:fixed!important;bottom:28px!important;left:50%!important;transform:translateX(-50%)!important;display:flex!important;gap:16px!important;z-index:1000000!important}.photoControls button{border:none!important;border-radius:20px!important;background:#d4af37!important;color:#000!important;padding:14px 24px!important;font-size:20px!important;font-weight:1000!important;box-shadow:0 10px 30px rgba(0,0,0,.45)!important;min-width:130px!important}
+
+    #beforeAfterModal{position:fixed!important;inset:0!important;background:rgba(0,0,0,.97)!important;z-index:999999!important;overflow:auto!important;padding:80px 16px 40px!important;box-sizing:border-box!important}.beforeAfterContainer{max-width:520px!important;margin:0 auto!important;display:grid!important;gap:18px!important}.beforeAfterContainer img{width:100%!important;max-height:360px!important;object-fit:contain!important;border-radius:18px!important;background:#111827!important;display:block!important}.beforeAfterTitle{color:#d4af37!important;text-align:center!important;font-size:28px!important;font-weight:900!important;margin-bottom:20px!important}.modalCloseFixed{position:fixed!important;top:20px!important;right:20px!important;width:58px!important;height:58px!important;border-radius:50%!important;border:none!important;background:#ef4444!important;color:white!important;font-size:28px!important;font-weight:900!important;z-index:1000000!important}
+  `;
   document.head.appendChild(style);
 }
 
@@ -452,7 +196,7 @@ function renderTimeline(patient) {
   const data = parseClinicData(patient.progress_notes);
   const timeline = [];
   (data.visits || []).forEach(v => timeline.push({ type: "visit", date: v.date || "", text: v.note || "Visit note" }));
-  (data.payments || []).forEach(p => timeline.push({ type: "payment", date: p.date || "", text: `Paid ${p.paid || 0}` }));
+  (data.payments || []).forEach(p => timeline.push({ type: "payment", date: p.date || "", text: `Payment: ${p.paid || 0}` }));
   (data.appointments || []).forEach(a => timeline.push({ type: "appointment", date: a.date || "", text: a.note || "Appointment" }));
   (patient.photos || []).forEach(ph => timeline.push({ type: "photo", date: ph.date || "", text: "Photo added" }));
   timeline.sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -545,6 +289,14 @@ async function uploadPhotos(patientId) {
   return uploaded;
 }
 
+function getToothType(n) {
+  const incisors = [11,12,21,22,31,32,41,42];
+  const canines = [13,23,33,43];
+  if (incisors.includes(Number(n))) return "incisor";
+  if (canines.includes(Number(n))) return "canine";
+  return "molar";
+}
+
 function toothSvg(type = "molar") {
   if (type === "incisor") {
     return `<svg viewBox="-40 -55 80 110" class="proToothSvg">
@@ -580,18 +332,18 @@ function renderToothChart(p) {
   const teeth = data.teeth || {};
 
  const toothData = [
-    [18,18,44,-28],[17,24,37,-22],[16,30,31,-16],[15,36,25,-10],
-    [14,42,19,-5],[13,48,14,-2],[12,54,10,0],[11,59,9,0],
+  [18,18,44,-28],[17,24,37,-22],[16,30,31,-16],[15,36,25,-10],
+  [14,42,19,-5],[13,48,14,-2],[12,54,10,0],[11,59,9,0],
 
-    [21,63,9,0],[22,68,10,0],[23,73,14,2],[24,78,19,5],
-    [25,84,25,10],[26,89,31,16],[27,93,37,22],[28,95,44,28],
+  [21,63,9,0],[22,68,10,0],[23,73,14,2],[24,78,19,5],
+  [25,84,25,10],[26,89,31,16],[27,93,37,22],[28,95,44,28],
 
-    [48,18,60,-152],[47,24,67,-158],[46,30,74,-164],[45,36,81,-170],
-    [44,43,88,-176],[43,49,92,180],[42,54,95,180],[41,58,96,180],
+  [48,18,60,-152],[47,24,67,-158],[46,30,74,-164],[45,36,81,-170],
+  [44,43,88,-176],[43,49,92,180],[42,54,95,180],[41,58,96,180],
 
-    [31,62,96,180],[32,66,95,180],[33,71,92,180],[34,77,88,176],
-    [35,83,81,170],[36,86,74,164],[37,91,67,158],[38,93,60,152]
-  ];
+  [31,62,96,180],[32,66,95,180],[33,71,92,180],[34,77,88,176],
+  [35,83,81,170],[36,86,74,164],[37,91,67,158],[38,93,60,152]
+];
 
   return `
     <div class="proMouthChart">
@@ -624,57 +376,47 @@ function renderToothChart(p) {
 function patientDetailsHTML(p) {
   const data = parseClinicData(p.progress_notes);
   const money = paymentTotals(data);
-  const photos = (p.photos || []).map((ph, i) => {
-    const url = photoUrl(ph);
-    if (!url) return "";
-    return `<div class="photoItem">
-      <img src="${safeText(url)}" onclick="viewPhoto('${safeText(url)}')" alt="Patient photo">
-      ${canEdit() ? `<button type="button" class="photoDeleteBtn" onclick="event.stopPropagation();deletePhoto('${p.id}', ${i})">X</button>` : ""}
+  const photos = p.photos || [];
+  return `
+    <div class="card">
+      <h2>${safeText(p.name || "No name")}</h2>
+      <span class="pill">ID: ${safeText(p.case_id || "-")}</span>
+      <span class="pill">${safeText(p.phone || "No phone")}</span>
+      <span class="pill">${safeText(p.age || "-")} yrs</span>
+      <span class="pill">${safeText(p.gender || "-")}</span>
+
+      <div class="kv"><b>Chief complaint</b><span>${safeText(p.chief_complaint || "-")}</span></div>
+      <div class="kv"><b>Medical alerts</b><span>${safeText(p.medical_alerts || "-")}</span></div>
+      <div class="kv"><b>Diagnosis</b><span>${safeText(p.diagnosis || "-")}</span></div>
+      <div class="kv"><b>Treatment plan</b><span>${safeText(p.treatment_plan || "-")}</span></div>
+
+      <h3 class="sectionTitle">Visits History</h3>
+      ${data.visits.length ? data.visits.map((v, i) => `<div class="kv"><b>Visit ${data.visits.length - i}</b><div class="visitDate">${safeText(v.date || "")}</div><span>${safeText(v.note || "-")}</span></div>`).join("") : `<div class="kv"><span>No visits yet</span></div>`}
+
+      <h3 class="sectionTitle">Tooth Chart</h3>
+      <div class="toothChartBox"><span class="legendItem">Healthy</span><span class="legendItem">Caries</span><span class="legendItem">Filling</span><span class="legendItem">RCT</span><span class="legendItem">Crown</span><span class="legendItem">Missing</span><span class="legendItem">Extraction</span><span class="legendItem">Implant</span></div>
+      <div class="toothChart">${renderToothChart(p)}</div>
+
+      <h3 class="sectionTitle">Appointments</h3>
+      <div class="actions"><button class="primary" onclick="addAppointment('${p.id}')">+ Add Appointment</button></div>
+      ${data.appointments.length ? data.appointments.map((a, i) => `<div class="appointment"><b>${safeText(a.date || "-")}</b><p>${safeText(a.note || "")}</p><button class="danger" onclick="deleteAppointment('${p.id}', ${i})">Delete</button></div>`).join("") : `<div class="kv"><span>No appointments yet</span></div>`}
+
+      <h3 class="sectionTitle">Payments</h3>
+      <div class="miniGrid"><div class="miniCard"><b>Total</b><span class="money">${money.total}</span></div><div class="miniCard"><b>Paid</b><span class="money">${money.paid}</span></div><div class="miniCard"><b>Remaining</b><span class="money unpaid">${money.remaining}</span></div></div>
+      <div class="actions"><button class="primary" onclick="addPayment('${p.id}')">+ Add Payment</button></div>
+      ${data.payments.length ? data.payments.map((pay, i) => `<div class="appointment"><b>${safeText(pay.date || "")}</b><p>Total: ${Number(pay.total || 0)} | Paid: ${Number(pay.paid || 0)} | Remaining: ${Number(pay.total || 0) - Number(pay.paid || 0)}</p><button class="danger" onclick="deletePayment('${p.id}', ${i})">Delete</button></div>`).join("") : `<div class="kv"><span>No payments yet</span></div>`}
+
+      <h3 class="sectionTitle">Photos / X-rays</h3>
+      <button class="secondary" onclick="showBeforeAfter('${p.id}')">Before / After</button>
+      <div class="photoGrid">${photos.length ? photos.map((ph, i) => {
+        const url = photoUrl(ph);
+        return `<div class="photoItem"><img src="${safeText(url)}" onclick="viewPhoto('${safeText(url)}')"><button type="button" onclick="event.stopPropagation();deletePhoto('${p.id}', ${i})">Ã</button></div>`;
+      }).join("") : "<p>No photos</p>"}</div>
+
+      <h3 class="sectionTitle">Patient Timeline</h3>
+      <div class="patientCard">${renderTimeline(p)}</div>
+      <div class="actions">${canEdit() ? `<button class="primary" onclick="editPatient('${p.id}')">Edit</button>` : ""}<button class="secondary" onclick="showQR('${p.id}')">QR</button><button class="secondary" onclick="exportPDF('${p.id}')">PDF</button>${canDelete() ? `<button class="danger" onclick="deletePatient('${p.id}')">Delete</button>` : ""}</div>
     </div>`;
-  }).join("");
-
-  return `<div class="card">
-    <h2>${safeText(p.name || "No name")}</h2>
-    <span class="pill">ID: ${safeText(p.case_id || "-")}</span>
-    <span class="pill">${safeText(p.phone || "No phone")}</span>
-    <span class="pill">${safeText(p.age || "-")} yrs</span>
-    <span class="pill">${safeText(p.gender || "-")}</span>
-
-    <div class="kv"><b>Chief complaint</b><span>${safeText(p.chief_complaint || "-")}</span></div>
-    <div class="kv"><b>Medical alerts</b><span>${safeText(p.medical_alerts || "-")}</span></div>
-    <div class="kv"><b>Diagnosis</b><span>${safeText(p.diagnosis || "-")}</span></div>
-    <div class="kv"><b>Treatment plan</b><span>${safeText(p.treatment_plan || "-")}</span></div>
-
-    <h3 class="sectionTitle">Visits History</h3>
-    ${data.visits.length ? data.visits.map((v, i) => `<div class="kv"><b>Visit ${data.visits.length - i}</b><div class="visitDate">${safeText(v.date || "")}</div><span>${safeText(v.note || "-")}</span></div>`).join("") : `<div class="kv"><span>No visits yet</span></div>`}
-
-    <h3 class="sectionTitle">Tooth Chart</h3>
-    <div class="toothChartBox"><span class="legendItem">Healthy</span><span class="legendItem">Caries</span><span class="legendItem">Filling</span><span class="legendItem">RCT</span><span class="legendItem">Crown</span><span class="legendItem">Missing</span><span class="legendItem">Extraction</span><span class="legendItem">Implant</span></div>
-    <div class="toothChart">${renderToothChart(p)}</div>
-
-    <h3 class="sectionTitle">Appointments</h3>
-    <div class="actions"><button class="primary" onclick="addAppointment('${p.id}')">+ Add Appointment</button></div>
-    ${data.appointments.length ? data.appointments.map((a, i) => `<div class="appointment"><b>${safeText(a.date || "-")}</b><p>${safeText(a.note || "")}</p><button class="danger" onclick="deleteAppointment('${p.id}', ${i})">Delete</button></div>`).join("") : `<div class="kv"><span>No appointments yet</span></div>`}
-
-    <h3 class="sectionTitle">Payments</h3>
-    <div class="miniGrid"><div class="miniCard"><b>Total</b><span class="money">${money.total}</span></div><div class="miniCard"><b>Paid</b><span class="money">${money.paid}</span></div><div class="miniCard"><b>Remaining</b><span class="money unpaid">${money.remaining}</span></div></div>
-    <div class="actions"><button class="primary" onclick="addPayment('${p.id}')">+ Add Payment</button></div>
-    ${data.payments.length ? data.payments.map((pay, i) => `<div class="appointment"><b>${safeText(pay.date || "")}</b><p>Total: ${Number(pay.total || 0)} | Paid: ${Number(pay.paid || 0)} | Remaining: ${Number(pay.total || 0) - Number(pay.paid || 0)}</p><button class="danger" onclick="deletePayment('${p.id}', ${i})">Delete</button></div>`).join("") : `<div class="kv"><span>No payments yet</span></div>`}
-
-    <h3 class="sectionTitle">Photos / X-rays</h3>
-    <button class="secondary" onclick="showBeforeAfter('${p.id}')">Before / After</button>
-    <div class="photoGrid">${photos || "<p>No photos</p>"}</div>
-
-    <h3 class="sectionTitle">Patient Timeline</h3>
-    <div class="patientCard">${renderTimeline(p)}</div>
-
-    <div class="actions">
-      ${canEdit() ? `<button class="primary" onclick="editPatient('${p.id}')">Edit</button>` : ""}
-      <button class="secondary" onclick="showQR('${p.id}')">QR</button>
-      <button class="secondary" onclick="exportPDF('${p.id}')">PDF</button>
-      ${canDelete() ? `<button class="danger" onclick="deletePatient('${p.id}')">Delete</button>` : ""}
-    </div>
-  </div>`;
 }
 
 window.openPatient = function(id) { const p = patients.find(x => x.id === id); if (!p) return alert("Patient not found or you do not have access."); $("details").innerHTML = patientDetailsHTML(p); showPage("detail"); };
@@ -732,73 +474,40 @@ window.deleteAppointment = async function(id, index) { const p = patients.find(x
 window.addPayment = async function(id) { const p = patients.find(x => x.id === id); if (!p) return alert("Patient not found or you do not have access."); const data = parseClinicData(p.progress_notes); const total = prompt("Total treatment cost:"); if (!total) return; const paid = prompt("Paid amount:") || "0"; data.payments.unshift({ date: new Date().toLocaleString(), total: Number(total || 0), paid: Number(paid || 0) }); await api(`patients?id=eq.${id}`, { method:"PATCH", body: JSON.stringify({ progress_notes: saveClinicData(data) }) }); await loadPatients(); openPatient(id); };
 window.deletePayment = async function(id, index) { const p = patients.find(x => x.id === id); if (!p) return alert("Patient not found or you do not have access."); const data = parseClinicData(p.progress_notes); data.payments.splice(index, 1); await api(`patients?id=eq.${id}`, { method:"PATCH", body: JSON.stringify({ progress_notes: saveClinicData(data) }) }); await loadPatients(); openPatient(id); };
 function photoUrl(photo) {
-  if (!photo) return "";
-  return typeof photo === "string" ? photo : (photo.url || "");
+  return typeof photo === "string" ? photo : (photo?.url || "");
 }
 
 window.showBeforeAfter = function(id) {
   const p = patients.find(x => x.id === id);
   if (!p) return alert("Patient not found.");
-
   const photos = (p.photos || []).map(photoUrl).filter(Boolean);
   if (photos.length < 2) return alert("Need at least 2 photos.");
-
   document.getElementById("beforeAfterModal")?.remove();
-
   const modal = document.createElement("div");
   modal.id = "beforeAfterModal";
-  modal.className = "beforeAfterModal";
   modal.innerHTML = `
-    <button type="button" class="photoCloseBtn" id="beforeAfterClose">X</button>
+    <button class="modalCloseFixed" type="button" onclick="document.getElementById('beforeAfterModal').remove()">Ã</button>
     <h2 class="beforeAfterTitle">Before / After Comparison</h2>
     <div class="beforeAfterContainer">
-      <div class="beforeAfterCard">
-        <b>Before</b>
-        <img src="${photos[0]}" alt="Before photo">
-      </div>
-      <div class="beforeAfterCard">
-        <b>After</b>
-        <img src="${photos[1]}" alt="After photo">
-      </div>
-    </div>
-  `;
+      <div><b style="color:white">Before</b><img src="${photos[0]}"></div>
+      <div><b style="color:white">After</b><img src="${photos[1]}"></div>
+    </div>`;
   document.body.appendChild(modal);
-  document.body.classList.add("photo-open");
-  document.getElementById("beforeAfterClose").onclick = () => {
-    modal.remove();
-    document.body.classList.remove("photo-open");
-  };
 };
 
 function openPhotoViewer(index = 0) {
   if (!currentPhotoList.length) return;
   currentPhotoIndex = Math.max(0, Math.min(index, currentPhotoList.length - 1));
-
-  document.getElementById("fullscreenPhotoModal")?.remove();
-
-  const modal = document.createElement("div");
-  modal.id = "fullscreenPhotoModal";
-  modal.className = "fullPhotoModal";
-  modal.innerHTML = `
-    <button type="button" class="photoCloseBtn" id="photoCloseBtn">X</button>
-    <img id="viewerImage" src="${currentPhotoList[currentPhotoIndex]}" alt="Patient photo">
-    <div class="photoNavBtns">
-      <button type="button" class="photoNavBtn" id="photoPrevBtn">Prev</button>
-      <button type="button" class="photoNavBtn" id="photoNextBtn">Next</button>
-    </div>
-  `;
-
-  document.body.appendChild(modal);
-  document.body.classList.add("photo-open");
-
-  document.getElementById("photoCloseBtn").addEventListener("click", closePhotoViewer);
-  document.getElementById("photoPrevBtn").addEventListener("click", prevPhoto);
-  document.getElementById("photoNextBtn").addEventListener("click", nextPhoto);
+  const viewer = document.getElementById("photoViewer");
+  const img = document.getElementById("viewerImage");
+  if (!viewer || !img) return;
+  img.src = currentPhotoList[currentPhotoIndex];
+  viewer.classList.remove("hidden");
 }
 
 function closePhotoViewer() {
-  document.getElementById("fullscreenPhotoModal")?.remove();
-  document.body.classList.remove("photo-open");
+  const viewer = document.getElementById("photoViewer");
+  if (viewer) viewer.classList.add("hidden");
 }
 
 function nextPhoto() {
@@ -816,36 +525,44 @@ function prevPhoto() {
 }
 
 window.viewPhoto = function(url) {
-  const p = patients.find(patient =>
-    (patient.photos || []).some(photo => photoUrl(photo) === url)
-  );
+  const p = patients.find(patient => (patient.photos || []).some(photo => photoUrl(photo) === url));
   currentPhotoList = p ? (p.photos || []).map(photoUrl).filter(Boolean) : [url];
   currentPhotoIndex = Math.max(0, currentPhotoList.indexOf(url));
   openPhotoViewer(currentPhotoIndex);
 };
 
 window.deletePhoto = async function(patientId, index) {
-  if (!canEdit()) return alert("You do not have permission to delete photos");
+  if (!canEdit()) return alert("You don't have permission to delete photos");
   const p = patients.find(x => x.id === patientId);
-  if (!p || !p.photos || !p.photos[index]) return alert("Photo not found.");
+  if (!p || !p.photos || !p.photos[index]) return;
   if (!confirm("Delete this photo?")) return;
-
-  const updatedPhotos = [...p.photos];
-  updatedPhotos.splice(index, 1);
-
-  await api(`patients?id=eq.${patientId}`, {
-    method: "PATCH",
-    body: JSON.stringify({ photos: updatedPhotos })
-  });
-
+  p.photos.splice(index, 1);
+  await api(`patients?id=eq.${patientId}`, { method: "PATCH", body: JSON.stringify({ photos: p.photos }) });
   await loadPatients();
   openPatient(patientId);
+};
+
+window.showQR = function(id) {
+  const p = patients.find(x => x.id === id);
+  if (!p) return alert("Patient not found.");
+  const box = document.getElementById("qrcode");
+  const modal = document.getElementById("qrModal");
+  if (!box || !modal) return alert("QR modal not found.");
+  box.innerHTML = "";
+  const url = `${location.origin}${location.pathname}?patient=${encodeURIComponent(id)}`;
+  if (window.QRCode) {
+    new QRCode(box, { text: url, width: 220, height: 220 });
+  } else {
+    box.textContent = url;
+  }
+  modal.classList.remove("hidden");
 };
 
 window.openPhotoViewer = openPhotoViewer;
 window.closePhotoViewer = closePhotoViewer;
 window.nextPhoto = nextPhoto;
 window.prevPhoto = prevPhoto;
+
 window.backupData = function() { const backup = { exported_at: new Date().toISOString(), user: currentUser, patients }; const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" }); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = `masri-dental-clinic-backup-${Date.now()}.json`; a.click(); URL.revokeObjectURL(url); };
 window.restoreBackup = function() { const input = document.createElement("input"); input.type = "file"; input.accept = ".json,application/json"; input.onchange = async e => { const file = e.target.files[0]; if (!file) return; if (!confirm("Restore backup? This will upload patients from the backup file.")) return; try { const backup = JSON.parse(await file.text()); if (!backup.patients || !Array.isArray(backup.patients)) return alert("Invalid backup file."); for (const p of backup.patients) { const newPatient = { owner_id: currentUser.role === "admin" ? (p.owner_id || currentUser.id) : currentUser.id, case_id: p.case_id || makeId(), name: p.name || "", phone: p.phone || "", age: p.age || "", gender: p.gender || "", chief_complaint: p.chief_complaint || "", medical_alerts: p.medical_alerts || "", diagnosis: p.diagnosis || "", treatment_plan: p.treatment_plan || "", progress_notes: p.progress_notes || "", photos: p.photos || [] }; await api("patients", { method: "POST", body: JSON.stringify(newPatient) }); } alert("Backup restored successfully."); await loadPatients(); showPage("patients"); } catch (err) { alert("Restore failed: " + err.message); } }; input.click(); };
 
