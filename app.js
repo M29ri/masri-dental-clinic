@@ -136,472 +136,192 @@ function canDelete() { return currentUser && currentUser.role === "admin"; }
 function makeId() { return "P-" + Date.now(); }
 
 function injectExtraStyles() {
-  const oldStyle = document.getElementById("clinicExtraStyles");
-  if (oldStyle) oldStyle.remove();
+  const old = document.getElementById("extraStyles");
+  if (old) old.remove();
 
   const style = document.createElement("style");
-  style.id = "clinicExtraStyles";
+  style.id = "extraStyles";
 
-  style.textContent = `
-    .page{display:none}
-    .page.active{display:block}
+  style.innerHTML = `
+/* ===========================
+   PHOTO GRID
+=========================== */
 
-    .sectionTitle{
-      margin-top:24px;
-      margin-bottom:14px;
-      color:#d4af37;
-      font-size:28px;
-      font-weight:1000;
-    }
-
-    /* ===== Legend ===== */
-
-    .toothLegend{
-  display:flex!important;
-  flex-wrap:wrap!important;
-  gap:10px!important;
-  margin:14px 0 22px!important;
-  justify-content:flex-start!important;
-  align-items:center!important;
-}
-
-    .legendItem{
-  display:inline-flex!important;
-  align-items:center!important;
-  gap:8px!important;
-  padding:10px 14px!important;
-  border-radius:18px!important;
-  background:#0f1620!important;
-  border:1px solid rgba(255,255,255,.08)!important;
-  color:#dbe2ea!important;
-  font-size:14px!important;
-  font-weight:800!important;
-  width:auto!important;
-  flex:0 0 auto!important;
-}
-
-    .legendItem::before{
-      content:"";
-      width:14px;
-      height:14px;
-      border-radius:50%;
-      display:inline-block;
-      background:#22c55e;
-      flex-shrink:0;
-    }
-
-    .legendItem:nth-child(2)::before{background:#ef4444}
-    .legendItem:nth-child(3)::before{background:#60a5fa}
-    .legendItem:nth-child(4)::before{background:#8b5cf6}
-    .legendItem:nth-child(5)::before{background:#d4af37}
-    .legendItem:nth-child(6)::before{background:#4b5563}
-    .legendItem:nth-child(7)::before{background:#fb7185}
-    .legendItem:nth-child(8)::before{background:#2dd4bf}
-
-    /* ===== Chart Box ===== */
-
-    .toothChartBox,
-    .toothChart{
-      display:block!important;
-      width:100%!important;
-      max-width:100%!important;
-    }
-
- .proMouthChart{
-position:relative!important;
-width:100%!important;
-max-width:680px!important;
-height:620px!important;
-padding:0 42px!important;
-box-sizing:border-box!important;
-margin:20px auto!important;
-left:-4px!important;
-
-border-radius:34px!important;
-background:radial-gradient(circle at center,#111827,#070b10)!important;
-border:1px solid #263241!important;
-overflow:hidden!important;
-
-display:flex!important;
-justify-content:center!important;
-align-items:center!important;
-}
-.proTooth{
-  position:absolute!important;
-  transform:translate(-50%,-50%)!important;
-  background:transparent!important;
-  border:none!important;
-  padding:0!important;
-
-  width:40px!important;
-  height:50px!important;
-
-  display:flex!important;
-  flex-direction:column!important;
-  align-items:center!important;
-  justify-content:center!important;
-
-  z-index:2!important;
-}
-
-.toothArt{
-  width:38px!important;
-  height:38px!important;
-  display:flex!important;
-  justify-content:center!important;
-  align-items:center!important;
-}
-
-.proTooth span{
-  color:#f8fafc!important;
-  font-size:12px!important;
-  font-weight:800!important;
-  margin-top:2px!important;
-}
-
-.proTooth.molar .proToothSvg{
-  width:40px!important;
-  height:40px!important;
-}
-
-.proToothSvg path:first-child{
-  fill:#f7f1e5!important;
-  stroke:#d8cfbf!important;
-  stroke-width:2!important;
-}
-
-.shine{
-  fill:none!important;
-  stroke:rgba(255,255,255,.35)!important;
-  stroke-width:2.5!important;
-  stroke-linecap:round!important;
-}
-
-.groove{
-  fill:none!important;
-  stroke:rgba(145,130,105,.38)!important;
-  stroke-width:2.2!important;
-  stroke-linecap:round!important;
-}
-
-.toothNo{
-  color:#eef2f7!important;
-  font-size:10px!important;
-  font-weight:900!important;
-  margin-top:1px!important;
-}
-
-.proTooth.caries path:first-child{fill:#ef4444!important}
-.proTooth.filling path:first-child{fill:#60a5fa!important}
-.proTooth.rct path:first-child{fill:#8b5cf6!important}
-.proTooth.crown path:first-child{fill:#d4af37!important}
-.proTooth.missing path:first-child{fill:#4b5563!important}
-.proTooth.extraction path:first-child{fill:#fb7185!important}
-.proTooth.implant path:first-child{fill:#2dd4bf!important}
-
-    /* ===== Center lines ===== */
-
- .proMidLine{
-  position:absolute!important;
-  left:61%!important;
-  top:20%!important;
-  height:66%!important;
-  border-left:1px dashed rgba(212,175,55,.28)!important;
-}
-
-    .proHorizontalLine{
-      position:absolute!important;
-      left:12%!important;
-      right:12%!important;
-      top:55%!important;
-      border-top:1px dashed rgba(212,175,55,.28)!important;
-    }
-
-    /* ===== Labels ===== */
-
-    .proMouthLabel{
-  position:absolute!important;
-  left:61%!important;
-  transform:translateX(-50%)!important;
-  color:#9ca3af!important;
-  font-weight:1000!important;
-  letter-spacing:5px!important;
-  opacity:.65!important;
-}
-
-    .proMouthLabel.upper{
-      top:43%!important;
-    }
-
-    .proMouthLabel.lower{
-      top:62%!important;
-    }
-
-    .modal.hidden,
-    .photoViewer.hidden{
-      display:none!important;
-    }
-    .photoGrid{
-display:grid!important;
-grid-template-columns:repeat(auto-fill,minmax(120px,1fr))!important;
-gap:12px!important;
-margin-top:12px!important;
-}
-
-.photoCard{
-position:relative!important;
-overflow:hidden!important;
-border-radius:18px!important;
-height:120px!important;
-background:#111827!important;
-border:1px solid #263241!important;
-}
-
-.photoCard img{
-width:100%!important;
-height:100%!important;
-object-fit:cover!important;
-display:block!important;
-border-radius:18px!important;
-cursor:pointer!important;
-}
-
-#bigPhoto{
-max-width:90vw!important;
-max-height:85vh!important;
-object-fit:contain!important;
-border-radius:20px!important;
-}
 .photoGrid,
 .photosGrid,
 .patientPhotos{
   display:grid!important;
-  grid-template-columns:repeat(3,1fr)!important;
-  gap:10px!important;
-  margin-top:12px!important;
+  grid-template-columns:repeat(2,1fr)!important;
+  gap:12px!important;
+  margin-top:14px!important;
 }
 
-.photoGrid img,
-.photosGrid img,
-.patientPhotos img,
-.photoItem img{
-  width:100%!important;
-  height:110px!important;
-  object-fit:cover!important;
-  border-radius:14px!important;
-  display:block!important;
-}
-
-.photoItem{
+.photoItem,
+.photoCard{
+  position:relative!important;
   overflow:hidden!important;
-  border-radius:14px!important;
-  background:#0f1620!important;
-}
-
-#bigPhoto,
-#viewerImage{
-  max-width:92vw!important;
-  max-height:85vh!important;
-  width:auto!important;
-  height:auto!important;
-  object-fit:contain!important;
-}
-.beforeAfterPage img,
-.beforeAfter img,
-#beforeAfter img{
-  width:100%!important;
-  max-width:420px!important;
-  height:auto!important;
-  object-fit:contain!important;
-  border-radius:16px!important;
-  display:block!important;
-  margin:10px auto!important;
-}
-
-.beforeAfterPage,
-.beforeAfter,
-#beforeAfter{
-  max-width:520px!important;
-  margin:0 auto!important;
-  padding:16px!important;
-}
-.photoControls{
-  position:fixed!important;
-  bottom:24px!important;
-  left:50%!important;
-  transform:translateX(-50%)!important;
-  display:flex!important;
-  gap:14px!important;
-  z-index:9999!important;
-}
-
-.photoControls button,
-#prevPhoto,
-#nextPhoto{
-  background:linear-gradient(135deg,#d4af37,#b8860b)!important;
-  color:#000!important;
-  border:none!important;
   border-radius:18px!important;
-  padding:12px 18px!important;
-  font-size:16px!important;
-  font-weight:1000!important;
-  box-shadow:0 10px 25px rgba(0,0,0,.45)!important;
+  background:#111827!important;
+  border:1px solid #263241!important;
 }
 
-#closeViewer{
-  position:fixed!important;
-  top:18px!important;
-  right:18px!important;
-  z-index:10000!important;
+.photoItem img,
+.photoCard img{
+  width:100%!important;
+  height:160px!important;
+  object-fit:cover!important;
+  display:block!important;
+  border-radius:18px!important;
+  cursor:pointer!important;
+}
+
+/* delete button */
+
+.deletePhotoBtn,
+.photoDelete{
+  position:absolute!important;
+  top:8px!important;
+  right:8px!important;
+  z-index:10!important;
+  border:none!important;
+  border-radius:14px!important;
   background:#ef4444!important;
   color:white!important;
-  border-radius:50%!important;
-  width:46px!important;
-  height:46px!important;
-  font-size:22px!important;
+  padding:8px 12px!important;
+  font-weight:900!important;
+  font-size:12px!important;
 }
-.photoViewer,
-#photoViewer,
+
+/* ===========================
+   TOOTH CHART
+=========================== */
+
+.toothChartBox,
+.toothChart{
+  width:100%!important;
+  display:flex!important;
+  justify-content:center!important;
+  overflow:hidden!important;
+}
+
+.proMouthChart{
+  position:relative!important;
+  width:100%!important;
+  max-width:620px!important;
+  height:620px!important;
+  margin:0 auto!important;
+  left:0!important;
+}
+
+/* ipad fix */
+
+@media (min-width:768px){
+  .proMouthChart{
+    max-width:680px!important;
+    height:680px!important;
+  }
+}
+
+/* ===========================
+   FULLSCREEN PHOTO VIEWER
+=========================== */
+
 #photoModal{
   position:fixed!important;
   inset:0!important;
-  background:rgba(0,0,0,.96)!important;
-  z-index:9999!important;
-  display:flex!important;
-  align-items:center!important;
-  justify-content:center!important;
-}
-
-.photoViewer.hidden,
-#photoViewer.hidden,
-#photoModal.hidden{
-  display:none!important;
-}
-
-#viewerImage,
-#bigPhoto{
-  max-width:94vw!important;
-  max-height:82vh!important;
-  width:auto!important;
-  height:auto!important;
-  object-fit:contain!important;
-  border-radius:18px!important;
-}
-.beforeAfterPage img,
-.beforeAfterComparison img,
-.beforeAfter img,
-#beforeAfter img,
-#beforeAfterPage img{
-  width:100%!important;
-  max-width:360px!important;
-  max-height:360px!important;
-  object-fit:contain!important;
-  border-radius:16px!important;
-  display:block!important;
-  margin:10px auto!important;
-}
-
-.beforeAfterPage,
-.beforeAfterComparison,
-.beforeAfter,
-#beforeAfter,
-#beforeAfterPage{
-  max-width:420px!important;
-  margin:0 auto!important;
-  padding:14px!important;
-}
-.beforeAfterPage,
-.beforeAfterComparison,
-#beforeAfterPage,
-#beforeAfter{
-  width:100%!important;
-  max-width:520px!important;
-  margin:0 auto!important;
-  padding:16px!important;
-}
-
-.beforeAfterPage img,
-.beforeAfterComparison img,
-#beforeAfterPage img,
-#beforeAfter img{
-  width:100%!important;
-  max-width:420px!important;
-  max-height:420px!important;
-  height:auto!important;
-  object-fit:contain!important;
-  display:block!important;
-  margin:10px auto!important;
-  border-radius:18px!important;
-}
-@media (min-width: 768px){
-  .proMouthChart{
-    max-width:720px!important;
-    height:620px!important;
-    padding:0 90px!important;
-    left:-10px!important;
-  }
-/* FULLSCREEN PHOTO VIEWER */
-
-.photoModal,
-#photoModal,
-.fullscreenPhoto{
-  position:fixed!important;
-  inset:0!important;
-  width:100vw!important;
-  height:100vh!important;
   background:rgba(0,0,0,.97)!important;
   z-index:999999!important;
-
   display:flex!important;
   align-items:center!important;
   justify-content:center!important;
+  flex-direction:column!important;
 }
 
-/* image */
-.photoModal img,
-#photoModal img,
-.fullscreenPhoto img{
-  max-width:95vw!important;
-  max-height:85vh!important;
-  width:auto!important;
-  height:auto!important;
+#viewerImage{
+  max-width:94vw!important;
+  max-height:75vh!important;
   object-fit:contain!important;
-  border-radius:18px!important;
+  border-radius:22px!important;
   box-shadow:0 0 40px rgba(0,0,0,.6)!important;
 }
 
 /* close button */
-.photoClose,
-.closePhoto,
-.photoModal .closeBtn{
+
+.photoCloseBtn{
   position:fixed!important;
   top:22px!important;
   right:22px!important;
-
-  width:58px!important;
-  height:58px!important;
+  width:62px!important;
+  height:62px!important;
   border-radius:50%!important;
   border:none!important;
-
   background:#ef4444!important;
   color:#fff!important;
-  font-size:28px!important;
+  font-size:30px!important;
   font-weight:900!important;
-  cursor:pointer!important;
-
-  display:flex!important;
-  align-items:center!important;
-  justify-content:center!important;
-
-  box-shadow:0 8px 25px rgba(239,68,68,.45)!important;
   z-index:1000000!important;
 }
 
-/* hide background page scroll */
-body.modal-open{
-  overflow:hidden!important;
+/* prev next buttons */
+
+.photoNavBtns{
+  position:fixed!important;
+  bottom:28px!important;
+  left:50%!important;
+  transform:translateX(-50%)!important;
+  display:flex!important;
+  gap:16px!important;
+  z-index:1000000!important;
 }
-  `;
+
+.photoNavBtn{
+  border:none!important;
+  border-radius:20px!important;
+  background:#d4af37!important;
+  color:#000!important;
+  padding:14px 24px!important;
+  font-size:20px!important;
+  font-weight:1000!important;
+  box-shadow:0 10px 30px rgba(0,0,0,.45)!important;
+}
+
+/* ===========================
+   BEFORE AFTER
+=========================== */
+
+#beforeAfterModal{
+  position:fixed!important;
+  inset:0!important;
+  background:rgba(0,0,0,.97)!important;
+  z-index:999999!important;
+  overflow:auto!important;
+  padding:80px 16px 40px!important;
+}
+
+.beforeAfterContainer{
+  max-width:520px!important;
+  margin:auto!important;
+  display:grid!important;
+  gap:22px!important;
+}
+
+.beforeAfterContainer img{
+  width:100%!important;
+  max-height:360px!important;
+  object-fit:contain!important;
+  border-radius:18px!important;
+  background:#111827!important;
+  display:block!important;
+}
+
+.beforeAfterTitle{
+  color:#d4af37!important;
+  text-align:center!important;
+  font-size:28px!important;
+  font-weight:900!important;
+  margin-bottom:20px!important;
+}
+`;
 
   document.head.appendChild(style);
 }
@@ -951,75 +671,25 @@ function openPhotoViewer(index = 0) {
 
   currentPhotoIndex = index;
 
-  const old = document.getElementById("photoModal");
-  if (old) old.remove();
+  document.getElementById("photoModal")?.remove();
 
   const modal = document.createElement("div");
   modal.id = "photoModal";
+
   modal.innerHTML = `
-    <div style="
-      position:fixed;
-      inset:0;
-      background:rgba(0,0,0,.97);
-      z-index:999999;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      flex-direction:column;
-    ">
-      <button onclick="closePhotoViewer()" style="
-        position:fixed;
-        top:20px;
-        right:20px;
-        width:58px;
-        height:58px;
-        border-radius:50%;
-        border:none;
-        background:#ef4444;
-        color:white;
-        font-size:28px;
-        font-weight:900;
-        z-index:1000000;
-      ">✕</button>
-
-      <img id="viewerImage"
-        src="${currentPhotoList[currentPhotoIndex]}"
-        style="
-          max-width:94vw;
-          max-height:78vh;
-          object-fit:contain;
-          border-radius:18px;
-        "
-      >
-
-      <div style="
-        position:fixed;
-        bottom:28px;
-        display:flex;
-        gap:16px;
-      ">
-        <button onclick="prevPhoto()" style="
-          background:#d4af37;
-          border:none;
-          border-radius:18px;
-          padding:14px 22px;
-          font-size:20px;
-          font-weight:900;
-        ">⬅ Prev</button>
-
-        <button onclick="nextPhoto()" style="
-          background:#d4af37;
-          border:none;
-          border-radius:18px;
-          padding:14px 22px;
-          font-size:20px;
-          font-weight:900;
-        ">Next ➡</button>
-      </div>
+    <button type="button" class="photoCloseBtn" id="photoCloseBtn">✕</button>
+    <img id="viewerImage" src="${currentPhotoList[currentPhotoIndex]}">
+    <div style="position:fixed;bottom:28px;left:50%;transform:translateX(-50%);display:flex;gap:16px;z-index:1000000;">
+      <button type="button" class="photoNavBtn" id="photoPrevBtn">⬅ Prev</button>
+      <button type="button" class="photoNavBtn" id="photoNextBtn">Next ➡</button>
     </div>
   `;
 
   document.body.appendChild(modal);
+
+  document.getElementById("photoCloseBtn").onclick = closePhotoViewer;
+  document.getElementById("photoPrevBtn").onclick = prevPhoto;
+  document.getElementById("photoNextBtn").onclick = nextPhoto;
 }
 
 function closePhotoViewer() {
@@ -1029,39 +699,14 @@ function closePhotoViewer() {
 function nextPhoto() {
   if (!currentPhotoList.length) return;
   currentPhotoIndex = (currentPhotoIndex + 1) % currentPhotoList.length;
-  const img = document.getElementById("viewerImage");
-  if (img) img.src = currentPhotoList[currentPhotoIndex];
+  document.getElementById("viewerImage").src = currentPhotoList[currentPhotoIndex];
 }
 
 function prevPhoto() {
   if (!currentPhotoList.length) return;
   currentPhotoIndex = (currentPhotoIndex - 1 + currentPhotoList.length) % currentPhotoList.length;
-  const img = document.getElementById("viewerImage");
-  if (img) img.src = currentPhotoList[currentPhotoIndex];
+  document.getElementById("viewerImage").src = currentPhotoList[currentPhotoIndex];
 }
-
-window.viewPhoto = function(url) {
-  const p = patients.find(patient =>
-    (patient.photos || []).some(photo => {
-      const u = typeof photo === "string" ? photo : photo.url;
-      return u === url;
-    })
-  );
-
-  currentPhotoList = p
-    ? (p.photos || []).map(photo => typeof photo === "string" ? photo : photo.url).filter(Boolean)
-    : [url];
-
-  currentPhotoIndex = Math.max(0, currentPhotoList.indexOf(url));
-  openPhotoViewer(currentPhotoIndex);
-};
-
-window.openPhotoViewer = openPhotoViewer;
-window.closePhotoViewer = closePhotoViewer;
-window.nextPhoto = nextPhoto;
-window.prevPhoto = prevPhoto;
-window.showQR = function(id) { const p = patients.find(x => x.id === id); if (!p) return alert("Patient not found or you do not have access."); $("qrcode").innerHTML = ""; const patientLink = location.origin + location.pathname + "?patient=" + encodeURIComponent(id); new QRCode($("qrcode"), { text: patientLink, width: 220, height: 220 }); $("qrModal").classList.remove("hidden"); };
-
 window.backupData = function() { const backup = { exported_at: new Date().toISOString(), user: currentUser, patients }; const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" }); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = `masri-dental-clinic-backup-${Date.now()}.json`; a.click(); URL.revokeObjectURL(url); };
 window.restoreBackup = function() { const input = document.createElement("input"); input.type = "file"; input.accept = ".json,application/json"; input.onchange = async e => { const file = e.target.files[0]; if (!file) return; if (!confirm("Restore backup? This will upload patients from the backup file.")) return; try { const backup = JSON.parse(await file.text()); if (!backup.patients || !Array.isArray(backup.patients)) return alert("Invalid backup file."); for (const p of backup.patients) { const newPatient = { owner_id: currentUser.role === "admin" ? (p.owner_id || currentUser.id) : currentUser.id, case_id: p.case_id || makeId(), name: p.name || "", phone: p.phone || "", age: p.age || "", gender: p.gender || "", chief_complaint: p.chief_complaint || "", medical_alerts: p.medical_alerts || "", diagnosis: p.diagnosis || "", treatment_plan: p.treatment_plan || "", progress_notes: p.progress_notes || "", photos: p.photos || [] }; await api("patients", { method: "POST", body: JSON.stringify(newPatient) }); } alert("Backup restored successfully."); await loadPatients(); showPage("patients"); } catch (err) { alert("Restore failed: " + err.message); } }; input.click(); };
 
