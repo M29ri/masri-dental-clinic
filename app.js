@@ -169,6 +169,33 @@ function injectExtraStyles() {
     #beforeAfterModal{position:fixed!important;inset:0!important;background:rgba(0,0,0,.97)!important;z-index:999999!important;overflow:auto!important;padding:80px 16px 40px!important;box-sizing:border-box!important}.beforeAfterContainer{max-width:520px!important;margin:0 auto!important;display:grid!important;gap:18px!important}.beforeAfterContainer img{width:100%!important;max-height:360px!important;object-fit:contain!important;border-radius:18px!important;background:#111827!important;display:block!important}.beforeAfterTitle{color:#d4af37!important;text-align:center!important;font-size:28px!important;font-weight:900!important;margin-bottom:20px!important}.modalCloseFixed{position:fixed!important;top:20px!important;right:20px!important;width:58px!important;height:58px!important;border-radius:50%!important;border:none!important;background:#ef4444!important;color:white!important;font-size:28px!important;font-weight:900!important;z-index:1000000!important}
   `;
   document.head.appendChild(style);
+ const fixStyle = document.createElement("style");
+fixStyle.id = "photoButtonFix";
+fixStyle.innerHTML = `
+.photoItem button{
+  position:absolute!important;
+  top:8px!important;
+  right:8px!important;
+  width:42px!important;
+  height:42px!important;
+  border-radius:50%!important;
+  border:3px solid white!important;
+  background:#ef4444!important;
+  color:transparent!important;
+  font-size:0!important;
+  z-index:50!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+}
+.photoItem button::before{
+  content:"X"!important;
+  color:white!important;
+  font-size:24px!important;
+  font-weight:900!important;
+}
+`;
+document.head.appendChild(fixStyle); 
 }
 
 function showPage(id) {
