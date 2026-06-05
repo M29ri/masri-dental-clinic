@@ -210,25 +210,17 @@ function injectExtraStyles() {
    .proMouthChart{
   position:relative!important;
   width:100%!important;
-padding:0 16px!important;
-box-sizing:border-box!important;
-  max-width:720px!important;
+  max-width:none!important;
   height:620px!important;
-
-  /* centers whole chart */
-  margin:20px auto!important;
-
-  /* move slightly left */
-  left:-8px!important;
-
+  margin:20px 0!important;
+  left:0!important;
+  padding:0 38px!important;
+  box-sizing:border-box!important;
   border-radius:34px!important;
   background:radial-gradient(circle at center,#111827,#070b10)!important;
   border:1px solid #263241!important;
   overflow:hidden!important;
-
-  display:flex!important;
-  justify-content:center!important;
-  align-items:center!important;
+  display:block!important;
 }
 
 .proTooth{
@@ -510,24 +502,48 @@ function renderToothChart(p) {
   const teeth = data.teeth || {};
 
   const toothData = [
-    [18,16,43,-25],[17,20,35,-20],[16,26,29,-15],[15,33,23,-10],
-    [14,40,18,-6],[13,47,14,-3],[12,53,11,0],[11,58,10,0],
 
-    [21,62,10,0],[22,67,11,0],[23,73,14,3],[24,80,18,6],
-    [25,87,23,10],[26,94,29,15],[27,100,35,20],[28,104,43,25],
+  // UPPER RIGHT
+  [18,18,44,-28],
+  [17,24,37,-22],
+  [16,30,31,-16],
+  [15,36,25,-10],
+  [14,42,19,-5],
+  [13,48,14,-2],
+  [12,54,10,0],
+  [11,59,9,0],
 
-    [48,16,59,25],[47,20,67,20],[46,26,75,15],[45,33,82,10],
-    [44,42,88,-165],
-    [43,47,91,-170],
-    [42,51,94,180],
-    [41,55,95,180],
+  // UPPER LEFT
+  [21,63,9,0],
+  [22,68,10,0],
+  [23,74,14,2],
+  [24,80,19,5],
+  [25,86,25,10],
+  [26,92,31,16],
+  [27,96,37,22],
+  [28,98,44,28],
 
-    [31,59,95,180],
-    [32,63,94,180],
-    [33,68,91,170],
-    [34,75,88,165],
-    [35,87,82,-10],[36,94,75,-15],[37,100,67,-20],[38,104,59,-25]
-  ];
+  // LOWER RIGHT
+  [48,18,60,-152],
+  [47,24,67,-158],
+  [46,30,74,-164],
+  [45,36,81,-170],
+  [44,43,88,-176],
+  [43,49,92,180],
+  [42,54,95,180],
+  [41,58,96,180],
+
+  // LOWER LEFT
+  [31,62,96,180],
+  [32,66,95,180],
+  [33,71,92,180],
+  [34,77,88,176],
+  [35,84,81,170],
+  [36,90,74,164],
+  [37,96,67,158],
+  [38,98,60,152]
+
+];
 
   return `
     <div class="proMouthChart">
