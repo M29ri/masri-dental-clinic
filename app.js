@@ -168,128 +168,56 @@ function injectExtraStyles() {
   overflow:hidden;
 }
 
+.mouthChart{
+  width:100%;
+  margin:22px auto;
+  padding:20px 10px;
+  border-radius:32px;
+  background:radial-gradient(circle at center,#111827,#070b10);
+  border:1px solid #263241;
+}
+
 .mouthArch{
-  position:absolute;
-  left:50%;
-  transform:translateX(-50%);
-  width:92%;
-  height:45%;
-}
-
-.upperArch{
-  top:7%;
-}
-
-.lowerArch{
-  bottom:7%;
+  display:grid;
+  grid-template-columns:repeat(8,1fr);
+  gap:10px;
+  margin:16px 0;
 }
 
 .mouthTooth{
-  position:absolute;
-  transform:translate(-50%,-50%);
-  width:54px;
-  height:54px;
-  border-radius:18px;
+  width:100%;
+  min-height:52px;
+  border-radius:16px;
   border:2px solid #22c55e;
   background:linear-gradient(180deg,#12351f,#0f2417);
   color:#86efac;
   font-weight:1000;
   font-size:15px;
-  box-shadow:0 10px 22px rgba(0,0,0,.35);
-}
-
-.mouthTooth span{
-  display:block;
-}
-
-.mouthTooth.healthy{
-  border-color:#22c55e;
-  background:linear-gradient(180deg,#12351f,#0f2417);
-  color:#86efac;
-}
-
-.mouthTooth.caries{
-  border-color:#ef4444;
-  background:linear-gradient(180deg,#4a1d1d,#210b0b);
-  color:#fecaca;
-}
-
-.mouthTooth.filling{
-  border-color:#60a5fa;
-  background:linear-gradient(180deg,#1e3a5f,#0b1f35);
-  color:#bfdbfe;
-}
-
-.mouthTooth.rct{
-  border-color:#facc15;
-  background:linear-gradient(180deg,#3b2f13,#1f1605);
-  color:#fde68a;
-}
-
-.mouthTooth.crown{
-  border-color:#f5d76e;
-  background:linear-gradient(135deg,#d4af37,#8f6b10);
-  color:#111;
-}
-
-.mouthTooth.missing{
-  border-color:#374151;
-  background:#05070a;
-  color:#6b7280;
-  text-decoration:line-through;
-  opacity:.75;
-}
-
-.mouthTooth.extraction{
-  border-color:#fb7185;
-  background:linear-gradient(180deg,#3f1111,#170505);
-  color:#fecdd3;
-}
-
-.mouthTooth.implant{
-  border-color:#2dd4bf;
-  background:linear-gradient(180deg,#12352b,#062019);
-  color:#99f6e4;
 }
 
 .mouthCenter{
-  position:absolute;
-  inset:22% 15%;
-  border-radius:50%;
-  border:1px dashed rgba(212,175,55,.22);
-  pointer-events:none;
-}
-
-.mouthLine{
-  position:absolute;
-  left:50%;
-  top:10%;
-  bottom:10%;
-  border-left:1px dashed rgba(255,255,255,.18);
+  height:40px;
+  border-top:1px dashed rgba(212,175,55,.25);
+  border-bottom:1px dashed rgba(212,175,55,.25);
+  margin:14px 0;
 }
 
 .archLabel{
-  position:absolute;
-  left:50%;
-  transform:translateX(-50%);
+  text-align:center;
   color:#9ca3af;
   font-weight:1000;
   letter-spacing:2px;
-  opacity:.65;
+  opacity:.7;
 }
 
-.upperLabel{
-  top:43%;
+.upperLabel,.lowerLabel{
+  position:static;
+  transform:none;
 }
 
-.lowerLabel{
-  bottom:43%;
+.mouthLine{
+  display:none;
 }
-
-@media(max-width:520px){
-  .mouthChart{
-    height:560px;
-  }
 
   .mouthTooth{
     width:46px;
