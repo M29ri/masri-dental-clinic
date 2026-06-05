@@ -136,27 +136,32 @@ function canDelete() { return currentUser && currentUser.role === "admin"; }
 function makeId() { return "P-" + Date.now(); }
 
 function injectExtraStyles() {
-  if (document.getElementById("clinicExtraStyles")) return;
+  const oldStyle = document.getElementById("clinicExtraStyles");
+  if (oldStyle) oldStyle.remove();
 
   const style = document.createElement("style");
   style.id = "clinicExtraStyles";
+
   style.textContent = `
     .page{display:none}
     .page.active{display:block}
 
     .sectionTitle{
       margin-top:24px;
-      margin-bottom:12px;
+      margin-bottom:14px;
       color:#d4af37;
       font-size:28px;
       font-weight:1000;
     }
 
+    /* ===== Legend ===== */
+
     .toothLegend{
       display:flex!important;
       flex-wrap:wrap!important;
       gap:10px!important;
-      margin:12px 0 18px!important;
+      margin:14px 0 22px!important;
+      justify-content:flex-start!important;
     }
 
     .legendItem{
@@ -166,11 +171,12 @@ function injectExtraStyles() {
       padding:10px 14px!important;
       border-radius:18px!important;
       background:#0f1620!important;
-      border:1px solid #263241!important;
-      color:#cbd5e1!important;
+      border:1px solid rgba(255,255,255,.08)!important;
+      color:#dbe2ea!important;
       font-size:14px!important;
       font-weight:800!important;
       min-width:145px!important;
+      width:auto!important;
     }
 
     .legendItem::before{
@@ -180,6 +186,7 @@ function injectExtraStyles() {
       border-radius:50%;
       display:inline-block;
       background:#22c55e;
+      flex-shrink:0;
     }
 
     .legendItem:nth-child(2)::before{background:#ef4444}
@@ -190,7 +197,10 @@ function injectExtraStyles() {
     .legendItem:nth-child(7)::before{background:#fb7185}
     .legendItem:nth-child(8)::before{background:#2dd4bf}
 
-    .toothChartBox,.toothChart{
+    /* ===== Chart Box ===== */
+
+    .toothChartBox,
+    .toothChart{
       display:block!important;
       width:100%!important;
       max-width:100%!important;
@@ -199,7 +209,7 @@ function injectExtraStyles() {
     .proMouthChart{
       position:relative!important;
       width:100%!important;
-      height:720px!important;
+      height:620px!important;
       margin:18px 0!important;
       border-radius:34px!important;
       background:radial-gradient(circle at center,#111827,#070b10)!important;
@@ -207,74 +217,109 @@ function injectExtraStyles() {
       overflow:hidden!important;
     }
 
+    /* ===== Teeth ===== */
+
     .proTooth{
       position:absolute!important;
       background:transparent!important;
       border:none!important;
       padding:0!important;
-      width:56px!important;
-      height:66px!important;
+      width:42px!important;
+      height:52px!important;
       display:flex!important;
       flex-direction:column!important;
       align-items:center!important;
       justify-content:center!important;
+      transform-origin:center!important;
     }
 
-    .proTooth.molar{width:64px!important;height:64px!important}
-    .proTooth.premolar{width:58px!important;height:62px!important}
+    .proTooth.molar{
+      width:48px!important;
+      height:52px!important;
+    }
+
+    .proTooth.premolar{
+      width:44px!important;
+      height:50px!important;
+    }
 
     .proToothSvg{
-      width:54px!important;
-      height:58px!important;
-      filter:drop-shadow(0 8px 10px rgba(0,0,0,.45))!important;
+      width:40px!important;
+      height:46px!important;
+      filter:drop-shadow(0 6px 8px rgba(0,0,0,.35))!important;
     }
 
     .proTooth.molar .proToothSvg{
-      width:62px!important;
-      height:58px!important;
+      width:46px!important;
+      height:46px!important;
     }
 
     .proToothSvg path:first-child{
-      fill:#f8f1df!important;
-      stroke:#d8d0bd!important;
-      stroke-width:2.5!important;
+      fill:#f7f1e5!important;
+      stroke:#d8cfbf!important;
+      stroke-width:2!important;
     }
 
     .shine{
       fill:none!important;
-      stroke:rgba(255,255,255,.45)!important;
-      stroke-width:3!important;
+      stroke:rgba(255,255,255,.35)!important;
+      stroke-width:2.5!important;
       stroke-linecap:round!important;
     }
 
     .groove{
       fill:none!important;
-      stroke:rgba(120,105,80,.38)!important;
-      stroke-width:3!important;
+      stroke:rgba(145,130,105,.38)!important;
+      stroke-width:2.2!important;
       stroke-linecap:round!important;
     }
 
     .proTooth span{
-      color:#e5e7eb!important;
+      color:#eef2f7!important;
       font-size:11px!important;
       font-weight:900!important;
-      margin-top:2px!important;
+      margin-top:1px!important;
+      text-shadow:0 1px 2px rgba(0,0,0,.4);
     }
 
-    .proTooth.caries path:first-child{fill:#ef4444!important}
-    .proTooth.filling path:first-child{fill:#60a5fa!important}
-    .proTooth.rct path:first-child{fill:#8b5cf6!important}
-    .proTooth.crown path:first-child{fill:#d4af37!important}
-    .proTooth.missing path:first-child{fill:#4b5563!important}
-    .proTooth.extraction path:first-child{fill:#fb7185!important}
-    .proTooth.implant path:first-child{fill:#2dd4bf!important}
+    /* ===== Status Colors ===== */
+
+    .proTooth.caries path:first-child{
+      fill:#ef4444!important;
+    }
+
+    .proTooth.filling path:first-child{
+      fill:#60a5fa!important;
+    }
+
+    .proTooth.rct path:first-child{
+      fill:#8b5cf6!important;
+    }
+
+    .proTooth.crown path:first-child{
+      fill:#d4af37!important;
+    }
+
+    .proTooth.missing path:first-child{
+      fill:#4b5563!important;
+    }
+
+    .proTooth.extraction path:first-child{
+      fill:#fb7185!important;
+    }
+
+    .proTooth.implant path:first-child{
+      fill:#2dd4bf!important;
+    }
+
+    /* ===== Center lines ===== */
 
     .proMidLine{
       position:absolute!important;
       left:50%!important;
-      top:18%!important;
-      height:70%!important;
-      border-left:1px dashed rgba(212,175,55,.32)!important;
+      top:20%!important;
+      height:66%!important;
+      border-left:1px dashed rgba(212,175,55,.28)!important;
     }
 
     .proHorizontalLine{
@@ -282,8 +327,10 @@ function injectExtraStyles() {
       left:12%!important;
       right:12%!important;
       top:55%!important;
-      border-top:1px dashed rgba(212,175,55,.32)!important;
+      border-top:1px dashed rgba(212,175,55,.28)!important;
     }
+
+    /* ===== Labels ===== */
 
     .proMouthLabel{
       position:absolute!important;
@@ -295,10 +342,18 @@ function injectExtraStyles() {
       opacity:.65!important;
     }
 
-    .proMouthLabel.upper{top:43%!important}
-    .proMouthLabel.lower{top:61%!important}
+    .proMouthLabel.upper{
+      top:43%!important;
+    }
 
-    .modal.hidden,.photoViewer.hidden{display:none!important}
+    .proMouthLabel.lower{
+      top:62%!important;
+    }
+
+    .modal.hidden,
+    .photoViewer.hidden{
+      display:none!important;
+    }
   `;
 
   document.head.appendChild(style);
@@ -472,16 +527,16 @@ function renderToothChart(p) {
   const teeth = data.teeth || {};
 
   const teethData = [
-    [18,12,48,-58],[17,15,39,-50],[16,20,31,-40],[15,27,24,-30],
-    [14,35,19,-18],[13,43,15,-8],[12,49,12,-3],[11,54,11,0],
-    [21,60,11,0],[22,66,12,3],[23,72,15,8],[24,80,19,18],
-    [25,88,24,30],[26,94,31,40],[27,99,39,50],[28,102,48,58],
+  [18,18,44,-48],[17,20,36,-42],[16,25,29,-34],[15,31,24,-25],
+  [14,38,20,-15],[13,45,17,-7],[12,50,15,-3],[11,55,14,0],
+  [21,61,14,0],[22,66,15,3],[23,71,17,7],[24,78,20,15],
+  [25,85,24,25],[26,91,29,34],[27,96,36,42],[28,98,44,48],
 
-    [48,12,62,-122],[47,15,71,-130],[46,21,79,-142],[45,29,86,-152],
-    [44,38,91,-162],[43,47,95,-172],[42,53,97,-178],[41,57,98,180],
-    [31,63,98,180],[32,68,97,178],[33,75,95,172],[34,84,91,162],
-    [35,93,86,152],[36,100,79,142],[37,104,71,130],[38,106,62,122]
-  ];
+  [48,18,58,-132],[47,20,66,-138],[46,25,73,-146],[45,32,79,-155],
+  [44,39,84,-164],[43,46,88,-172],[42,51,90,-178],[41,56,91,180],
+  [31,61,91,180],[32,66,90,178],[33,71,88,172],[34,78,84,164],
+  [35,85,79,155],[36,92,73,146],[37,97,66,138],[38,98,58,132]
+];
 
   return `
     <div class="proMouthChart">
