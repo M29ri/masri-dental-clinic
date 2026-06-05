@@ -207,22 +207,25 @@ function injectExtraStyles() {
       max-width:100%!important;
     }
 
-   .proMouthChart{
-  position:relative!important;
-  width:100%!important;
-  max-width:none!important;
-  height:620px!important;
-  margin:20px 0!important;
-  left:-18px!important;
-  padding:0 70px!important;
-  box-sizing:border-box!important;
-  border-radius:34px!important;
-  background:radial-gradient(circle at center,#111827,#070b10)!important;
-  border:1px solid #263241!important;
-  overflow:hidden!important;
-  display:block!important;
-}
+ .proMouthChart{
+position:relative!important;
+width:100%!important;
+max-width:680px!important;
+height:620px!important;
+padding:0 42px!important;
+box-sizing:border-box!important;
+margin:20px auto!important;
+left:-8px!important;
 
+border-radius:34px!important;
+background:radial-gradient(circle at center,#111827,#070b10)!important;
+border:1px solid #263241!important;
+overflow:hidden!important;
+
+display:flex!important;
+justify-content:center!important;
+align-items:center!important;
+}
 .proTooth{
   position:absolute!important;
   transform:translate(-50%,-50%)!important;
@@ -338,6 +341,37 @@ function injectExtraStyles() {
     .photoViewer.hidden{
       display:none!important;
     }
+    .photoGrid{
+display:grid!important;
+grid-template-columns:repeat(auto-fill,minmax(120px,1fr))!important;
+gap:12px!important;
+margin-top:12px!important;
+}
+
+.photoCard{
+position:relative!important;
+overflow:hidden!important;
+border-radius:18px!important;
+height:120px!important;
+background:#111827!important;
+border:1px solid #263241!important;
+}
+
+.photoCard img{
+width:100%!important;
+height:100%!important;
+object-fit:cover!important;
+display:block!important;
+border-radius:18px!important;
+cursor:pointer!important;
+}
+
+#bigPhoto{
+max-width:90vw!important;
+max-height:85vh!important;
+object-fit:contain!important;
+border-radius:20px!important;
+}
   `;
 
   document.head.appendChild(style);
@@ -519,9 +553,9 @@ function renderToothChart(p) {
   [23,74,14,2],
   [24,80,19,5],
   [25,86,25,10],
-  [26,92,31,16],
-  [27,96,37,22],
-  [28,98,44,28],
+  [26,88,23,14],
+  [27,94,28,19],
+  [28,98,35,24],
 
   // LOWER RIGHT
   [48,18,60,-152],
@@ -539,9 +573,9 @@ function renderToothChart(p) {
   [33,71,92,180],
   [34,77,88,176],
   [35,84,81,170],
-  [36,90,74,164],
-  [37,96,67,158],
-  [38,98,60,152]
+  [36,88,77,-14],
+  [37,94,72,-19],
+  [38,98,65,-24],
 
 ];
 
