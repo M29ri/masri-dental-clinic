@@ -865,7 +865,86 @@ window.addAppointment = async function(id) { const p = patients.find(x => x.id =
 window.deleteAppointment = async function(id, index) { const p = patients.find(x => x.id === id); if (!p) return alert("Patient not found or you do not have access."); const data = parseClinicData(p.progress_notes); data.appointments.splice(index, 1); await api(`patients?id=eq.${id}`, { method:"PATCH", body: JSON.stringify({ progress_notes: saveClinicData(data) }) }); await loadPatients(); openPatient(id); };
 window.addPayment = async function(id) { const p = patients.find(x => x.id === id); if (!p) return alert("Patient not found or you do not have access."); const data = parseClinicData(p.progress_notes); const total = prompt("Total treatment cost:"); if (!total) return; const paid = prompt("Paid amount:") || "0"; data.payments.unshift({ date: new Date().toLocaleString(), total: Number(total || 0), paid: Number(paid || 0) }); await api(`patients?id=eq.${id}`, { method:"PATCH", body: JSON.stringify({ progress_notes: saveClinicData(data) }) }); await loadPatients(); openPatient(id); };
 window.deletePayment = async function(id, index) { const p = patients.find(x => x.id === id); if (!p) return alert("Patient not found or you do not have access."); const data = parseClinicData(p.progress_notes); data.payments.splice(index, 1); await api(`patients?id=eq.${id}`, { method:"PATCH", body: JSON.stringify({ progress_notes: saveClinicData(data) }) }); await loadPatients(); openPatient(id); };
-window.showBeforeAfter = function(id) { const p = patients.find(x => x.id === id); if (!p || !(p.photos || []).length) return alert("No photos available for comparison."); const photos = p.photos || []; if (photos.length < 2) return alert("You need at least 2 photos for before / after comparison."); const before = photos[Number(prompt(`Choose BEFORE photo number: 1 to ${photos.length}`, "1")) - 1]; const after = photos[Number(prompt(`Choose AFTER photo number: 1 to ${photos.length}`, String(photos.length))) - 1]; if (!before || !after) return alert("Invalid photo number."); const box = document.createElement("div"); box.className = "compareBox"; box.innerHTML = `<h3 class="sectionTitle">Before / After Comparison</h3><div class="compareGrid"><div><div class="compareLabel">Before</div><img src="${before.url}"></div><div><div class="compareLabel">After</div><img src="${after.url}"></div></div>`; $("details").prepend(box); };
+function photoUrl(photo){
+  return typeof photo === "string" ? photo : (photo?.url || "");
+}
+
+window.showBeforeAfter = function(id) {
+  const p = patients.find(x => x.id === id);
+  if (!p) return alert("Patient not found.");
+
+  const photos = (p.photos || []).map(photoUrl).filter(Boolean);
+  if (photos.length < 2) return alert("Need at least 2 photos.");
+
+  const old = document.getElementById("beforeAfterModal");
+  if (old) old.remove();
+
+  const modal = document.createElement("div");
+  modal.id = "beforeAfterModal";
+  modal.innerHTML = `
+    <div style="
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.97);
+      z-index:999999;
+      overflow:auto;
+      padding:80px 16px 30px;
+    ">
+      <button onclick="document.getElementById('beforeAfterModal').remove()" style="
+        position:fixed;
+        top:20px;
+        right:20px;
+        width:58px;
+        height:58px;
+        border-radius:50%;
+        border:none;
+        background:#ef4444;
+        color:white;
+        font-size:28px;
+        font-weight:900;
+        z-index:1000000;
+      ">✕</button>
+
+      <h2 style="color:#d4af37;text-align:center;margin-bottom:18px;">
+        Before / After Comparison
+      </h2>
+
+      <div style="
+        max-width:520px;
+        margin:0 auto;
+        display:grid;
+        grid-template-columns:1fr;
+        gap:18px;
+      ">
+        <div>
+          <b style="color:white">Before</b>
+          <img src="${photos[0]}" style="
+            width:100%;
+            max-height:360px;
+            object-fit:contain;
+            border-radius:18px;
+            background:#111827;
+            display:block;
+          ">
+        </div>
+
+        <div>
+          <b style="color:white">After</b>
+          <img src="${photos[1]}" style="
+            width:100%;
+            max-height:360px;
+            object-fit:contain;
+            border-radius:18px;
+            background:#111827;
+            display:block;
+          ">
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+};
 
 function openPhotoViewer(index = 0) {
   if (!currentPhotoList.length) return;
@@ -877,7 +956,6 @@ function openPhotoViewer(index = 0) {
 
   const modal = document.createElement("div");
   modal.id = "photoModal";
-
   modal.innerHTML = `
     <div style="
       position:fixed;
@@ -889,35 +967,34 @@ function openPhotoViewer(index = 0) {
       justify-content:center;
       flex-direction:column;
     ">
-
       <button onclick="closePhotoViewer()" style="
         position:fixed;
         top:20px;
         right:20px;
-        width:60px;
-        height:60px;
+        width:58px;
+        height:58px;
         border-radius:50%;
         border:none;
         background:#ef4444;
         color:white;
-        font-size:30px;
-        font-weight:bold;
+        font-size:28px;
+        font-weight:900;
         z-index:1000000;
       ">✕</button>
 
       <img id="viewerImage"
         src="${currentPhotoList[currentPhotoIndex]}"
         style="
-          max-width:95vw;
-          max-height:82vh;
+          max-width:94vw;
+          max-height:78vh;
           object-fit:contain;
           border-radius:18px;
         "
-      />
+      >
 
       <div style="
         position:fixed;
-        bottom:30px;
+        bottom:28px;
         display:flex;
         gap:16px;
       ">
@@ -925,18 +1002,18 @@ function openPhotoViewer(index = 0) {
           background:#d4af37;
           border:none;
           border-radius:18px;
-          padding:16px 24px;
-          font-size:22px;
-          font-weight:bold;
+          padding:14px 22px;
+          font-size:20px;
+          font-weight:900;
         ">⬅ Prev</button>
 
         <button onclick="nextPhoto()" style="
           background:#d4af37;
           border:none;
           border-radius:18px;
-          padding:16px 24px;
-          font-size:22px;
-          font-weight:bold;
+          padding:14px 22px;
+          font-size:20px;
+          font-weight:900;
         ">Next ➡</button>
       </div>
     </div>
@@ -944,11 +1021,34 @@ function openPhotoViewer(index = 0) {
 
   document.body.appendChild(modal);
 }
-function closePhotoViewer() { $("photoViewer")?.classList.add("hidden"); }
-function nextPhoto() { if (!currentPhotoList.length) return; currentPhotoIndex = (currentPhotoIndex + 1) % currentPhotoList.length; $("viewerImage").src = currentPhotoList[currentPhotoIndex].url; }
-function prevPhoto() { if (!currentPhotoList.length) return; currentPhotoIndex = (currentPhotoIndex - 1 + currentPhotoList.length) % currentPhotoList.length; $("viewerImage").src = currentPhotoList[currentPhotoIndex].url; }
-window.viewPhoto = function(url) { const patient = patients.find(p => (p.photos || []).some(ph => ph.url === url)); currentPhotoList = patient?.photos || [{ url }]; currentPhotoIndex = currentPhotoList.findIndex(ph => ph.url === url); if (currentPhotoIndex < 0) currentPhotoIndex = 0; openPhotoViewer(currentPhotoIndex); };
-window.deletePhoto = async function(patientId, index) { if (!canEdit()) return alert("You don't have permission to delete photos"); const p = patients.find(x => x.id === patientId); if (!p) return alert("Patient not found or you do not have access."); if (!confirm("Delete this photo?")) return; const photos = [...(p.photos || [])]; photos.splice(index, 1); await api(`patients?id=eq.${patientId}`, { method:"PATCH", body: JSON.stringify({ photos }) }); await loadPatients(); openPatient(patientId); };
+
+function closePhotoViewer() {
+  document.getElementById("photoModal")?.remove();
+}
+
+function nextPhoto() {
+  if (!currentPhotoList.length) return;
+  currentPhotoIndex = (currentPhotoIndex + 1) % currentPhotoList.length;
+  const img = document.getElementById("viewerImage");
+  if (img) img.src = currentPhotoList[currentPhotoIndex];
+}
+
+function prevPhoto() {
+  if (!currentPhotoList.length) return;
+  currentPhotoIndex = (currentPhotoIndex - 1 + currentPhotoList.length) % currentPhotoList.length;
+  const img = document.getElementById("viewerImage");
+  if (img) img.src = currentPhotoList[currentPhotoIndex];
+}
+
+window.viewPhoto = function(url) {
+  currentPhotoList = [url];
+  openPhotoViewer(0);
+};
+
+window.openPhotoViewer = openPhotoViewer;
+window.closePhotoViewer = closePhotoViewer;
+window.nextPhoto = nextPhoto;
+window.prevPhoto = prevPhoto;
 window.showQR = function(id) { const p = patients.find(x => x.id === id); if (!p) return alert("Patient not found or you do not have access."); $("qrcode").innerHTML = ""; const patientLink = location.origin + location.pathname + "?patient=" + encodeURIComponent(id); new QRCode($("qrcode"), { text: patientLink, width: 220, height: 220 }); $("qrModal").classList.remove("hidden"); };
 
 window.backupData = function() { const backup = { exported_at: new Date().toISOString(), user: currentUser, patients }; const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" }); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = `masri-dental-clinic-backup-${Date.now()}.json`; a.click(); URL.revokeObjectURL(url); };
