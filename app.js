@@ -510,6 +510,97 @@ border-radius:20px!important;
   margin:0 auto!important;
   padding:14px!important;
 }
+.beforeAfterPage,
+.beforeAfterComparison,
+#beforeAfterPage,
+#beforeAfter{
+  width:100%!important;
+  max-width:520px!important;
+  margin:0 auto!important;
+  padding:16px!important;
+}
+
+.beforeAfterPage img,
+.beforeAfterComparison img,
+#beforeAfterPage img,
+#beforeAfter img{
+  width:100%!important;
+  max-width:420px!important;
+  max-height:420px!important;
+  height:auto!important;
+  object-fit:contain!important;
+  display:block!important;
+  margin:10px auto!important;
+  border-radius:18px!important;
+}
+@media (min-width: 768px){
+  .proMouthChart{
+    max-width:720px!important;
+    height:620px!important;
+    padding:0 90px!important;
+    left:-10px!important;
+  }
+/* FULLSCREEN PHOTO VIEWER */
+
+.photoModal,
+#photoModal,
+.fullscreenPhoto{
+  position:fixed!important;
+  inset:0!important;
+  width:100vw!important;
+  height:100vh!important;
+  background:rgba(0,0,0,.97)!important;
+  z-index:999999!important;
+
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+}
+
+/* image */
+.photoModal img,
+#photoModal img,
+.fullscreenPhoto img{
+  max-width:95vw!important;
+  max-height:85vh!important;
+  width:auto!important;
+  height:auto!important;
+  object-fit:contain!important;
+  border-radius:18px!important;
+  box-shadow:0 0 40px rgba(0,0,0,.6)!important;
+}
+
+/* close button */
+.photoClose,
+.closePhoto,
+.photoModal .closeBtn{
+  position:fixed!important;
+  top:22px!important;
+  right:22px!important;
+
+  width:58px!important;
+  height:58px!important;
+  border-radius:50%!important;
+  border:none!important;
+
+  background:#ef4444!important;
+  color:#fff!important;
+  font-size:28px!important;
+  font-weight:900!important;
+  cursor:pointer!important;
+
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+
+  box-shadow:0 8px 25px rgba(239,68,68,.45)!important;
+  z-index:1000000!important;
+}
+
+/* hide background page scroll */
+body.modal-open{
+  overflow:hidden!important;
+}
   `;
 
   document.head.appendChild(style);
@@ -776,7 +867,83 @@ window.addPayment = async function(id) { const p = patients.find(x => x.id === i
 window.deletePayment = async function(id, index) { const p = patients.find(x => x.id === id); if (!p) return alert("Patient not found or you do not have access."); const data = parseClinicData(p.progress_notes); data.payments.splice(index, 1); await api(`patients?id=eq.${id}`, { method:"PATCH", body: JSON.stringify({ progress_notes: saveClinicData(data) }) }); await loadPatients(); openPatient(id); };
 window.showBeforeAfter = function(id) { const p = patients.find(x => x.id === id); if (!p || !(p.photos || []).length) return alert("No photos available for comparison."); const photos = p.photos || []; if (photos.length < 2) return alert("You need at least 2 photos for before / after comparison."); const before = photos[Number(prompt(`Choose BEFORE photo number: 1 to ${photos.length}`, "1")) - 1]; const after = photos[Number(prompt(`Choose AFTER photo number: 1 to ${photos.length}`, String(photos.length))) - 1]; if (!before || !after) return alert("Invalid photo number."); const box = document.createElement("div"); box.className = "compareBox"; box.innerHTML = `<h3 class="sectionTitle">Before / After Comparison</h3><div class="compareGrid"><div><div class="compareLabel">Before</div><img src="${before.url}"></div><div><div class="compareLabel">After</div><img src="${after.url}"></div></div>`; $("details").prepend(box); };
 
-function openPhotoViewer(index = 0) { if (!currentPhotoList.length) return; currentPhotoIndex = index; $("viewerImage").src = currentPhotoList[currentPhotoIndex].url; $("photoViewer").classList.remove("hidden"); }
+function openPhotoViewer(index = 0) {
+  if (!currentPhotoList.length) return;
+
+  currentPhotoIndex = index;
+
+  const old = document.getElementById("photoModal");
+  if (old) old.remove();
+
+  const modal = document.createElement("div");
+  modal.id = "photoModal";
+
+  modal.innerHTML = `
+    <div style="
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.97);
+      z-index:999999;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-direction:column;
+    ">
+
+      <button onclick="closePhotoViewer()" style="
+        position:fixed;
+        top:20px;
+        right:20px;
+        width:60px;
+        height:60px;
+        border-radius:50%;
+        border:none;
+        background:#ef4444;
+        color:white;
+        font-size:30px;
+        font-weight:bold;
+        z-index:1000000;
+      ">✕</button>
+
+      <img id="viewerImage"
+        src="${currentPhotoList[currentPhotoIndex]}"
+        style="
+          max-width:95vw;
+          max-height:82vh;
+          object-fit:contain;
+          border-radius:18px;
+        "
+      />
+
+      <div style="
+        position:fixed;
+        bottom:30px;
+        display:flex;
+        gap:16px;
+      ">
+        <button onclick="prevPhoto()" style="
+          background:#d4af37;
+          border:none;
+          border-radius:18px;
+          padding:16px 24px;
+          font-size:22px;
+          font-weight:bold;
+        ">⬅ Prev</button>
+
+        <button onclick="nextPhoto()" style="
+          background:#d4af37;
+          border:none;
+          border-radius:18px;
+          padding:16px 24px;
+          font-size:22px;
+          font-weight:bold;
+        ">Next ➡</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+}
 function closePhotoViewer() { $("photoViewer")?.classList.add("hidden"); }
 function nextPhoto() { if (!currentPhotoList.length) return; currentPhotoIndex = (currentPhotoIndex + 1) % currentPhotoList.length; $("viewerImage").src = currentPhotoList[currentPhotoIndex].url; }
 function prevPhoto() { if (!currentPhotoList.length) return; currentPhotoIndex = (currentPhotoIndex - 1 + currentPhotoList.length) % currentPhotoList.length; $("viewerImage").src = currentPhotoList[currentPhotoIndex].url; }
