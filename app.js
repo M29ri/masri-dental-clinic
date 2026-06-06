@@ -595,75 +595,103 @@ function parseClinicData(raw) {
 function saveClinicData(data) { return JSON.stringify({ visits: data.visits || [], appointments: data.appointments || [], payments: data.payments || [], teeth: data.teeth || {} }); }
 function paymentTotals(data) { const total = data.payments.reduce((s, x) => s + Number(x.total || 0), 0); const paid = data.payments.reduce((s, x) => s + Number(x.paid || 0), 0); return { total, paid, remaining: total - paid }; }
 function renderTimeline(patient) {
-return `
-  <div class="kv" style="
-    margin-bottom:16px;
-    border-radius:28px;
-    overflow:hidden;
-    background:linear-gradient(145deg,#0f172a,#111827);
-    border:1px solid rgba(212,175,55,.15);
-    box-shadow:0 12px 30px rgba(0,0,0,.22);
-  ">
+  const data = parseClinicData(patient.progress_notes);
 
-    <div style="
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      padding:18px 20px;
-      border-bottom:1px solid rgba(255,255,255,.05);
+  const timeline = [];
+
+  (data.visits || []).forEach(v => {
+    timeline.push({
+      type: "Visit",
+      title: v.treatment || "Visit",
+      date: v.date || "",
+      text: v.note || v.notes || ""
+    });
+  });
+
+  (data.payments || []).forEach(p => {
+    timeline.push({
+      type: "Payment",
+      title: "Payment",
+      date: p.date || "",
+      text: `Total: ${p.total || 0} | Paid: ${p.paid || 0}`
+    });
+  });
+
+  (data.appointments || []).forEach(a => {
+    timeline.push({
+      type: "Appointment",
+      title: "Appointment",
+      date: a.date || "",
+      text: a.note || ""
+    });
+  });
+
+  timeline.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  if (!timeline.length) {
+    return `<p style="color:var(--muted);font-weight:800">No timeline yet</p>`;
+  }
+
+  return timeline.map(item => `
+    <div class="kv" style="
+      margin-bottom:16px;
+      border-radius:28px;
+      overflow:hidden;
+      background:linear-gradient(145deg,#0f172a,#111827);
+      border:1px solid rgba(212,175,55,.15);
+      box-shadow:0 12px 30px rgba(0,0,0,.22);
     ">
-      <div>
-        <div style="
-          color:#d4af37;
-          font-weight:1000;
-          font-size:18px;
-        ">
-          ${safeText(v.treatment || "Visit")}
+      <div style="
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        gap:12px;
+        padding:18px 20px;
+        border-bottom:1px solid rgba(255,255,255,.05);
+      ">
+        <div>
+          <div style="
+            color:#d4af37;
+            font-weight:1000;
+            font-size:18px;
+          ">
+            ${safeText(item.title)}
+          </div>
+
+          <div style="
+            color:#94a3b8;
+            font-size:13px;
+            font-weight:800;
+            margin-top:4px;
+          ">
+            ${safeText(item.date)}
+          </div>
         </div>
 
         <div style="
-          color:#94a3b8;
-          font-size:13px;
-          font-weight:800;
-          margin-top:4px;
+          background:rgba(212,175,55,.12);
+          color:#d4af37;
+          padding:9px 12px;
+          border-radius:999px;
+          font-size:12px;
+          font-weight:1000;
+          white-space:nowrap;
         ">
-          ${safeText(v.date || "")}
+          ${safeText(item.type)}
         </div>
       </div>
 
-      ${
-        v.payment
-          ? `
-            <div style="
-              background:rgba(34,197,94,.15);
-              color:#22c55e;
-              padding:10px 14px;
-              border-radius:999px;
-              font-weight:1000;
-            ">
-              ${safeText(v.payment)}
-            </div>
-          `
-          : ""
-      }
+      <div style="
+        padding:18px 20px;
+        color:#dbe6f3;
+        line-height:1.6;
+        font-weight:700;
+      ">
+        ${safeText(item.text || "-")}
+      </div>
     </div>
-
-    ${
-      v.notes
-        ? `
-          <div style="
-            padding:18px 20px;
-            color:#dbe6f3;
-            line-height:1.6;
-            font-weight:700;
-          ">
-            ${safeText(v.notes)}
-          </div>
-        `
-        : ""
-    }
-  </div>
-`;
+  `).join("");
+}
 
 async function loadPatients() {
   try {
