@@ -530,6 +530,16 @@ function injectExtraStyles() {
     .primary:active,button:active{
       transform:scale(.97)!important;
     }
+
+
+    .photoTabs{display:flex!important;gap:10px!important;overflow-x:auto!important;padding-bottom:6px!important;margin-bottom:12px!important}
+    .photoTabs button{white-space:nowrap!important}
+    .photoTag{position:absolute!important;left:10px!important;top:10px!important;z-index:8!important;background:rgba(0,0,0,.68)!important;color:white!important;padding:6px 10px!important;border-radius:999px!important;font-size:12px!important;font-weight:900!important}
+    .deletePhotoBtn{position:absolute!important;top:10px!important;right:10px!important;width:42px!important;height:42px!important;border-radius:50%!important;border:3px solid rgba(255,255,255,.92)!important;background:linear-gradient(135deg,#ff4d4d,#d62828)!important;color:transparent!important;font-size:0!important;padding:0!important;z-index:99!important;display:flex!important;align-items:center!important;justify-content:center!important;box-shadow:0 10px 28px rgba(0,0,0,.45)!important}
+    .deletePhotoBtn::before{content:"X"!important;color:white!important;font-size:22px!important;font-weight:1000!important;line-height:1!important}
+    .baPick{border:2px solid #263241!important;border-radius:18px!important;overflow:hidden!important;padding:0!important;background:#111827!important;position:relative!important}
+    .baPick img{width:100%!important;height:150px!important;object-fit:cover!important;display:block!important}
+    .baTag{position:absolute!important;top:8px!important;left:8px!important;background:rgba(0,0,0,.7)!important;color:white!important;padding:6px 10px!important;border-radius:999px!important;font-size:12px!important;font-weight:900!important}
   `;
   document.head.appendChild(style);
 }
@@ -594,6 +604,7 @@ function parseClinicData(raw) {
 }
 function saveClinicData(data) { return JSON.stringify({ visits: data.visits || [], appointments: data.appointments || [], payments: data.payments || [], teeth: data.teeth || {} }); }
 function paymentTotals(data) { const total = data.payments.reduce((s, x) => s + Number(x.total || 0), 0); const paid = data.payments.reduce((s, x) => s + Number(x.paid || 0), 0); return { total, paid, remaining: total - paid }; }
+
 function renderTimeline(patient) {
   const data = parseClinicData(patient.progress_notes);
 
@@ -626,6 +637,15 @@ function renderTimeline(patient) {
     });
   });
 
+  (patient.photos || []).forEach(ph => {
+    timeline.push({
+      type: "Photo",
+      title: "Photo",
+      date: ph.date || "",
+      text: ph.category ? `${ph.category} photo added` : "Photo added"
+    });
+  });
+
   timeline.sort((a, b) => new Date(b.date) - new Date(a.date));
 
   if (!timeline.length) {
@@ -641,54 +661,14 @@ function renderTimeline(patient) {
       border:1px solid rgba(212,175,55,.15);
       box-shadow:0 12px 30px rgba(0,0,0,.22);
     ">
-      <div style="
-        display:flex;
-        justify-content:space-between;
-        align-items:center;
-        gap:12px;
-        padding:18px 20px;
-        border-bottom:1px solid rgba(255,255,255,.05);
-      ">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;padding:18px 20px;border-bottom:1px solid rgba(255,255,255,.05);">
         <div>
-          <div style="
-            color:#d4af37;
-            font-weight:1000;
-            font-size:18px;
-          ">
-            ${safeText(item.title)}
-          </div>
-
-          <div style="
-            color:#94a3b8;
-            font-size:13px;
-            font-weight:800;
-            margin-top:4px;
-          ">
-            ${safeText(item.date)}
-          </div>
+          <div style="color:#d4af37;font-weight:1000;font-size:18px;">${safeText(item.title)}</div>
+          <div style="color:#94a3b8;font-size:13px;font-weight:800;margin-top:4px;">${safeText(item.date)}</div>
         </div>
-
-        <div style="
-          background:rgba(212,175,55,.12);
-          color:#d4af37;
-          padding:9px 12px;
-          border-radius:999px;
-          font-size:12px;
-          font-weight:1000;
-          white-space:nowrap;
-        ">
-          ${safeText(item.type)}
-        </div>
+        <div style="background:rgba(212,175,55,.12);color:#d4af37;padding:9px 12px;border-radius:999px;font-size:12px;font-weight:1000;white-space:nowrap;">${safeText(item.type)}</div>
       </div>
-
-      <div style="
-        padding:18px 20px;
-        color:#dbe6f3;
-        line-height:1.6;
-        font-weight:700;
-      ">
-        ${safeText(item.text || "-")}
-      </div>
+      <div style="padding:18px 20px;color:#dbe6f3;line-height:1.6;font-weight:700;">${safeText(item.text || "-")}</div>
     </div>
   `).join("");
 }
@@ -899,52 +879,35 @@ function patientDetailsHTML(p) {
 
       <h3 class="sectionTitle">Photos / X-rays</h3>
 
-<div class="actions" style="margin-bottom:12px;">
-  <button class="secondary" onclick="setPhotoTab('all')">All</button>
-  <button class="secondary" onclick="setPhotoTab('clinical')">Clinical</button>
-  <button class="secondary" onclick="setPhotoTab('xray')">X-rays</button>
-  <button class="secondary" onclick="showBeforeAfter('${p.id}')">Before / After</button>
-</div>
+      <div class="actions photoTabs">
+        <button class="secondary" onclick="setPhotoTab('all')">All</button>
+        <button class="secondary" onclick="setPhotoTab('clinical')">Clinical</button>
+        <button class="secondary" onclick="setPhotoTab('xray')">X-rays</button>
+        <button class="secondary" onclick="showBeforeAfter('${p.id}')">Before / After</button>
+      </div>
 
-<div class="photoGrid">
-${
-  photos.length
-    ? photos.map((ph, i) => {
-        const url = photoUrl(ph);
-        const category = ph.category || "Clinical";
-        const isXray = ["x-ray", "xray", "x ray"].includes(String(category).toLowerCase());
-        const group = isXray ? "xray" : "clinical";
+      <div class="photoGrid">
+        ${
+          photos.length
+            ? photos.map((ph, i) => {
+                const url = photoUrl(ph);
+                const category = ph.category || "Clinical";
+                const isXray = ["x-ray", "xray", "x ray"].includes(String(category).toLowerCase());
+                const group = isXray ? "xray" : "clinical";
 
-        return `
-          <div class="photoItem photoTabItem ${group}">
-            <span onclick="event.stopPropagation();setPhotoCategory('${p.id}', ${i})" style="
-              position:absolute;
-              left:10px;
-              top:10px;
-              z-index:8;
-              background:rgba(0,0,0,.68);
-              color:white;
-              padding:6px 10px;
-              border-radius:999px;
-              font-size:12px;
-              font-weight:900;
-            ">
-              ${safeText(category)}
-            </span>
-
-            <img src="${url}" onclick="viewPhotoGroup('${p.id}', ${i}, '${group}')">
-
-            ${
-              canEdit()
-                ? `<button type="button" onclick="event.stopPropagation();deletePhoto('${p.id}', ${i})" aria-label="Delete photo">X</button>`
-                : ""
-            }
-          </div>
-        `;
-      }).join("")
-    : "<p>No photos</p>"
-}
-</div>
+                return `
+                  <div class="photoItem photoTabItem ${group}">
+                    <span class="photoTag" onclick="event.stopPropagation();setPhotoCategory('${p.id}', ${i})">
+                      ${safeText(category)}
+                    </span>
+                    <img src="${url}" onclick="viewPhotoGroup('${p.id}', ${i}, '${group}')">
+                    ${canEdit() ? `<button class="deletePhotoBtn" type="button" onclick="event.stopPropagation();deletePhoto('${p.id}', ${i})" aria-label="Delete photo">X</button>` : ""}
+                  </div>
+                `;
+              }).join("")
+            : "<p>No photos</p>"
+        }
+      </div>
 
       <h3 class="sectionTitle">Patient Timeline</h3>
       <div class="patientCard">${renderTimeline(p)}</div>
@@ -1074,23 +1037,18 @@ window.setToothStatus = async function(status) {
 
   closeToothPopup();
 
-  const oldPatientId = selectedToothPatientId;
-
-  await refreshPatientKeepingScroll(oldPatientId);
+  await refreshPatientKeepingScroll(selectedToothPatientId);
 };
 window.changeTooth = async function(patientId, toothNumber) {
   window.openToothPopup(patientId, toothNumber);
 };
+
 async function refreshPatientKeepingScroll(patientId) {
   const scrollY = window.scrollY;
-
-  await refreshPatientKeepingScroll(id);
-
+  await loadPatients();
+  openPatient(patientId);
   requestAnimationFrame(() => {
-    window.scrollTo({
-      top: scrollY,
-      behavior: "instant"
-    });
+    window.scrollTo({ top: scrollY, behavior: "instant" });
   });
 }
 
@@ -1136,7 +1094,7 @@ window.deletePayment = async function(id, index) {
   const data = parseClinicData(p.progress_notes);
   data.payments.splice(index, 1);
   await api(`patients?id=eq.${id}`, { method:"PATCH", body: JSON.stringify({ progress_notes: saveClinicData(data) }) });
-  await refreshPatientKeepingScroll(...)
+  await refreshPatientKeepingScroll(id);
 };
 
 function photoUrl(photo){ return typeof photo === "string" ? photo : (photo?.url || ""); }
@@ -1146,10 +1104,7 @@ window.showBeforeAfter = function(id) {
   if (!p) return alert("Patient not found.");
 
   const photos = (p.photos || []).map(photoUrl).filter(Boolean);
-
-  if (photos.length < 2) {
-    return luxuryConfirm("Before / After", "Need at least 2 photos.");
-  }
+  if (photos.length < 2) return luxuryConfirm("Before / After", "Need at least 2 photos.");
 
   document.getElementById("beforeAfterModal")?.remove();
 
@@ -1158,188 +1113,65 @@ window.showBeforeAfter = function(id) {
 
   const modal = document.createElement("div");
   modal.id = "beforeAfterModal";
-
   modal.innerHTML = `
     <button type="button" class="beforeAfterClose" id="beforeAfterClose">X</button>
-
     <h2 class="beforeAfterTitle">Choose Before / After</h2>
-
     <div class="beforeAfterContainer">
-      <p style="color:white;font-weight:800;text-align:center;">
-        Tap one photo as Before, then tap another as After.
-      </p>
-
-      <div id="baGrid" style="
-        display:grid;
-        grid-template-columns:repeat(2,1fr);
-        gap:12px;
-      ">
+      <p style="color:white;font-weight:800;text-align:center;">Tap one photo as Before, then tap another as After.</p>
+      <div id="baGrid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;">
         ${photos.map((url, i) => `
-          <button type="button" class="baPick" data-index="${i}" style="
-            border:2px solid #263241;
-            border-radius:18px;
-            overflow:hidden;
-            padding:0;
-            background:#111827;
-            position:relative;
-          ">
-            <img src="${url}" style="
-              width:100%;
-              height:150px;
-              object-fit:cover;
-              display:block;
-            ">
-            <span class="baTag" style="
-              position:absolute;
-              top:8px;
-              left:8px;
-              background:rgba(0,0,0,.7);
-              color:white;
-              padding:6px 10px;
-              border-radius:999px;
-              font-size:12px;
-              font-weight:900;
-            ">Select</span>
+          <button type="button" class="baPick" data-index="${i}">
+            <img src="${url}">
+            <span class="baTag">Select</span>
           </button>
         `).join("")}
       </div>
-
-      <button type="button" id="createBA" style="
-        margin-top:18px;
-        width:100%;
-        padding:16px;
-        border:none;
-        border-radius:20px;
-        background:linear-gradient(135deg,#f5d76e,#b8860b);
-        color:#050505;
-        font-size:18px;
-        font-weight:1000;
-      ">
-        Create Comparison
-      </button>
-
+      <button type="button" id="createBA" style="margin-top:18px;width:100%;padding:16px;border:none;border-radius:20px;background:linear-gradient(135deg,#f5d76e,#b8860b);color:#050505;font-size:18px;font-weight:1000;">Create Comparison</button>
       <div id="baResult" style="display:none;margin-top:22px;">
-        <div style="
-          position:relative;
-          width:100%;
-          height:430px;
-          border-radius:24px;
-          overflow:hidden;
-          background:#000;
-          box-shadow:0 18px 45px rgba(0,0,0,.45);
-        ">
-          <img id="baAfterImg" style="
-            position:absolute;
-            inset:0;
-            width:100%;
-            height:100%;
-            object-fit:contain;
-          ">
-
-          <div id="baBeforeWrap" style="
-            position:absolute;
-            inset:0;
-            width:50%;
-            overflow:hidden;
-          ">
-            <img id="baBeforeImg" style="
-              width:100%;
-              height:100%;
-              object-fit:contain;
-            ">
+        <div style="position:relative;width:100%;height:430px;border-radius:24px;overflow:hidden;background:#000;box-shadow:0 18px 45px rgba(0,0,0,.45);">
+          <img id="baAfterImg" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;">
+          <div id="baBeforeWrap" style="position:absolute;inset:0;width:50%;overflow:hidden;">
+            <img id="baBeforeImg" style="width:100%;height:100%;object-fit:contain;">
           </div>
-
-          <input id="baSlider" type="range" min="0" max="100" value="50" style="
-            position:absolute;
-            left:5%;
-            right:5%;
-            bottom:18px;
-            width:90%;
-            z-index:5;
-          ">
-
-          <div style="
-            position:absolute;
-            left:12px;
-            top:12px;
-            background:rgba(0,0,0,.65);
-            color:white;
-            padding:8px 12px;
-            border-radius:999px;
-            font-weight:900;
-          ">Before</div>
-
-          <div style="
-            position:absolute;
-            right:12px;
-            top:12px;
-            background:rgba(0,0,0,.65);
-            color:white;
-            padding:8px 12px;
-            border-radius:999px;
-            font-weight:900;
-          ">After</div>
+          <input id="baSlider" type="range" min="0" max="100" value="50" style="position:absolute;left:5%;right:5%;bottom:18px;width:90%;z-index:5;">
+          <div style="position:absolute;left:12px;top:12px;background:rgba(0,0,0,.65);color:white;padding:8px 12px;border-radius:999px;font-weight:900;">Before</div>
+          <div style="position:absolute;right:12px;top:12px;background:rgba(0,0,0,.65);color:white;padding:8px 12px;border-radius:999px;font-weight:900;">After</div>
         </div>
       </div>
-    </div>
-  `;
+    </div>`;
 
   document.body.appendChild(modal);
-
   document.getElementById("beforeAfterClose").onclick = () => modal.remove();
 
   modal.querySelectorAll(".baPick").forEach(btn => {
     btn.onclick = () => {
       const i = Number(btn.dataset.index);
-
       if (beforeIndex === null || (beforeIndex !== null && afterIndex !== null)) {
         beforeIndex = i;
         afterIndex = null;
       } else if (i !== beforeIndex) {
         afterIndex = i;
       }
-
       modal.querySelectorAll(".baPick").forEach((b, idx) => {
         const tag = b.querySelector(".baTag");
         b.style.borderColor = "#263241";
         tag.textContent = "Select";
         tag.style.background = "rgba(0,0,0,.7)";
-
-        if (idx === beforeIndex) {
-          b.style.borderColor = "#d4af37";
-          tag.textContent = "Before";
-          tag.style.background = "#b8860b";
-        }
-
-        if (idx === afterIndex) {
-          b.style.borderColor = "#22c55e";
-          tag.textContent = "After";
-          tag.style.background = "#16a34a";
-        }
+        if (idx === beforeIndex) { b.style.borderColor = "#d4af37"; tag.textContent = "Before"; tag.style.background = "#b8860b"; }
+        if (idx === afterIndex) { b.style.borderColor = "#22c55e"; tag.textContent = "After"; tag.style.background = "#16a34a"; }
       });
     };
   });
 
   document.getElementById("createBA").onclick = () => {
-    if (beforeIndex === null || afterIndex === null) {
-      return luxuryConfirm("Before / After", "Choose both Before and After photos.");
-    }
-
+    if (beforeIndex === null || afterIndex === null) return luxuryConfirm("Before / After", "Choose both Before and After photos.");
     document.getElementById("baResult").style.display = "block";
     document.getElementById("baBeforeImg").src = photos[beforeIndex];
     document.getElementById("baAfterImg").src = photos[afterIndex];
-
     const slider = document.getElementById("baSlider");
     const beforeWrap = document.getElementById("baBeforeWrap");
-
-    slider.oninput = () => {
-      beforeWrap.style.width = slider.value + "%";
-    };
-
-    document.getElementById("baResult").scrollIntoView({
-      behavior: "smooth",
-      block: "center"
-    });
+    slider.oninput = () => { beforeWrap.style.width = slider.value + "%"; };
+    document.getElementById("baResult").scrollIntoView({ behavior: "smooth", block: "center" });
   };
 };
 
@@ -1391,13 +1223,11 @@ function prevPhoto() {
   const img = document.getElementById("viewerImage");
   if (img) img.src = currentPhotoList[currentPhotoIndex];
 }
+
 window.setPhotoTab = function(tab) {
   document.querySelectorAll(".photoTabItem").forEach(item => {
-    if (tab === "all") {
-      item.style.display = "";
-    } else {
-      item.style.display = item.classList.contains(tab) ? "" : "none";
-    }
+    if (tab === "all") item.style.display = "";
+    else item.style.display = item.classList.contains(tab) ? "" : "none";
   });
 };
 
@@ -1415,11 +1245,32 @@ window.viewPhotoGroup = function(patientId, index, group) {
     .filter(item => item.url);
 
   currentPhotoList = grouped.map(item => item.url);
-
   const clickedUrl = photoUrl(p.photos[index]);
   currentPhotoIndex = Math.max(0, currentPhotoList.indexOf(clickedUrl));
-
   openPhotoViewer(currentPhotoIndex);
+};
+
+window.setPhotoCategory = async function(patientId, index) {
+  const p = patients.find(x => x.id === patientId);
+  if (!p || !p.photos?.[index]) return;
+
+  const category = await luxuryPrompt(
+    "Photo category",
+    "Clinical / X-ray / Before / After / Other",
+    p.photos[index].category || "Clinical"
+  );
+
+  if (!category) return;
+
+  if (typeof p.photos[index] === "string") p.photos[index] = { url: p.photos[index], category };
+  else p.photos[index].category = category;
+
+  await api(`patients?id=eq.${patientId}`, {
+    method: "PATCH",
+    body: JSON.stringify({ photos: p.photos })
+  });
+
+  await refreshPatientKeepingScroll(patientId);
 };
 
 window.viewPhoto = function(url) {
@@ -1428,33 +1279,6 @@ window.viewPhoto = function(url) {
   currentPhotoIndex = Math.max(0, currentPhotoList.indexOf(url));
   openPhotoViewer(currentPhotoIndex);
 };
-window.setPhotoCategory = async function(patientId, index) {
-  const p = patients.find(x => x.id === patientId);
-  if (!p || !p.photos?.[index]) return;
-
-  const category = await luxuryPrompt(
-    "Photo category",
-    "Intraoral / Extraoral / X-ray / Before / After / Other",
-    p.photos[index].category || "Other"
-  );
-
-  if (!category) return;
-
-  if (typeof p.photos[index] === "string") {
-    p.photos[index] = {
-      url: p.photos[index],
-      category
-    };
-  } else {
-    p.photos[index].category = category;
-  }
-
-  await api(`patients?id=eq.${patientId}`, {
-    method: "PATCH",
-    body: JSON.stringify({ photos: p.photos })
-  });
-
- await refreshPatientKeepingScroll(patientId);
 
 window.deletePhoto = async function(patientId, index) {
   const p = patients.find(x => x.id === patientId);
