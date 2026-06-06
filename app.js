@@ -540,6 +540,27 @@ function injectExtraStyles() {
     .baPick{border:2px solid #263241!important;border-radius:18px!important;overflow:hidden!important;padding:0!important;background:#111827!important;position:relative!important}
     .baPick img{width:100%!important;height:150px!important;object-fit:cover!important;display:block!important}
     .baTag{position:absolute!important;top:8px!important;left:8px!important;background:rgba(0,0,0,.7)!important;color:white!important;padding:6px 10px!important;border-radius:999px!important;font-size:12px!important;font-weight:900!important}
+    #search{
+  position:sticky!important;
+  top:12px!important;
+  z-index:999!important;
+  backdrop-filter:blur(16px)!important;
+}
+
+.patientCard{
+  animation:fadeIn .25s ease!important;
+}
+
+@keyframes fadeIn{
+  from{
+    opacity:0;
+    transform:translateY(8px);
+  }
+  to{
+    opacity:1;
+    transform:translateY(0);
+  }
+}
   `;
   document.head.appendChild(style);
 }
@@ -589,7 +610,15 @@ function showPage(id) {
   document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
   $(id)?.classList.add("active");
   document.querySelector(`[data-page="${id}"]`)?.classList.add("active");
-  window.scrollTo(0, 0);
+  const savedScroll = sessionStorage.getItem("lastPatientScroll");
+
+window.scrollTo({
+  top:
+    id === "patients" && savedScroll
+      ? Number(savedScroll)
+      : 0,
+  behavior: "instant"
+});
 }
 
 function parseClinicData(raw) {
@@ -716,13 +745,153 @@ function dashboardPanel(title, arr, empty) { return `<div class="dashboardPanel"
 
 function renderPatients() {
   const q = ($("search")?.value || "").toLowerCase();
-  const filtered = patients.filter(p => (p.name || "").toLowerCase().includes(q) || (p.phone || "").includes(q) || (p.case_id || "").toLowerCase().includes(q) || (p.diagnosis || "").toLowerCase().includes(q) || (p.chief_complaint || "").toLowerCase().includes(q));
-  if ($("list")) $("list").innerHTML = filtered.length ? "" : `<div class="card"><h3>No patients yet</h3></div>`;
+
+  const filtered = [...patients]
+  .sort((a, b) => {
+    const aData = parseClinicData(a.progress_notes);
+    const bData = parseClinicData(b.progress_notes);
+
+    const aMoney = paymentTotals(aData);
+    const bMoney = paymentTotals(bData);
+
+    const aUnpaid = aMoney.remaining > 0 ? 1 : 0;
+    const bUnpaid = bMoney.remaining > 0 ? 1 : 0;
+
+    if (bUnpaid !== aUnpaid) {
+      return bUnpaid - aUnpaid;
+    }
+
+    const aLast = new Date((aData.visits || [])[0]?.date || 0);
+    const bLast = new Date((bData.visits || [])[0]?.date || 0);
+
+    return bLast - aLast;
+  })
+  .filter(p =>
+    (p.name || "").toLowerCase().includes(q) ||
+    (p.phone || "").includes(q) ||
+    (p.case_id || "").toLowerCase().includes(q)
+  );
+
+  const list = $("list");
+  if (!list) return;
+
+  if (!filtered.length) {
+    list.innerHTML = `
+      <div class="card" style="text-align:center;padding:26px;">
+        <h3>No patients yet</h3>
+        <p style="color:var(--muted);font-weight:800;">Add your first patient to start.</p>
+      </div>
+    `;
+    return;
+  }
+
+  list.innerHTML = "";
+
   filtered.forEach(p => {
-    const data = parseClinicData(p.progress_notes); const money = paymentTotals(data);
-    const card = document.createElement("div"); card.className = "patientCard";
-    card.innerHTML = `<h3>${safeText(p.name || "No name")}</h3><span class="pill">ID: ${safeText(p.case_id || "-")}</span><span class="pill">${safeText(p.phone || "No phone")}</span><span class="pill">${(p.photos || []).length} photos</span><span class="pill">${data.visits.length} visits</span><span class="pill">Remaining: ${money.remaining}</span><p style="color:var(--muted);margin-top:8px">${safeText(p.chief_complaint || p.diagnosis || "")}</p><div class="actions"><button class="primary" onclick="openPatient('${p.id}')">Open</button>${canEdit() ? `<button class="secondary" onclick="editPatient('${p.id}')">Edit</button>` : ""}<button class="secondary" onclick="showQR('${p.id}')">QR</button></div>`;
-    $("list").appendChild(card);
+    const data = parseClinicData(p.progress_notes);
+    const money = paymentTotals(data);
+    const visitsCount = (data.visits || []).length;
+    const photosCount = (p.photos || []).length;
+    const lastVisit = (data.visits || [])[0]?.date || "No visits yet";
+
+    const status =
+      money.remaining > 0
+        ? "Unpaid"
+        : visitsCount > 0
+          ? "Active"
+          : "New";
+
+    const statusColor =
+      status === "Unpaid"
+        ? "#fb7185"
+        : status === "Active"
+          ? "#22c55e"
+          : "#60a5fa";
+
+    const card = document.createElement("div");
+    card.className = "patientCard";
+
+    card.innerHTML = `
+      <div style="
+        display:flex;
+        justify-content:space-between;
+        gap:12px;
+        align-items:flex-start;
+      ">
+        <div>
+          <h3 style="margin-bottom:8px;">${safeText(p.name || "No name")}</h3>
+
+          <div style="
+            display:flex;
+            flex-wrap:wrap;
+            gap:8px;
+            margin-bottom:12px;
+          ">
+            <span class="pill">ID: ${safeText(p.case_id || p.id)}</span>
+            <span class="pill">${safeText(p.phone || "No phone")}</span>
+            ${
+              p.age
+                ? `<span class="pill">${safeText(p.age)} yrs</span>`
+                : ""
+            }
+          </div>
+        </div>
+
+        <span style="
+          background:${statusColor}22;
+          color:${statusColor};
+          border:1px solid ${statusColor}66;
+          padding:8px 12px;
+          border-radius:999px;
+          font-size:12px;
+          font-weight:1000;
+          white-space:nowrap;
+        ">
+          ${status}
+        </span>
+      </div>
+
+      <div style="
+        display:grid;
+        grid-template-columns:repeat(3,1fr);
+        gap:10px;
+        margin:14px 0;
+      ">
+        <div class="miniCard">
+          <b>Visits</b>
+          <div class="money">${visitsCount}</div>
+        </div>
+
+        <div class="miniCard">
+          <b>Photos</b>
+          <div class="money">${photosCount}</div>
+        </div>
+
+        <div class="miniCard">
+          <b>Remaining</b>
+          <div class="money ${money.remaining > 0 ? "unpaid" : ""}">
+            ${money.remaining || 0}
+          </div>
+        </div>
+      </div>
+
+      <div class="kv" style="margin:12px 0;">
+        <b>Last visit</b>
+        <div style="color:#dbe6f3;font-weight:800;">${safeText(lastVisit)}</div>
+      </div>
+
+      <div class="actions">
+        <button class="primary" onclick="openPatient('${p.id}')">Open</button>
+        <button class="secondary" onclick="showQR('${p.id}')">QR</button>
+        ${
+          canEdit()
+            ? `<button class="secondary" onclick="editPatient('${p.id}')">Edit</button>`
+            : ""
+        }
+      </div>
+    `;
+
+    list.appendChild(card);
   });
 }
 
@@ -920,7 +1089,28 @@ function patientDetailsHTML(p) {
     </div>`;
 }
 
-window.openPatient = function(id) { const p = patients.find(x => x.id === id); if (!p) return alert("Patient not found or you do not have access."); $("details").innerHTML = patientDetailsHTML(p); showPage("detail"); };
+window.openPatient = function(id) {
+  sessionStorage.setItem("lastPatientScroll", window.scrollY);
+
+  const p = patients.find(x => x.id === id);
+
+  if (!p) {
+    return alert("Patient not found.");
+  }
+
+  const data = parseClinicData(p.progress_notes);
+  const money = paymentTotals(data);
+  const photos = (p.photos || []).map(photoUrl).filter(Boolean);
+
+  $("details").innerHTML = patientDetailsHTML(
+    p,
+    data,
+    money,
+    photos
+  );
+
+  showPage("details");
+};
 window.showQR = function(id) {
   const p = patients.find(x => x.id === id);
   if (!p) return alert("Patient not found");
