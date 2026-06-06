@@ -134,240 +134,405 @@ function injectExtraStyles() {
     button,a{user-select:none!important;-webkit-user-select:none!important}
     input,textarea,select{user-select:text!important;-webkit-user-select:text!important}
 
-    .sectionTitle{margin:28px 0 14px;color:var(--gold,#d4af37);font-size:clamp(30px,6vw,42px);font-weight:1000;letter-spacing:-.8px}
-    .kv{background:#0f1620;border:1px solid var(--border,#263241);border-radius:24px;padding:18px;margin:12px 0}
-    .kv b{display:block;color:var(--gold,#d4af37);font-weight:1000;margin-bottom:8px}
-    .visitDate{color:#9ca9b8;font-size:13px;font-weight:800;margin-bottom:6px}
-    .miniGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:14px 0}
-    .miniCard{background:#0f1620;border:1px solid var(--border,#263241);border-radius:22px;padding:14px}
-    .miniCard b{display:block;color:var(--gold,#d4af37);margin-bottom:8px}.money{font-size:24px;font-weight:1000;color:#19c37d}.unpaid{color:#fb7185}
-    .timelineItem{padding:10px 0;border-bottom:1px solid rgba(255,255,255,.06)}.timelineItem:last-child{border-bottom:none}.timelineDate{color:#dbe6f3;font-weight:900}.timelineText{color:#f8fafc;font-weight:800}
+    .sectionTitle{
+      margin:28px 0 14px!important;
+      color:var(--gold,#d4af37)!important;
+      font-size:clamp(30px,6vw,42px)!important;
+      font-weight:1000!important;
+      letter-spacing:-.8px!important;
+    }
+
+    .kv{
+      background:#0f1620!important;
+      border:1px solid var(--border,#263241)!important;
+      border-radius:24px!important;
+      padding:18px!important;
+      margin:12px 0!important;
+    }
+    .kv b{display:block!important;color:var(--gold,#d4af37)!important;font-weight:1000!important;margin-bottom:8px!important}
+    .visitDate{color:#9ca9b8!important;font-size:13px!important;font-weight:800!important;margin-bottom:6px!important}
+    .miniGrid{display:grid!important;grid-template-columns:repeat(3,1fr)!important;gap:12px!important;margin:14px 0!important}
+    .miniCard{background:#0f1620!important;border:1px solid var(--border,#263241)!important;border-radius:22px!important;padding:14px!important}
+    .miniCard b{display:block!important;color:var(--gold,#d4af37)!important;margin-bottom:8px!important}
+    .money{font-size:24px!important;font-weight:1000!important;color:#19c37d!important}
+    .unpaid{color:#fb7185!important}
+
+    .timelineItem{padding:10px 0!important;border-bottom:1px solid rgba(255,255,255,.06)!important}
+    .timelineItem:last-child{border-bottom:none!important}
+    .timelineDate{color:#dbe6f3!important;font-weight:900!important}
+    .timelineText{color:#f8fafc!important;font-weight:800!important}
 
     /* Legend */
-    .toothChartBox{display:flex!important;flex-wrap:wrap!important;gap:10px!important;margin:10px 0 18px!important;overflow:visible!important;width:100%!important;justify-content:flex-start!important}
-    .legendItem{display:inline-flex!important;align-items:center!important;gap:10px!important;padding:11px 16px!important;border-radius:999px!important;background:#0f1620!important;border:1px solid #263241!important;color:#dbe6f3!important;font-weight:1000!important;white-space:nowrap!important}
-    .legendItem:before{content:"";width:14px;height:14px;border-radius:50%;display:inline-block;flex-shrink:0;background:#22c55e}.legendItem:nth-child(2):before{background:#ef4444}.legendItem:nth-child(3):before{background:#60a5fa}.legendItem:nth-child(4):before{background:#8b5cf6}.legendItem:nth-child(5):before{background:#d4af37}.legendItem:nth-child(6):before{background:#4b5563}.legendItem:nth-child(7):before{background:#fb7185}.legendItem:nth-child(8):before{background:#2dd4bf}
+    .toothChartBox{
+      display:flex!important;
+      flex-wrap:wrap!important;
+      gap:10px!important;
+      margin:10px 0 18px!important;
+      overflow:visible!important;
+      width:100%!important;
+      justify-content:flex-start!important;
+    }
+    .legendItem{
+      display:inline-flex!important;
+      align-items:center!important;
+      gap:10px!important;
+      padding:11px 16px!important;
+      border-radius:999px!important;
+      background:#0f1620!important;
+      border:1px solid #263241!important;
+      color:#dbe6f3!important;
+      font-weight:1000!important;
+      white-space:nowrap!important;
+    }
+    .legendItem:before{
+      content:"";
+      width:14px;
+      height:14px;
+      border-radius:50%;
+      display:inline-block;
+      flex-shrink:0;
+      background:#22c55e;
+    }
+    .legendItem:nth-child(2):before{background:#ef4444}
+    .legendItem:nth-child(3):before{background:#60a5fa}
+    .legendItem:nth-child(4):before{background:#8b5cf6}
+    .legendItem:nth-child(5):before{background:#d4af37}
+    .legendItem:nth-child(6):before{background:#4b5563}
+    .legendItem:nth-child(7):before{background:#fb7185}
+    .legendItem:nth-child(8):before{background:#2dd4bf}
 
     /* Tooth chart */
     .toothChart{display:block!important;width:100%!important;overflow:visible!important}
     .proMouthChart{
-  position:relative!important;
-  width:100%!important;
-  max-width:700px!important;
-  height:620px!important;
-  margin:20px auto!important;
-  left:-10px!important;
-  border-radius:34px!important;
-  background:radial-gradient(circle at center,#111827,#070b10)!important;
-  border:1px solid #263241!important;
-  overflow:hidden!important;
-}
+      position:relative!important;
+      width:100%!important;
+      max-width:760px!important;
+      height:620px!important;
+      margin:20px auto!important;
+      left:0!important;
+      border-radius:34px!important;
+      background:radial-gradient(circle at center,#111827,#070b10)!important;
+      border:1px solid #263241!important;
+      overflow:hidden!important;
+    }
     .proMidLine{
-  position:absolute!important;
-  left:61%!important;
-  top:22%!important;
-  height:58%!important;
-  border-left:1px dashed rgba(212,175,55,.28)!important;
-}
-.proMouthLabel{
-  position:absolute!important;
-  left:61%!important;
-  transform:translateX(-50%)!important;
-  color:#9ca3af!important;
-  font-weight:1000!important;
-  letter-spacing:5px!important;
-  opacity:.65!important;
-  z-index:2!important;
-}
+      position:absolute!important;
+      left:61%!important;
+      top:22%!important;
+      height:58%!important;
+      border-left:1px dashed rgba(212,175,55,.28)!important;
+      z-index:1!important;
+    }
+    .proHorizontalLine{
+      position:absolute!important;
+      left:12%!important;
+      right:12%!important;
+      top:50%!important;
+      border-top:1px dashed rgba(212,175,55,.28)!important;
+      z-index:1!important;
+    }
+    .proMouthLabel{
+      position:absolute!important;
+      left:61%!important;
+      transform:translateX(-50%)!important;
+      color:#9ca3af!important;
+      font-weight:1000!important;
+      letter-spacing:5px!important;
+      opacity:.65!important;
+      z-index:2!important;
+      pointer-events:none!important;
+    }
+    .proMouthLabel.upper{top:38%!important}
+    .proMouthLabel.lower{top:58%!important}
 
-.proMouthLabel.upper{
-  top:38%!important;
-}
+    .proTooth{
+      position:absolute!important;
+      transform:translate(-50%,-50%)!important;
+      background:transparent!important;
+      border:none!important;
+      padding:0!important;
+      width:42px!important;
+      height:54px!important;
+      display:flex!important;
+      flex-direction:column!important;
+      align-items:center!important;
+      justify-content:center!important;
+      z-index:2!important;
+      cursor:pointer!important;
+    }
+    .toothArt{
+      width:40px!important;
+      height:40px!important;
+      display:flex!important;
+      align-items:center!important;
+      justify-content:center!important;
+    }
+    .proToothSvg{
+      width:36px!important;
+      height:40px!important;
+      filter:drop-shadow(0 6px 8px rgba(0,0,0,.35))!important;
+    }
+    .proTooth.molar .proToothSvg{width:40px!important;height:40px!important}
+    .proToothSvg path:first-child{
+      fill:#fff7e6!important;
+      stroke:rgba(255,255,255,.35)!important;
+      stroke-width:2.5!important;
+      stroke-linecap:round!important;
+    }
+    .groove{fill:none!important;stroke:rgba(145,130,105,.38)!important;stroke-width:2.2!important;stroke-linecap:round!important}
+    .shine{fill:none!important;stroke:rgba(255,255,255,.35)!important;stroke-width:2.5!important;stroke-linecap:round!important}
+    .toothNo{color:#eef2f7!important;font-size:11px!important;font-weight:900!important;margin-top:1px!important;line-height:1!important}
+    .proTooth.caries path:first-child{fill:#ef4444!important}
+    .proTooth.filling path:first-child{fill:#60a5fa!important}
+    .proTooth.rct path:first-child{fill:#8b5cf6!important}
+    .proTooth.crown path:first-child{fill:#d4af37!important}
+    .proTooth.missing path:first-child{fill:#4b5563!important}
+    .proTooth.extraction path:first-child{fill:#fb7185!important}
+    .proTooth.implant path:first-child{fill:#2dd4bf!important}
 
-.proMouthLabel.lower{
-  top:58%!important;
-}
-.proHorizontalLine{
-  position:absolute!important;
-  left:12%!important;
-  right:12%!important;
-  top:50%!important;
-  border-top:1px dashed rgba(212,175,55,.28)!important;
-}
-    .proTooth{position:absolute!important;transform:translate(-50%,-50%)!important;background:transparent!important;border:none!important;padding:0!important;width:42px!important;height:54px!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;z-index:2!important;cursor:pointer!important}.toothArt{width:40px!important;height:40px!important;display:flex!important;align-items:center!important;justify-content:center!important}.proToothSvg{width:36px!important;height:40px!important;filter:drop-shadow(0 6px 8px rgba(0,0,0,.35))!important}.proTooth.molar .proToothSvg{width:40px!important;height:40px!important}.proToothSvg path:first-child{fill:#fff7e6!important;stroke:rgba(255,255,255,.35)!important;stroke-width:2.5!important;stroke-linecap:round!important}.groove{fill:none!important;stroke:rgba(145,130,105,.38)!important;stroke-width:2.2!important;stroke-linecap:round!important}.shine{fill:none!important;stroke:rgba(255,255,255,.35)!important;stroke-width:2.5!important;stroke-linecap:round!important}.toothNo{color:#eef2f7!important;font-size:11px!important;font-weight:900!important;margin-top:1px!important;line-height:1!important}.proTooth.caries path:first-child{fill:#ef4444!important}.proTooth.filling path:first-child{fill:#60a5fa!important}.proTooth.rct path:first-child{fill:#8b5cf6!important}.proTooth.crown path:first-child{fill:#d4af37!important}.proTooth.missing path:first-child{fill:#4b5563!important}.proTooth.extraction path:first-child{fill:#fb7185!important}.proTooth.implant path:first-child{fill:#2dd4bf!important}
-    @media (min-width:768px){.proMouthChart{max-width:760px!important;height:640px!important}.proTooth{width:40px!important;height:50px!important}.toothArt{width:36px!important;height:36px!important}.proToothSvg{width:34px!important;height:38px!important}.proTooth.molar .proToothSvg{width:38px!important;height:38px!important}}
+    @media (min-width:768px){
+      .proMouthChart{max-width:760px!important;height:640px!important}
+      .proTooth{width:40px!important;height:50px!important}
+      .toothArt{width:36px!important;height:36px!important}
+      .proToothSvg{width:34px!important;height:38px!important}
+      .proTooth.molar .proToothSvg{width:38px!important;height:38px!important}
+    }
 
- /* Photos */
-.photoGrid,
-.photosGrid,
-.patientPhotos,
-.grid.photoGrid{
-  display:grid!important;
-  grid-template-columns:repeat(2,1fr)!important;
-  gap:12px!important;
-  margin-top:14px!important;
-}
+    @media (max-width:480px){
+      .proMouthChart{height:560px!important;max-width:100%!important}
+      .proTooth{width:38px!important;height:50px!important}
+      .toothArt{width:36px!important;height:36px!important}
+      .proToothSvg{width:33px!important;height:36px!important}
+      .proTooth.molar .proToothSvg{width:36px!important;height:36px!important}
+      .toothNo{font-size:10px!important}
+    }
 
-.photoItem button{
-  position:absolute!important;
-  top:10px!important;
-  right:10px!important;
-  width:42px!important;
-  height:42px!important;
-  border-radius:50%!important;
-  border:3px solid rgba(255,255,255,.92)!important;
-  background:linear-gradient(135deg,#ff4d4d,#d62828)!important;
-  color:transparent!important;
-  font-size:0!important;
-  padding:0!important;
-  z-index:99!important;
-  display:flex!important;
-  align-items:center!important;
-  justify-content:center!important;
-  box-shadow:0 10px 28px rgba(0,0,0,.45)!important;
-}
-
-.photoItem button::before{
-  content:"×"!important;
-  color:white!important;
-  font-size:22px!important;
-  font-weight:1000!important;
-  line-height:1!important;
-}
-
-.photoItem,
-.photoItem *,
-button{
-  -webkit-tap-highlight-color:transparent!important;
-  user-select:none!important;
-  -webkit-user-select:none!important;
-}
+    /* Photos grid and delete */
+    .photoGrid,.photosGrid,.patientPhotos,.grid.photoGrid{
+      display:grid!important;
+      grid-template-columns:repeat(2,1fr)!important;
+      gap:12px!important;
+      margin-top:14px!important;
+    }
+    .photoItem{
+      position:relative!important;
+      overflow:hidden!important;
+      border-radius:18px!important;
+      background:#111827!important;
+      border:1px solid #263241!important;
+      min-height:170px!important;
+    }
+    .photoItem img{
+      width:100%!important;
+      height:170px!important;
+      object-fit:cover!important;
+      display:block!important;
+      border-radius:18px!important;
+      cursor:pointer!important;
+      user-select:none!important;
+      -webkit-user-select:none!important;
+    }
+    .photoItem button{
+      position:absolute!important;
+      top:10px!important;
+      right:10px!important;
+      width:42px!important;
+      height:42px!important;
+      border-radius:50%!important;
+      border:3px solid rgba(255,255,255,.92)!important;
+      background:linear-gradient(135deg,#ff4d4d,#d62828)!important;
+      color:transparent!important;
+      font-size:0!important;
+      padding:0!important;
+      z-index:99!important;
+      display:flex!important;
+      align-items:center!important;
+      justify-content:center!important;
+      box-shadow:0 10px 28px rgba(0,0,0,.45)!important;
+    }
+    .photoItem button::before{
+      content:"X"!important;
+      color:white!important;
+      font-size:22px!important;
+      font-weight:1000!important;
+      line-height:1!important;
+    }
 
     /* Fullscreen photo viewer */
-    #photoViewer,#photoModal{position:fixed!important;inset:0!important;background:rgba(0,0,0,.96)!important;z-index:999999!important;display:flex!important;align-items:center!important;justify-content:center!important;flex-direction:column!important;padding:80px 14px 100px!important;box-sizing:border-box!important}#photoViewer.hidden,#photoModal.hidden{display:none!important}#viewerImage,#bigPhoto{max-width:94vw!important;max-height:76vh!important;width:auto!important;height:auto!important;object-fit:contain!important;border-radius:20px!important;box-shadow:0 0 40px rgba(0,0,0,.6)!important}.photoClose,.photoCloseBtn,#closePhoto{position:fixed!important;top:22px!important;right:22px!important;width:60px!important;height:60px!important;border-radius:50%!important;border:none!important;background:#ef4444!important;color:white!important;font-size:0!important;font-weight:900!important;z-index:1000000!important;display:flex!important;align-items:center!important;justify-content:center!important}.photoClose:before,.photoCloseBtn:before,#closePhoto:before{content:"X"!important;font-size:28px!important;color:#fff!important}.photoControls,.photoNavBtns{position:fixed!important;bottom:28px!important;left:50%!important;transform:translateX(-50%)!important;display:flex!important;gap:16px!important;z-index:1000000!important}.photoControls button,.photoNavBtn{border:none!important;border-radius:20px!important;background:#d4af37!important;color:#000!important;padding:14px 24px!important;font-size:20px!important;font-weight:1000!important;min-width:130px!important}
+    #photoViewer,#photoModal{
+      position:fixed!important;
+      inset:0!important;
+      background:rgba(0,0,0,.96)!important;
+      z-index:999999!important;
+      display:flex!important;
+      align-items:center!important;
+      justify-content:center!important;
+      flex-direction:column!important;
+      padding:80px 14px 110px!important;
+      box-sizing:border-box!important;
+    }
+    #photoViewer.hidden,#photoModal.hidden{display:none!important}
+    #viewerImage,#bigPhoto{
+      max-width:94vw!important;
+      max-height:72vh!important;
+      width:auto!important;
+      height:auto!important;
+      object-fit:contain!important;
+      border-radius:22px!important;
+      box-shadow:0 28px 70px rgba(0,0,0,.65)!important;
+    }
+    .photoClose,.photoCloseBtn,#closePhoto{
+      position:fixed!important;
+      top:22px!important;
+      right:22px!important;
+      width:60px!important;
+      height:60px!important;
+      border-radius:50%!important;
+      border:3px solid rgba(255,255,255,.9)!important;
+      background:linear-gradient(135deg,#ff4d4d,#d62828)!important;
+      color:white!important;
+      font-size:0!important;
+      font-weight:900!important;
+      z-index:1000000!important;
+      display:flex!important;
+      align-items:center!important;
+      justify-content:center!important;
+      box-shadow:0 12px 35px rgba(255,0,0,.35)!important;
+    }
+    .photoClose:before,.photoCloseBtn:before,#closePhoto:before{
+      content:"X"!important;
+      font-size:28px!important;
+      color:#fff!important;
+      line-height:1!important;
+    }
+    .photoControls,.photoNavBtns{
+      position:fixed!important;
+      bottom:28px!important;
+      left:50%!important;
+      transform:translateX(-50%)!important;
+      display:flex!important;
+      gap:16px!important;
+      z-index:1000000!important;
+    }
+    .photoControls button,.photoNavBtn{
+      border:none!important;
+      border-radius:22px!important;
+      background:linear-gradient(135deg,#f5d76e,#b8860b)!important;
+      color:#050505!important;
+      padding:16px 22px!important;
+      font-size:18px!important;
+      font-weight:1000!important;
+      min-width:126px!important;
+      box-shadow:0 14px 35px rgba(0,0,0,.45)!important;
+    }
 
     /* Before/After */
-    #beforeAfterModal{position:fixed!important;inset:0!important;background:rgba(0,0,0,.97)!important;z-index:999999!important;overflow:auto!important;padding:80px 16px 40px!important;box-sizing:border-box!important}.beforeAfterContainer{max-width:520px!important;margin:0 auto!important;display:grid!important;gap:18px!important}.beforeAfterContainer img{width:100%!important;max-height:360px!important;object-fit:contain!important;border-radius:18px!important;background:#111827!important;display:block!important}.beforeAfterTitle{color:#d4af37!important;text-align:center!important;font-size:28px!important;font-weight:1000!important;margin-bottom:18px!important}.beforeAfterClose{position:fixed!important;top:20px!important;right:20px!important;width:58px!important;height:58px!important;border-radius:50%!important;border:none!important;background:#ef4444!important;color:white!important;font-size:0!important;z-index:1000000!important}.beforeAfterClose::before{content:"X"!important;font-size:28px!important;font-weight:900!important;color:white!important}
+    #beforeAfterModal{
+      position:fixed!important;
+      inset:0!important;
+      background:rgba(0,0,0,.96)!important;
+      z-index:999999!important;
+      overflow:auto!important;
+      padding:80px 18px 80px!important;
+      box-sizing:border-box!important;
+    }
+    .beforeAfterContainer{
+      max-width:720px!important;
+      margin:0 auto!important;
+      display:grid!important;
+      grid-template-columns:1fr!important;
+      gap:22px!important;
+    }
+    .beforeAfterContainer img{
+      width:100%!important;
+      max-height:430px!important;
+      object-fit:contain!important;
+      border-radius:24px!important;
+      background:#111827!important;
+      box-shadow:0 18px 45px rgba(0,0,0,.45)!important;
+      display:block!important;
+    }
+    .beforeAfterTitle{
+      color:#d4af37!important;
+      text-align:center!important;
+      font-size:30px!important;
+      font-weight:1000!important;
+      margin:0 0 24px!important;
+    }
+    .beforeAfterClose{
+      position:fixed!important;
+      top:22px!important;
+      right:22px!important;
+      width:58px!important;
+      height:58px!important;
+      border-radius:50%!important;
+      border:3px solid rgba(255,255,255,.9)!important;
+      background:linear-gradient(135deg,#ff4d4d,#d62828)!important;
+      color:white!important;
+      font-size:0!important;
+      z-index:1000000!important;
+      box-shadow:0 12px 35px rgba(255,0,0,.35)!important;
+    }
+    .beforeAfterClose::before{content:"X"!important;font-size:26px!important;font-weight:1000!important;color:white!important}
 
     /* Luxury prompts */
     .luxuryModal{
-position:fixed!important;
-inset:0!important;
-background:rgba(0,0,0,.72)!important;
-backdrop-filter:blur(14px)!important;
-z-index:999999!important;
-display:flex!important;
-align-items:center!important;
-justify-content:center!important;
-padding:22px!important;
-}
+      position:fixed!important;
+      inset:0!important;
+      background:rgba(0,0,0,.78)!important;
+      backdrop-filter:blur(14px)!important;
+      z-index:999999!important;
+      display:flex!important;
+      align-items:center!important;
+      justify-content:center!important;
+      padding:20px!important;
+    }
+    .luxuryBox{
+      width:100%!important;
+      max-width:440px!important;
+      background:linear-gradient(145deg,#111827,#1f2937)!important;
+      border:1px solid rgba(212,175,55,.35)!important;
+      border-radius:30px!important;
+      padding:26px!important;
+      box-shadow:0 25px 70px rgba(0,0,0,.65)!important;
+    }
+    .luxuryBox h2{color:#d4af37!important;font-size:26px!important;margin:0 0 18px!important;font-weight:1000!important}
+    .luxuryBox p{color:#dbe6f3!important;margin:0 0 18px!important;font-weight:800!important;line-height:1.5!important}
+    .luxuryBox input{
+      width:100%!important;
+      box-sizing:border-box!important;
+      padding:18px!important;
+      border-radius:18px!important;
+      border:1px solid #475569!important;
+      background:#0f172a!important;
+      color:white!important;
+      font-size:20px!important;
+      outline:none!important;
+    }
+    .luxuryBox input:focus{
+      border-color:#d4af37!important;
+      box-shadow:0 0 0 4px rgba(212,175,55,.18)!important;
+    }
+    .luxuryActions{display:flex!important;gap:12px!important;margin-top:20px!important}
+    .luxuryActions button{flex:1!important;padding:16px!important;border-radius:18px!important;border:none!important;font-size:18px!important;font-weight:900!important}
+    .luxuryActions .primary{background:linear-gradient(135deg,#f5d76e,#b8860b)!important;color:#000!important}
+    .luxuryActions .secondary{background:#263241!important;color:white!important}
 
-.luxuryBox{
-width:100%!important;
-max-width:430px!important;
-background:linear-gradient(145deg,#111827,#1f2937)!important;
-border:1px solid rgba(212,175,55,.35)!important;
-border-radius:30px!important;
-padding:28px!important;
-box-shadow:0 28px 80px rgba(0,0,0,.75)!important;
-}
-
-.luxuryBox h2{
-color:#d4af37!important;
-font-size:28px!important;
-font-weight:1000!important;
-margin:0 0 18px!important;
-}
-
-.luxuryBox p{
-color:#cbd5e1!important;
-font-size:17px!important;
-line-height:1.5!important;
-margin:0 0 18px!important;
-}
-
-.luxuryBox input{
-width:100%!important;
-box-sizing:border-box!important;
-padding:18px!important;
-border-radius:18px!important;
-border:1px solid #475569!important;
-background:#0b1220!important;
-color:white!important;
-font-size:20px!important;
-font-weight:700!important;
-outline:none!important;
-}
-
-.luxuryBox input:focus{
-border-color:#d4af37!important;
-box-shadow:0 0 0 4px rgba(212,175,55,.18)!important;
-}
-
-.luxuryActions{
-display:flex!important;
-gap:12px!important;
-margin-top:22px!important;
-}
-
-.luxuryActions button{
-flex:1!important;
-padding:16px!important;
-border-radius:18px!important;
-border:none!important;
-font-size:18px!important;
-font-weight:1000!important;
-}
-
-.luxuryActions .primary{
-background:linear-gradient(135deg,#f5d76e,#b8860b)!important;
-color:#050505!important;
-}
-
-.luxuryActions .secondary{
-background:#263241!important;
-color:white!important;
-}
-.photoControls button{
-  width:62px!important;
-  height:62px!important;
-  border-radius:20px!important;
-  border:2px solid rgba(255,255,255,.12)!important;
-  background:rgba(17,24,39,.92)!important;
-  color:#fff!important;
-  font-size:28px!important;
-  font-weight:900!important;
-  backdrop-filter:blur(18px)!important;
-  box-shadow:0 10px 30px rgba(0,0,0,.35)!important;
-}
-.statCard,
-.heroCard,
-.dashboardPanel,
-.card{
-  transition:transform .2s ease, box-shadow .2s ease!important;
-}
-
-.statCard:active,
-.heroCard:active,
-.dashboardPanel:active,
-.card:active{
-  transform:scale(.98)!important;
-}
-
-.primary,
-button{
-  transition:transform .18s ease, box-shadow .18s ease!important;
-}
-
-.primary:active,
-button:active{
-  transform:scale(.97)!important;
-}
+    .statCard,.heroCard,.dashboardPanel,.card,.patientCard{
+      transition:transform .2s ease,box-shadow .2s ease!important;
+    }
+    .statCard:active,.heroCard:active,.dashboardPanel:active,.card:active,.patientCard:active{
+      transform:scale(.985)!important;
+    }
+    .primary,button{
+      transition:transform .18s ease,box-shadow .18s ease!important;
+    }
+    .primary:active,button:active{
+      transform:scale(.97)!important;
+    }
   `;
   document.head.appendChild(style);
 }
-
-
 function luxuryPrompt(title, placeholder = "", initialValue = "") {
   return new Promise((resolve) => {
     const modal = document.createElement("div");
@@ -682,29 +847,37 @@ window.showQR = function(id) {
       align-items:center;
       justify-content:center;
       padding:20px;
+      box-sizing:border-box;
     ">
       <div style="
-        background:#111827;
-        border:1px solid #334155;
-        border-radius:28px;
+        background:linear-gradient(145deg,#111827,#1f2937);
+        border:1px solid rgba(212,175,55,.35);
+        border-radius:30px;
         padding:28px;
         text-align:center;
         max-width:360px;
         width:100%;
+        box-shadow:0 25px 70px rgba(0,0,0,.65);
+        position:relative;
       ">
         <button onclick="document.getElementById('qrModal').remove()" style="
-          float:right;
-          background:#ef4444;
+          position:absolute;
+          top:14px;
+          right:14px;
+          background:linear-gradient(135deg,#ff4d4d,#d62828);
           color:white;
-          border:none;
+          border:3px solid rgba(255,255,255,.9);
           border-radius:50%;
-          width:44px;
-          height:44px;
-          font-size:22px;
+          width:46px;
+          height:46px;
+          font-size:0;
           font-weight:900;
-        ">X</button>
+          display:flex;
+          align-items:center;
+          justify-content:center;
+        "><span style="font-size:22px;line-height:1;">X</span></button>
 
-        <h2 style="color:#d4af37;margin:20px 0;">Patient QR</h2>
+        <h2 style="color:#d4af37;margin:22px 0;">Patient QR</h2>
         <div id="qrCodeBox" style="
           background:white;
           padding:16px;
@@ -717,11 +890,14 @@ window.showQR = function(id) {
 
   document.body.appendChild(modal);
 
-  new QRCode(document.getElementById("qrCodeBox"), {
-    text: `${location.origin}${location.pathname}?patient=${p.id}`,
-    width: 220,
-    height: 220
-  });
+  const qrTarget = document.getElementById("qrCodeBox");
+  const qrText = `${location.origin}${location.pathname}?patient=${p.id}`;
+
+  if (window.QRCode) {
+    new QRCode(qrTarget, { text: qrText, width: 220, height: 220 });
+  } else {
+    qrTarget.innerHTML = `<p style="color:#111;max-width:220px;word-break:break-all;">${safeText(qrText)}</p>`;
+  }
 };
 window.editPatient = function(id) { const p = patients.find(x => x.id === id); if (!p) return alert("Patient not found or you do not have access."); fillForm(p); showPage("form"); };
 window.deletePatient = async function(id) { if (!canDelete()) return alert("Only admin can delete patients"); if (!confirm("Delete this patient?")) return; await api(`patients?id=eq.${id}`, { method: "DELETE" }); await loadPatients(); showPage("patients"); };
@@ -768,10 +944,15 @@ window.setToothStatus = async function(status) {
 
   closeToothPopup();
 
-  const scrollY = window.scrollY;
-await loadPatients();
-openPatient(selectedToothPatientId);
-setTimeout(() => window.scrollTo(0, scrollY), 50);
+  const oldPatientId = selectedToothPatientId;
+
+  await loadPatients();
+
+  requestAnimationFrame(() => {
+    openPatient(oldPatientId);
+    const chart = document.querySelector(".toothChart");
+    if (chart) chart.scrollIntoView({ behavior: "instant", block: "center" });
+  });
 };
 window.changeTooth = async function(patientId, toothNumber) {
   window.openToothPopup(patientId, toothNumber);
@@ -828,138 +1009,62 @@ window.showBeforeAfter = function(id) {
   const p = patients.find(x => x.id === id);
   if (!p) return alert("Patient not found.");
 
-  const photos = (p.photos || [])
-    .map(photoUrl)
-    .filter(Boolean);
-
+  const photos = (p.photos || []).map(photoUrl).filter(Boolean);
   if (photos.length < 2) {
-    return luxuryConfirm(
-      "Before / After",
-      "Need at least 2 photos."
-    );
+    return luxuryConfirm("Before / After", "Need at least 2 photos.");
   }
 
   document.getElementById("beforeAfterModal")?.remove();
 
   const modal = document.createElement("div");
   modal.id = "beforeAfterModal";
-
   modal.innerHTML = `
-    <div style="
-      position:fixed;
-      inset:0;
-      background:rgba(0,0,0,.92);
-      z-index:999999;
-      overflow:auto;
-      padding:30px 18px 100px;
-      box-sizing:border-box;
-    ">
+    <button type="button" class="beforeAfterClose" id="beforeAfterClose">X</button>
 
-      <button id="beforeAfterClose" style="
-        position:fixed;
-        top:22px;
-        right:22px;
-        width:64px;
-        height:64px;
-        border:none;
-        border-radius:50%;
-        background:linear-gradient(135deg,#ff4d4d,#d62828);
-        color:white;
-        font-size:30px;
-        font-weight:900;
-        box-shadow:0 12px 35px rgba(255,0,0,.35);
-        z-index:1000000;
-      ">✕</button>
+    <h2 class="beforeAfterTitle">Before / After Comparison</h2>
 
-      <h2 style="
-        text-align:center;
-        color:#d4af37;
-        font-size:34px;
-        font-weight:900;
-        margin:20px 0 40px;
-      ">
-        Before / After Comparison
-      </h2>
+    <div class="beforeAfterContainer">
+      <div>
+        <b style="color:white;font-size:18px;display:block;margin-bottom:10px;">Before</b>
+        <img src="${photos[0]}">
+      </div>
 
-      <div style="
-        max-width:900px;
-        margin:auto;
-        display:flex;
-        flex-direction:column;
-        gap:28px;
-      ">
-
-        <div style="
-          background:#111827;
-          border-radius:28px;
-          overflow:hidden;
-          border:1px solid #263241;
-          padding:20px;
-        ">
-          <h3 style="
-            color:white;
-            font-size:26px;
-            margin-bottom:16px;
-          ">
-            Before
-          </h3>
-
-          <img
-            src="${photos[0]}"
-            style="
-              width:100%;
-              border-radius:22px;
-              max-height:480px;
-              object-fit:contain;
-              background:#000;
-            "
-          />
-        </div>
-
-        <div style="
-          background:#111827;
-          border-radius:28px;
-          overflow:hidden;
-          border:1px solid #263241;
-          padding:20px;
-        ">
-          <h3 style="
-            color:white;
-            font-size:26px;
-            margin-bottom:16px;
-          ">
-            After
-          </h3>
-
-          <img
-            src="${photos[photos.length - 1]}"
-            style="
-              width:100%;
-              border-radius:22px;
-              max-height:480px;
-              object-fit:contain;
-              background:#000;
-            "
-          />
-        </div>
-
+      <div>
+        <b style="color:white;font-size:18px;display:block;margin-bottom:10px;">After</b>
+        <img src="${photos[photos.length - 1]}">
       </div>
     </div>
   `;
 
   document.body.appendChild(modal);
-
-  document.getElementById(
-    "beforeAfterClose"
-  ).onclick = () => modal.remove();
+  document.getElementById("beforeAfterClose").onclick = () => modal.remove();
 };
 
 function openPhotoViewer(index = 0) {
   if (!currentPhotoList.length) return;
+
   currentPhotoIndex = Math.max(0, Math.min(index, currentPhotoList.length - 1));
+
   const viewer = document.getElementById("photoViewer");
   const img = document.getElementById("viewerImage");
-  if (!viewer || !img) return;
+
+  if (!viewer || !img) {
+    document.getElementById("photoModal")?.remove();
+
+    const modal = document.createElement("div");
+    modal.id = "photoModal";
+    modal.innerHTML = `
+      <button type="button" class="photoCloseBtn" onclick="closePhotoViewer()">X</button>
+      <img id="viewerImage" src="${currentPhotoList[currentPhotoIndex]}">
+      <div class="photoControls">
+        <button type="button" onclick="prevPhoto()">Prev</button>
+        <button type="button" onclick="nextPhoto()">Next</button>
+      </div>
+    `;
+    document.body.appendChild(modal);
+    return;
+  }
+
   img.src = currentPhotoList[currentPhotoIndex];
   viewer.classList.remove("hidden");
 }
@@ -967,6 +1072,7 @@ function openPhotoViewer(index = 0) {
 function closePhotoViewer() {
   const viewer = document.getElementById("photoViewer");
   if (viewer) viewer.classList.add("hidden");
+  document.getElementById("photoModal")?.remove();
 }
 
 function nextPhoto() {
@@ -1023,148 +1129,13 @@ window.saveClinicBranding = async function() {
 };
 
 window.exportPDF = async function(id) {
-  const ok = await luxuryConfirm(
-    "PDF Report",
-    "Create printable PDF report for this patient?"
-  );
-
-  if (!ok) return;
-
-  const p = patients.find(x => x.id === id);
-  if (!p) return alert("Patient not found.");
-
-  const data = parseClinicData(p.progress_notes);
-  const money = paymentTotals(data);
-  const clinicName = currentUser.clinic_name || "Masri Dental Clinic";
-
-  const win = window.open("", "_blank");
-
-  win.document.write(`
-    <html>
-      <head>
-        <title>${safeText(p.name)} - Dental Report</title>
-        <style>
-         body{
-  font-family:Arial;
-  padding:30px;
-  background:#f6f7fb;
-  color:#111827;
-}
-
-.header{
-  background:linear-gradient(135deg,#111827,#1f2937);
-  color:white;
-  padding:28px;
-  border-radius:24px;
-  margin-bottom:20px;
-}
-
-h1{
-  color:#d4af37;
-  margin:0;
-  font-size:32px;
-}
-
-h2{
-  margin-top:8px;
-}
-
-.box{
-  background:white;
-  border:1px solid #e5e7eb;
-  border-radius:24px;
-  padding:22px;
-  margin:18px 0;
-  box-shadow:0 10px 30px rgba(0,0,0,.08);
-}
-
-img{
-  width:180px;
-  border-radius:18px;
-  margin:12px;
-  border:4px solid white;
-  box-shadow:0 8px 20px rgba(0,0,0,.12);
-}
-
-button{
-  padding:14px 24px;
-  border:none;
-  border-radius:18px;
-  font-weight:900;
-  font-size:16px;
-  margin-right:10px;
-}
-
-.print{
-  background:#d4af37;
-  color:#111827;
-}
-
-.cancel{
-  background:#263241;
-  color:white;
-}
-        </style>
-      </head>
-      <body>
-        <button class="cancel" onclick="window.close()">Cancel</button>
-        <button class="print" onclick="window.print()">Print / Save PDF</button>
-
-        <div class="header">
-  <h1>${safeText(clinicName)}</h1>
-  <h2>${safeText(p.name)}</h2>
-  <div>Dental Report</div>
-</div>
-
-        <div class="box">
-          <b>ID:</b> ${safeText(p.case_id || p.id)}<br>
-          <b>Phone:</b> ${safeText(p.phone)}<br>
-          <b>Diagnosis:</b> ${safeText(p.diagnosis)}<br>
-          <b>Treatment plan:</b> ${safeText(p.treatment_plan)}
-        </div>
-
-        <div class="box">
-          <b>Total:</b> ${money.total}<br>
-          <b>Paid:</b> ${money.paid}<br>
-          <b>Remaining:</b> ${money.remaining}
-        </div>
-
-        <h3 style="margin-top:30px;color:#111827">
-  Clinical Photos
-</h3>
-
-<div style="
-display:grid;
-grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
-gap:18px;
-margin-top:16px;
-">
-${(p.photos || []).map(photo => {
-  const url = typeof photo === "string" ? photo : photo.url;
-  return `
-    <div style="
-      background:white;
-      border-radius:24px;
-      overflow:hidden;
-      box-shadow:0 8px 22px rgba(0,0,0,.08);
-      border:1px solid #ececec;
-      padding:12px;
-    ">
-      <img src="${url}" style="
-        width:100%;
-        height:220px;
-        object-fit:cover;
-        border-radius:18px;
-        margin:0;
-      ">
-    </div>
-  `;
-}).join("")}
-</div>
-      </body>
-    </html>
-  `);
-
+  if (!(await luxuryConfirm("Export PDF report?", "Create printable report for this patient."))) return;
+  const p = patients.find(x => x.id === id); if (!p) return alert("Patient not found or you do not have access.");
+  const data = parseClinicData(p.progress_notes); const money = paymentTotals(data); const clinicName = currentUser.clinic_name || "Masri Dental Clinic"; const logo = currentUser.clinic_logo || ""; const win = window.open("", "_blank");
+  win.document.write(`<html><head><title>${safeText(p.name)} - Dental Report</title><style>body{margin:0;padding:0;font-family:Arial,sans-serif;background:#f4f6f8;color:#111827}.report{max-width:900px;margin:auto;padding:28px}.header{background:linear-gradient(135deg,#070b10,#111827);color:white;border-radius:24px;padding:26px;margin-bottom:20px}.header h1{margin:0;font-size:34px}.header p{margin:8px 0 0;color:#d4af37;font-weight:bold}.logo{width:90px;height:90px;object-fit:contain;margin-bottom:12px;background:white;border-radius:18px;padding:8px}.section{background:white;border-radius:18px;padding:20px;margin-bottom:16px;border:1px solid #e5e7eb}.section h2{margin:0 0 14px;font-size:22px;color:#111827;border-bottom:2px solid #d4af37;padding-bottom:8px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.item{background:#f9fafb;border-radius:14px;padding:12px;border:1px solid #e5e7eb}.label{display:block;color:#6b7280;font-size:12px;font-weight:bold;text-transform:uppercase;margin-bottom:5px}.value{font-size:15px;white-space:pre-wrap}.visit,.payment,.appointment{border-left:4px solid #d4af37;padding:12px;background:#f9fafb;border-radius:12px;margin-bottom:10px}.photos{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.photos img{width:100%;height:160px;object-fit:cover;border-radius:14px;border:1px solid #e5e7eb}.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.moneyBox{background:#111827;color:white;border-radius:16px;padding:14px}.moneyBox b{color:#d4af37;display:block;margin-bottom:6px}.footer{text-align:center;color:#6b7280;margin-top:24px;font-size:12px}@media print{body{background:white}.report{padding:0}.section,.header{break-inside:avoid}button{display:none}}</style></head><body><div class="report"><div class="header">${logo ? `<img class="logo" src="${logo}">` : ""}<h1>${safeText(clinicName)}</h1><p>Professional Dental Patient Report</p></div><div class="section"><h2>Patient Information</h2><div class="grid"><div class="item"><span class="label">Name</span><span class="value">${safeText(p.name || "-")}</span></div><div class="item"><span class="label">Patient ID</span><span class="value">${safeText(p.case_id || "-")}</span></div><div class="item"><span class="label">Phone</span><span class="value">${safeText(p.phone || "-")}</span></div><div class="item"><span class="label">Age / Gender</span><span class="value">${safeText(p.age || "-")} / ${safeText(p.gender || "-")}</span></div></div></div><div class="section"><h2>Clinical Summary</h2><div class="item"><span class="label">Chief Complaint</span><span class="value">${safeText(p.chief_complaint || "-")}</span></div><br><div class="item"><span class="label">Medical Alerts</span><span class="value">${safeText(p.medical_alerts || "-")}</span></div><br><div class="item"><span class="label">Diagnosis</span><span class="value">${safeText(p.diagnosis || "-")}</span></div><br><div class="item"><span class="label">Treatment Plan</span><span class="value">${safeText(p.treatment_plan || "-")}</span></div></div><div class="section"><h2>Payments Summary</h2><div class="summary"><div class="moneyBox"><b>Total</b>${money.total}</div><div class="moneyBox"><b>Paid</b>${money.paid}</div><div class="moneyBox"><b>Remaining</b>${money.remaining}</div></div></div><div class="section"><h2>Visits History</h2>${data.visits.length ? data.visits.map(v => `<div class="visit"><b>${safeText(v.date || "")}</b><p>${safeText(v.note || "-")}</p></div>`).join("") : "<p>No visits recorded.</p>"}</div><div class="section"><h2>Appointments</h2>${data.appointments.length ? data.appointments.map(a => `<div class="appointment"><b>${safeText(a.date || "")}</b><p>${safeText(a.note || "-")}</p></div>`).join("") : "<p>No appointments recorded.</p>"}</div><div class="section"><h2>Payments History</h2>${data.payments.length ? data.payments.map(pay => `<div class="payment"><b>${safeText(pay.date || "")}</b><p>Total: ${Number(pay.total || 0)} | Paid: ${Number(pay.paid || 0)} | Remaining: ${Number(pay.total || 0) - Number(pay.paid || 0)}</p></div>`).join("") : "<p>No payments recorded.</p>"}</div><div class="section"><h2>Photos / X-rays</h2><div class="photos">${(p.photos || []).length ? p.photos.map(ph => `<img src="${ph.url}">`).join("") : "<p>No photos recorded.</p>"}</div></div><div class="footer">Generated by ${safeText(clinicName)} Management System</div></div><div style="position:fixed;top:18px;right:18px;display:flex;gap:10px;z-index:9999;">
+<button onclick="window.close()" style="padding:12px 18px;border:none;border-radius:16px;background:#263241;color:white;font-weight:900;">Cancel</button>
+<button onclick="window.print()" style="padding:12px 18px;border:none;border-radius:16px;background:#d4af37;color:#111827;font-weight:900;">Print / Save PDF</button>
+</div></body></html>`);
   win.document.close();
 };
 
