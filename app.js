@@ -1101,14 +1101,17 @@ window.openPatient = function(id) {
     return alert("Patient not found.");
   }
 
-  const data = parseClinicData(p.progress_notes);
-  const money = paymentTotals(data);
+  try {
+    $("details").innerHTML =
+      patientDetailsHTML(p);
+  } catch (err) {
+    console.error(err);
+    alert("Patient page error");
+    return;
+  }
 
-  $("details").innerHTML = patientDetailsHTML(
-    p,
-    data,
-    money
-  );
+  showPage("details");
+};
 
   showPage("details");
 };
