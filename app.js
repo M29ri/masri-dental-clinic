@@ -1090,7 +1090,10 @@ function patientDetailsHTML(p) {
 }
 
 window.openPatient = function(id) {
-  sessionStorage.setItem("lastPatientScroll", window.scrollY);
+  sessionStorage.setItem(
+    "lastPatientScroll",
+    window.scrollY
+  );
 
   const p = patients.find(x => x.id === id);
 
@@ -1100,13 +1103,11 @@ window.openPatient = function(id) {
 
   const data = parseClinicData(p.progress_notes);
   const money = paymentTotals(data);
-  const photos = (p.photos || []).map(photoUrl).filter(Boolean);
 
   $("details").innerHTML = patientDetailsHTML(
     p,
     data,
-    money,
-    photos
+    money
   );
 
   showPage("details");
