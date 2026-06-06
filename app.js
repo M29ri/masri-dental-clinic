@@ -1076,17 +1076,23 @@ window.setToothStatus = async function(status) {
 
   const oldPatientId = selectedToothPatientId;
 
-  await loadPatients();
-
-  requestAnimationFrame(() => {
-    openPatient(oldPatientId);
-    const chart = document.querySelector(".toothChart");
-    if (chart) chart.scrollIntoView({ behavior: "instant", block: "center" });
-  });
+  await refreshPatientKeepingScroll(oldPatientId);
 };
 window.changeTooth = async function(patientId, toothNumber) {
   window.openToothPopup(patientId, toothNumber);
 };
+async function refreshPatientKeepingScroll(patientId) {
+  const scrollY = window.scrollY;
+
+  await refreshPatientKeepingScroll(id);
+
+  requestAnimationFrame(() => {
+    window.scrollTo({
+      top: scrollY,
+      behavior: "instant"
+    });
+  });
+}
 
 window.addAppointment = async function(id) {
   const p = patients.find(x => x.id === id);
@@ -1097,7 +1103,7 @@ window.addAppointment = async function(id) {
   const note = await luxuryPrompt("Appointment note", "Optional note") || "";
   data.appointments.unshift({ date, note });
   await api(`patients?id=eq.${id}`, { method: "PATCH", body: JSON.stringify({ progress_notes: saveClinicData(data) }) });
-  await loadPatients(); openPatient(id);
+  await refreshPatientKeepingScroll(id);
 };
 
 window.deleteAppointment = async function(id, index) {
@@ -1107,7 +1113,7 @@ window.deleteAppointment = async function(id, index) {
   const data = parseClinicData(p.progress_notes);
   data.appointments.splice(index, 1);
   await api(`patients?id=eq.${id}`, { method:"PATCH", body: JSON.stringify({ progress_notes: saveClinicData(data) }) });
-  await loadPatients(); openPatient(id);
+  await refreshPatientKeepingScroll(id);
 };
 
 window.addPayment = async function(id) {
@@ -1120,7 +1126,7 @@ window.addPayment = async function(id) {
   if (paid === null) return;
   data.payments.unshift({ date: new Date().toLocaleString(), total: Number(total || 0), paid: Number(paid || 0) });
   await api(`patients?id=eq.${id}`, { method:"PATCH", body: JSON.stringify({ progress_notes: saveClinicData(data) }) });
-  await loadPatients(); openPatient(id);
+  await refreshPatientKeepingScroll(id);
 };
 
 window.deletePayment = async function(id, index) {
@@ -1130,7 +1136,7 @@ window.deletePayment = async function(id, index) {
   const data = parseClinicData(p.progress_notes);
   data.payments.splice(index, 1);
   await api(`patients?id=eq.${id}`, { method:"PATCH", body: JSON.stringify({ progress_notes: saveClinicData(data) }) });
-  await loadPatients(); openPatient(id);
+  await refreshPatientKeepingScroll(...)
 };
 
 function photoUrl(photo){ return typeof photo === "string" ? photo : (photo?.url || ""); }
@@ -1448,9 +1454,7 @@ window.setPhotoCategory = async function(patientId, index) {
     body: JSON.stringify({ photos: p.photos })
   });
 
-  await loadPatients();
-  openPatient(patientId);
-};
+ await refreshPatientKeepingScroll(patientId);
 
 window.deletePhoto = async function(patientId, index) {
   const p = patients.find(x => x.id === patientId);
@@ -1458,7 +1462,7 @@ window.deletePhoto = async function(patientId, index) {
   if (!(await luxuryConfirm("Delete this photo?"))) return;
   p.photos.splice(index, 1);
   await api(`patients?id=eq.${patientId}`, { method: "PATCH", body: JSON.stringify({ photos: p.photos }) });
-  await loadPatients(); openPatient(patientId);
+  await refreshPatientKeepingScroll(patientId);
 };
 
 window.openPhotoViewer = openPhotoViewer;
