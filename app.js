@@ -112,10 +112,23 @@ function applyUserBar() {
   const doctorRole = $("doctorRole");
   const logoutBtn = $("logoutBtn");
   const brand = document.querySelector(".brand h1");
+
   if (doctorName) doctorName.textContent = currentUser.full_name || currentUser.username || "Doctor";
   if (doctorRole) doctorRole.textContent = (currentUser.role || "doctor").toUpperCase();
   if (logoutBtn) logoutBtn.onclick = logout;
-  if (brand) brand.textContent = currentUser.clinic_name || "Masri Dental Clinic";
+
+  if (brand) {
+    brand.textContent = currentUser.clinic_name || "Masri Dental Clinic";
+    const brandBox = brand.parentElement;
+    if (brandBox && currentUser.clinic_logo && !brandBox.querySelector(".brandLogoMini")) {
+      const img = document.createElement("img");
+      img.className = "brandLogoMini";
+      img.src = currentUser.clinic_logo;
+      img.alt = "Clinic logo";
+      brandBox.insertBefore(img, brand);
+    }
+  }
+
   if ($("clinicName")) $("clinicName").value = currentUser.clinic_name || "";
 }
 
@@ -540,27 +553,6 @@ function injectExtraStyles() {
     .baPick{border:2px solid #263241!important;border-radius:18px!important;overflow:hidden!important;padding:0!important;background:#111827!important;position:relative!important}
     .baPick img{width:100%!important;height:150px!important;object-fit:cover!important;display:block!important}
     .baTag{position:absolute!important;top:8px!important;left:8px!important;background:rgba(0,0,0,.7)!important;color:white!important;padding:6px 10px!important;border-radius:999px!important;font-size:12px!important;font-weight:900!important}
-    #search{
-  position:sticky!important;
-  top:12px!important;
-  z-index:999!important;
-  backdrop-filter:blur(16px)!important;
-}
-
-.patientCard{
-  animation:fadeIn .25s ease!important;
-}
-
-@keyframes fadeIn{
-  from{
-    opacity:0;
-    transform:translateY(8px);
-  }
-  to{
-    opacity:1;
-    transform:translateY(0);
-  }
-}
   `;
   document.head.appendChild(style);
 }
@@ -610,15 +602,7 @@ function showPage(id) {
   document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
   $(id)?.classList.add("active");
   document.querySelector(`[data-page="${id}"]`)?.classList.add("active");
-  const savedScroll = sessionStorage.getItem("lastPatientScroll");
-
-window.scrollTo({
-  top:
-    id === "patients" && savedScroll
-      ? Number(savedScroll)
-      : 0,
-  behavior: "instant"
-});
+  window.scrollTo(0, 0);
 }
 
 function parseClinicData(raw) {
@@ -719,58 +703,168 @@ async function loadPatients() {
   }
 }
 
+
+function getPatientStatus(patient, data = parseClinicData(patient.progress_notes), money = paymentTotals(data)) {
+  const visitsCount = (data.visits || []).length;
+  if (money.remaining > 0) return { text: "Unpaid", cls: "badgeRed" };
+  if (!patient.treatment_plan || !patient.treatment_plan.trim()) return { text: "Needs Plan", cls: "badgeGold" };
+  if (visitsCount > 0) return { text: "Active", cls: "badgeGreen" };
+  return { text: "New", cls: "badgeBlue" };
+}
+
+function nextAppointmentInfo(data) {
+  const now = new Date();
+  const future = (data.appointments || [])
+    .map(a => ({ ...a, parsed: new Date(a.date || "") }))
+    .filter(a => !isNaN(a.parsed) && a.parsed >= now)
+    .sort((a, b) => a.parsed - b.parsed);
+  return future[0] || null;
+}
+
+function lastVisitText(data) {
+  return (data.visits || [])[0]?.date || "No visits yet";
+}
+
+function normalizePhoneForWhatsApp(phone = "") {
+  let digits = String(phone || "").replace(/\D/g, "");
+  if (!digits) return "";
+  if (digits.startsWith("0")) digits = "20" + digits.slice(1);
+  if (!digits.startsWith("20") && digits.length <= 11) digits = "20" + digits;
+  return digits;
+}
+
+window.openWhatsAppReminder = function(id) {
+  const p = patients.find(x => x.id === id);
+  if (!p) return alert("Patient not found.");
+
+  const phone = normalizePhoneForWhatsApp(p.phone || "");
+  if (!phone) return alert("No valid phone number for this patient.");
+
+  const clinicName = currentUser?.clinic_name || "Masri Dental Clinic";
+  const data = parseClinicData(p.progress_notes);
+  const next = nextAppointmentInfo(data);
+  const appointmentLine = next?.date ? `\nYour next appointment: ${next.date}` : "";
+
+  const message = `Hello ${p.name || ""}, this is ${clinicName}. This is a reminder from the clinic.${appointmentLine}`;
+  window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, "_blank");
+};
+
 function renderDashboard() {
-  const dash = $("dashboardContent"); if (!dash) return;
-  let totalPhotos = 0, totalVisits = 0, unpaid = 0, totalRevenue = 0, paidToday = 0, missingPlan = 0;
-  let upcoming = [], todayAppointments = [], overdueAppointments = [];
+  const dash = $("dashboardContent");
+  if (!dash) return;
+
+  let totalPhotos = 0;
+  let totalVisits = 0;
+  let unpaid = 0;
+  let totalRevenue = 0;
+  let paidToday = 0;
+  let missingPlan = 0;
+  let todayAppointments = [];
+  let overdueAppointments = [];
+  let upcoming = [];
+  let unpaidPatients = [];
+
   patients.forEach(p => {
-    const data = parseClinicData(p.progress_notes); const money = paymentTotals(data);
-    totalPhotos += (p.photos || []).length; totalVisits += data.visits.length; unpaid += money.remaining; totalRevenue += money.paid;
-    data.payments.forEach(pay => { if (new Date(pay.date).toDateString() === new Date().toDateString()) paidToday += Number(pay.paid || 0); });
+    const data = parseClinicData(p.progress_notes);
+    const money = paymentTotals(data);
+
+    totalPhotos += (p.photos || []).length;
+    totalVisits += (data.visits || []).length;
+    unpaid += money.remaining;
+    totalRevenue += money.paid;
+
+    if (money.remaining > 0) {
+      unpaidPatients.push({ patient: p.name || "No name", phone: p.phone || "", amount: money.remaining, id: p.id });
+    }
+
+    (data.payments || []).forEach(pay => {
+      if (new Date(pay.date).toDateString() === new Date().toDateString()) {
+        paidToday += Number(pay.paid || 0);
+      }
+    });
+
     if (!p.treatment_plan || !p.treatment_plan.trim()) missingPlan++;
-    data.appointments.forEach(a => {
-      const item = { patient: p.name || "No name", phone: p.phone || "", date: a.date || "", note: a.note || "" };
-      const appDate = new Date(a.date); const today = new Date();
+
+    (data.appointments || []).forEach(a => {
+      const item = { patient: p.name || "No name", phone: p.phone || "", date: a.date || "", note: a.note || "", id: p.id };
+      const appDate = new Date(a.date);
+      const today = new Date();
+
       if (!isNaN(appDate)) {
         if (appDate.toDateString() === today.toDateString()) todayAppointments.push(item);
         else if (appDate < today) overdueAppointments.push(item);
         else upcoming.push(item);
-      } else upcoming.push(item);
+      } else {
+        upcoming.push(item);
+      }
     });
   });
-  upcoming = upcoming.slice(0, 5);
-  dash.innerHTML = `<div class="heroGrid"><div class="statCard"><small>Total patients</small><strong>${patients.length}</strong></div><div class="statCard"><small>Total photos</small><strong>${totalPhotos}</strong></div><div class="statCard"><small>Unpaid balance</small><strong>${unpaid}</strong></div><div class="statCard"><small>Total visits</small><strong>${totalVisits}</strong></div><div class="statCard"><small>Total revenue</small><strong>${totalRevenue}</strong></div><div class="statCard"><small>Paid today</small><strong>${paidToday}</strong></div></div><div class="quickActions"><button class="primary" onclick="fillForm();showPage('form')">+ New Patient</button><button class="secondary" onclick="showPage('scan')">Scan QR</button><button class="secondary" onclick="backupData()">Backup</button><button class="secondary" onclick="restoreBackup()">Restore</button></div><div class="dashboardPanel"><h2>Clinic Alerts</h2><span class="pill">${missingPlan} without treatment plan</span><span class="pill">${todayAppointments.length} today appointments</span><span class="pill">${overdueAppointments.length} overdue appointments</span></div>${dashboardPanel("Today Appointments", todayAppointments, "No appointments today")}${dashboardPanel("Overdue Appointments", overdueAppointments, "No overdue appointments")}${dashboardPanel("Upcoming Appointments", upcoming, "No upcoming appointments")}`;
+
+  upcoming = upcoming
+    .sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0))
+    .slice(0, 5);
+  unpaidPatients = unpaidPatients.sort((a, b) => b.amount - a.amount).slice(0, 5);
+
+  dash.innerHTML = `
+    <div class="heroGrid">
+      <div class="statCard"><small>Total patients</small><strong>${patients.length}</strong></div>
+      <div class="statCard"><small>Today's appointments</small><strong>${todayAppointments.length}</strong></div>
+      <div class="statCard"><small>Unpaid balance</small><strong>${unpaid}</strong></div>
+      <div class="statCard"><small>Total visits</small><strong>${totalVisits}</strong></div>
+      <div class="statCard"><small>Total revenue</small><strong>${totalRevenue}</strong></div>
+      <div class="statCard"><small>Paid today</small><strong>${paidToday}</strong></div>
+    </div>
+
+    <div class="quickActions">
+      <button class="primary" onclick="fillForm();showPage('form')">+ New Patient</button>
+      <button class="secondary" onclick="showPage('scan')">Scan QR</button>
+      <button class="secondary" onclick="backupData()">Backup</button>
+      <button class="secondary" onclick="restoreBackup()">Restore</button>
+    </div>
+
+    <div class="dashboardPanel">
+      <h2>Clinic Alerts</h2>
+      <span class="pill">${missingPlan} without treatment plan</span>
+      <span class="pill">${todayAppointments.length} today appointments</span>
+      <span class="pill">${overdueAppointments.length} overdue appointments</span>
+      <span class="pill">${unpaidPatients.length} unpaid priority</span>
+    </div>
+
+    ${dashboardPanel("Today Appointments", todayAppointments, "No appointments today")}
+    ${dashboardPanel("Upcoming Appointments", upcoming, "No upcoming appointments")}
+    ${dashboardPanel("Unpaid Priority", unpaidPatients.map(x => ({ patient: x.patient, phone: x.phone, date: `Remaining: ${x.amount}`, note: "Payment follow-up", id: x.id })), "No unpaid priority patients")}
+    ${dashboardPanel("Overdue Appointments", overdueAppointments, "No overdue appointments")}
+  `;
 }
+
 function dashboardPanel(title, arr, empty) { return `<div class="dashboardPanel"><h2>${title}</h2>${arr.length ? arr.map(a => `<div class="appointment"><b>${safeText(a.date)}</b><p>${safeText(a.patient)} - ${safeText(a.phone)}</p><p>${safeText(a.note)}</p></div>`).join("") : `<p style="color:var(--muted);font-weight:800">${empty}</p>`}</div>`; }
 
 function renderPatients() {
   const q = ($("search")?.value || "").toLowerCase();
 
   const filtered = [...patients]
-  .sort((a, b) => {
-    const aData = parseClinicData(a.progress_notes);
-    const bData = parseClinicData(b.progress_notes);
-
-    const aMoney = paymentTotals(aData);
-    const bMoney = paymentTotals(bData);
-
-    const aUnpaid = aMoney.remaining > 0 ? 1 : 0;
-    const bUnpaid = bMoney.remaining > 0 ? 1 : 0;
-
-    if (bUnpaid !== aUnpaid) {
-      return bUnpaid - aUnpaid;
-    }
-
-    const aLast = new Date((aData.visits || [])[0]?.date || 0);
-    const bLast = new Date((bData.visits || [])[0]?.date || 0);
-
-    return bLast - aLast;
-  })
-  .filter(p =>
-    (p.name || "").toLowerCase().includes(q) ||
-    (p.phone || "").includes(q) ||
-    (p.case_id || "").toLowerCase().includes(q)
-  );
+    .sort((a, b) => {
+      const aData = parseClinicData(a.progress_notes);
+      const bData = parseClinicData(b.progress_notes);
+      const aMoney = paymentTotals(aData);
+      const bMoney = paymentTotals(bData);
+      const aUnpaid = aMoney.remaining > 0 ? 1 : 0;
+      const bUnpaid = bMoney.remaining > 0 ? 1 : 0;
+      if (bUnpaid !== aUnpaid) return bUnpaid - aUnpaid;
+      const aNext = nextAppointmentInfo(aData)?.parsed || new Date(8640000000000000);
+      const bNext = nextAppointmentInfo(bData)?.parsed || new Date(8640000000000000);
+      if (+aNext !== +bNext) return aNext - bNext;
+      const aLast = new Date((aData.visits || [])[0]?.date || 0);
+      const bLast = new Date((bData.visits || [])[0]?.date || 0);
+      return bLast - aLast;
+    })
+    .filter(p =>
+      (p.name || "").toLowerCase().includes(q) ||
+      (p.phone || "").includes(q) ||
+      (p.case_id || "").toLowerCase().includes(q) ||
+      (p.diagnosis || "").toLowerCase().includes(q) ||
+      (p.chief_complaint || "").toLowerCase().includes(q)
+    );
 
   const list = $("list");
   if (!list) return;
@@ -792,87 +886,30 @@ function renderPatients() {
     const money = paymentTotals(data);
     const visitsCount = (data.visits || []).length;
     const photosCount = (p.photos || []).length;
-    const lastVisit = (data.visits || [])[0]?.date || "No visits yet";
-
-    const status =
-      money.remaining > 0
-        ? "Unpaid"
-        : visitsCount > 0
-          ? "Active"
-          : "New";
-
-    const statusColor =
-      status === "Unpaid"
-        ? "#fb7185"
-        : status === "Active"
-          ? "#22c55e"
-          : "#60a5fa";
+    const lastVisit = lastVisitText(data);
+    const next = nextAppointmentInfo(data);
+    const status = getPatientStatus(p, data, money);
 
     const card = document.createElement("div");
     card.className = "patientCard";
 
     card.innerHTML = `
-      <div style="
-        display:flex;
-        justify-content:space-between;
-        gap:12px;
-        align-items:flex-start;
-      ">
+      <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;">
         <div>
           <h3 style="margin-bottom:8px;">${safeText(p.name || "No name")}</h3>
-
-          <div style="
-            display:flex;
-            flex-wrap:wrap;
-            gap:8px;
-            margin-bottom:12px;
-          ">
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
             <span class="pill">ID: ${safeText(p.case_id || p.id)}</span>
             <span class="pill">${safeText(p.phone || "No phone")}</span>
-            ${
-              p.age
-                ? `<span class="pill">${safeText(p.age)} yrs</span>`
-                : ""
-            }
+            ${p.age ? `<span class="pill">${safeText(p.age)} yrs</span>` : ""}
           </div>
         </div>
-
-        <span style="
-          background:${statusColor}22;
-          color:${statusColor};
-          border:1px solid ${statusColor}66;
-          padding:8px 12px;
-          border-radius:999px;
-          font-size:12px;
-          font-weight:1000;
-          white-space:nowrap;
-        ">
-          ${status}
-        </span>
+        <span class="premiumBadge ${status.cls}">${status.text}</span>
       </div>
 
-      <div style="
-        display:grid;
-        grid-template-columns:repeat(3,1fr);
-        gap:10px;
-        margin:14px 0;
-      ">
-        <div class="miniCard">
-          <b>Visits</b>
-          <div class="money">${visitsCount}</div>
-        </div>
-
-        <div class="miniCard">
-          <b>Photos</b>
-          <div class="money">${photosCount}</div>
-        </div>
-
-        <div class="miniCard">
-          <b>Remaining</b>
-          <div class="money ${money.remaining > 0 ? "unpaid" : ""}">
-            ${money.remaining || 0}
-          </div>
-        </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0;">
+        <div class="miniCard"><b>Visits</b><div class="money">${visitsCount}</div></div>
+        <div class="miniCard"><b>Photos</b><div class="money">${photosCount}</div></div>
+        <div class="miniCard"><b>Remaining</b><div class="money ${money.remaining > 0 ? "unpaid" : ""}">${money.remaining || 0}</div></div>
       </div>
 
       <div class="kv" style="margin:12px 0;">
@@ -880,14 +917,13 @@ function renderPatients() {
         <div style="color:#dbe6f3;font-weight:800;">${safeText(lastVisit)}</div>
       </div>
 
+      ${next ? `<div class="kv" style="margin:12px 0;"><b>Next appointment</b><div style="color:#dbe6f3;font-weight:800;">${safeText(next.date || "")}</div></div>` : ""}
+
       <div class="actions">
         <button class="primary" onclick="openPatient('${p.id}')">Open</button>
+        ${canEdit() ? `<button class="secondary" onclick="editPatient('${p.id}')">Edit</button>` : ""}
         <button class="secondary" onclick="showQR('${p.id}')">QR</button>
-        ${
-          canEdit()
-            ? `<button class="secondary" onclick="editPatient('${p.id}')">Edit</button>`
-            : ""
-        }
+        <button class="secondary whatsappBtn" onclick="openWhatsAppReminder('${p.id}')">WhatsApp</button>
       </div>
     `;
 
@@ -1083,38 +1119,14 @@ function patientDetailsHTML(p) {
       <div class="actions">
         ${canEdit() ? `<button class="primary" onclick="editPatient('${p.id}')">Edit</button>` : ""}
         <button class="secondary" onclick="showQR('${p.id}')">QR</button>
+        <button class="secondary whatsappBtn" onclick="openWhatsAppReminder('${p.id}')">WhatsApp</button>
         <button class="secondary" onclick="exportPDF('${p.id}')">PDF</button>
         ${canDelete() ? `<button class="danger" onclick="deletePatient('${p.id}')">Delete</button>` : ""}
       </div>
     </div>`;
 }
 
-window.openPatient = function(id) {
-  sessionStorage.setItem(
-    "lastPatientScroll",
-    window.scrollY
-  );
-
-  const p = patients.find(x => x.id === id);
-
-  if (!p) {
-    return alert("Patient not found.");
-  }
-
-  try {
-    $("details").innerHTML =
-      patientDetailsHTML(p);
-  } catch (err) {
-    console.error(err);
-    alert("Patient page error");
-    return;
-  }
-
-  showPage("details");
-};
-
-  showPage("details");
-};
+window.openPatient = function(id) { const p = patients.find(x => x.id === id); if (!p) return alert("Patient not found or you do not have access."); $("details").innerHTML = patientDetailsHTML(p); showPage("detail"); };
 window.showQR = function(id) {
   const p = patients.find(x => x.id === id);
   if (!p) return alert("Patient not found");
@@ -1502,15 +1514,16 @@ window.saveClinicBranding = async function() {
       logoUrl = await uploadToBucket(LOGO_BUCKET, path, logoFile, logoFile.type || "image/png");
     }
     await api(`clinic_users?id=eq.${currentUser.id}`, { method: "PATCH", body: JSON.stringify({ clinic_name: clinicName, clinic_logo: logoUrl }) });
-    currentUser.clinic_name = clinicName; currentUser.clinic_logo = logoUrl; saveUser(currentUser); applyUserBar(); alert("Clinic branding saved.");
+    currentUser.clinic_name = clinicName; currentUser.clinic_logo = logoUrl; saveUser(currentUser); applyUserBar(); await luxuryConfirm("Clinic branding", "Clinic branding saved successfully.");
   } catch (err) { alert("Save failed: " + err.message); }
 };
 
 window.exportPDF = async function(id) {
-  if (!(await luxuryConfirm("Export PDF report?", "Create printable report for this patient."))) return;
+  const reportType = await luxuryPrompt("Report type", "full / payment / clinical", "full");
+  if (!reportType) return;
   const p = patients.find(x => x.id === id); if (!p) return alert("Patient not found or you do not have access.");
   const data = parseClinicData(p.progress_notes); const money = paymentTotals(data); const clinicName = currentUser.clinic_name || "Masri Dental Clinic"; const logo = currentUser.clinic_logo || ""; const win = window.open("", "_blank");
-  win.document.write(`<html><head><title>${safeText(p.name)} - Dental Report</title><style>body{margin:0;padding:0;font-family:Arial,sans-serif;background:#f4f6f8;color:#111827}.report{max-width:900px;margin:auto;padding:28px}.header{background:linear-gradient(135deg,#070b10,#111827);color:white;border-radius:24px;padding:26px;margin-bottom:20px}.header h1{margin:0;font-size:34px}.header p{margin:8px 0 0;color:#d4af37;font-weight:bold}.logo{width:90px;height:90px;object-fit:contain;margin-bottom:12px;background:white;border-radius:18px;padding:8px}.section{background:white;border-radius:18px;padding:20px;margin-bottom:16px;border:1px solid #e5e7eb}.section h2{margin:0 0 14px;font-size:22px;color:#111827;border-bottom:2px solid #d4af37;padding-bottom:8px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.item{background:#f9fafb;border-radius:14px;padding:12px;border:1px solid #e5e7eb}.label{display:block;color:#6b7280;font-size:12px;font-weight:bold;text-transform:uppercase;margin-bottom:5px}.value{font-size:15px;white-space:pre-wrap}.visit,.payment,.appointment{border-left:4px solid #d4af37;padding:12px;background:#f9fafb;border-radius:12px;margin-bottom:10px}.photos{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.photos img{width:100%;height:160px;object-fit:cover;border-radius:14px;border:1px solid #e5e7eb}.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.moneyBox{background:#111827;color:white;border-radius:16px;padding:14px}.moneyBox b{color:#d4af37;display:block;margin-bottom:6px}.footer{text-align:center;color:#6b7280;margin-top:24px;font-size:12px}@media print{body{background:white}.report{padding:0}.section,.header{break-inside:avoid}button{display:none}}</style></head><body><div class="report"><div class="header">${logo ? `<img class="logo" src="${logo}">` : ""}<h1>${safeText(clinicName)}</h1><p>Professional Dental Patient Report</p></div><div class="section"><h2>Patient Information</h2><div class="grid"><div class="item"><span class="label">Name</span><span class="value">${safeText(p.name || "-")}</span></div><div class="item"><span class="label">Patient ID</span><span class="value">${safeText(p.case_id || "-")}</span></div><div class="item"><span class="label">Phone</span><span class="value">${safeText(p.phone || "-")}</span></div><div class="item"><span class="label">Age / Gender</span><span class="value">${safeText(p.age || "-")} / ${safeText(p.gender || "-")}</span></div></div></div><div class="section"><h2>Clinical Summary</h2><div class="item"><span class="label">Chief Complaint</span><span class="value">${safeText(p.chief_complaint || "-")}</span></div><br><div class="item"><span class="label">Medical Alerts</span><span class="value">${safeText(p.medical_alerts || "-")}</span></div><br><div class="item"><span class="label">Diagnosis</span><span class="value">${safeText(p.diagnosis || "-")}</span></div><br><div class="item"><span class="label">Treatment Plan</span><span class="value">${safeText(p.treatment_plan || "-")}</span></div></div><div class="section"><h2>Payments Summary</h2><div class="summary"><div class="moneyBox"><b>Total</b>${money.total}</div><div class="moneyBox"><b>Paid</b>${money.paid}</div><div class="moneyBox"><b>Remaining</b>${money.remaining}</div></div></div><div class="section"><h2>Visits History</h2>${data.visits.length ? data.visits.map(v => `<div class="visit"><b>${safeText(v.date || "")}</b><p>${safeText(v.note || "-")}</p></div>`).join("") : "<p>No visits recorded.</p>"}</div><div class="section"><h2>Appointments</h2>${data.appointments.length ? data.appointments.map(a => `<div class="appointment"><b>${safeText(a.date || "")}</b><p>${safeText(a.note || "-")}</p></div>`).join("") : "<p>No appointments recorded.</p>"}</div><div class="section"><h2>Payments History</h2>${data.payments.length ? data.payments.map(pay => `<div class="payment"><b>${safeText(pay.date || "")}</b><p>Total: ${Number(pay.total || 0)} | Paid: ${Number(pay.paid || 0)} | Remaining: ${Number(pay.total || 0) - Number(pay.paid || 0)}</p></div>`).join("") : "<p>No payments recorded.</p>"}</div><div class="section"><h2>Photos / X-rays</h2><div class="photos">${(p.photos || []).length ? p.photos.map(ph => `<img src="${ph.url}">`).join("") : "<p>No photos recorded.</p>"}</div></div><div class="footer">Generated by ${safeText(clinicName)} Management System</div></div><div style="position:fixed;top:18px;right:18px;display:flex;gap:10px;z-index:9999;">
+  win.document.write(`<html><head><title>${safeText(p.name)} - Dental Report</title><style>body{margin:0;padding:0;font-family:Arial,sans-serif;background:#f4f6f8;color:#111827}.report{max-width:900px;margin:auto;padding:28px}.header{background:linear-gradient(135deg,#070b10,#111827);color:white;border-radius:24px;padding:26px;margin-bottom:20px}.header h1{margin:0;font-size:34px}.header p{margin:8px 0 0;color:#d4af37;font-weight:bold}.logo{width:90px;height:90px;object-fit:contain;margin-bottom:12px;background:white;border-radius:18px;padding:8px}.section{background:white;border-radius:18px;padding:20px;margin-bottom:16px;border:1px solid #e5e7eb}.section h2{margin:0 0 14px;font-size:22px;color:#111827;border-bottom:2px solid #d4af37;padding-bottom:8px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.item{background:#f9fafb;border-radius:14px;padding:12px;border:1px solid #e5e7eb}.label{display:block;color:#6b7280;font-size:12px;font-weight:bold;text-transform:uppercase;margin-bottom:5px}.value{font-size:15px;white-space:pre-wrap}.visit,.payment,.appointment{border-left:4px solid #d4af37;padding:12px;background:#f9fafb;border-radius:12px;margin-bottom:10px}.photos{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.photos img{width:100%;height:160px;object-fit:cover;border-radius:14px;border:1px solid #e5e7eb}.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.moneyBox{background:#111827;color:white;border-radius:16px;padding:14px}.moneyBox b{color:#d4af37;display:block;margin-bottom:6px}.footer{text-align:center;color:#6b7280;margin-top:24px;font-size:12px}@media print{body{background:white}.report{padding:0}.section,.header{break-inside:avoid}button{display:none}}</style></head><body><div class="report"><div class="header">${logo ? `<img class="logo" src="${logo}">` : ""}<h1>${safeText(clinicName)}</h1><p>Professional Dental Patient Report - ${safeText(reportType)}</p></div><div class="section"><h2>Patient Information</h2><div class="grid"><div class="item"><span class="label">Name</span><span class="value">${safeText(p.name || "-")}</span></div><div class="item"><span class="label">Patient ID</span><span class="value">${safeText(p.case_id || "-")}</span></div><div class="item"><span class="label">Phone</span><span class="value">${safeText(p.phone || "-")}</span></div><div class="item"><span class="label">Age / Gender</span><span class="value">${safeText(p.age || "-")} / ${safeText(p.gender || "-")}</span></div></div></div><div class="section"><h2>Clinical Summary</h2><div class="item"><span class="label">Chief Complaint</span><span class="value">${safeText(p.chief_complaint || "-")}</span></div><br><div class="item"><span class="label">Medical Alerts</span><span class="value">${safeText(p.medical_alerts || "-")}</span></div><br><div class="item"><span class="label">Diagnosis</span><span class="value">${safeText(p.diagnosis || "-")}</span></div><br><div class="item"><span class="label">Treatment Plan</span><span class="value">${safeText(p.treatment_plan || "-")}</span></div></div><div class="section"><h2>Payments Summary</h2><div class="summary"><div class="moneyBox"><b>Total</b>${money.total}</div><div class="moneyBox"><b>Paid</b>${money.paid}</div><div class="moneyBox"><b>Remaining</b>${money.remaining}</div></div></div><div class="section"><h2>Visits History</h2>${data.visits.length ? data.visits.map(v => `<div class="visit"><b>${safeText(v.date || "")}</b><p>${safeText(v.note || "-")}</p></div>`).join("") : "<p>No visits recorded.</p>"}</div><div class="section"><h2>Appointments</h2>${data.appointments.length ? data.appointments.map(a => `<div class="appointment"><b>${safeText(a.date || "")}</b><p>${safeText(a.note || "-")}</p></div>`).join("") : "<p>No appointments recorded.</p>"}</div><div class="section"><h2>Payments History</h2>${data.payments.length ? data.payments.map(pay => `<div class="payment"><b>${safeText(pay.date || "")}</b><p>Total: ${Number(pay.total || 0)} | Paid: ${Number(pay.paid || 0)} | Remaining: ${Number(pay.total || 0) - Number(pay.paid || 0)}</p></div>`).join("") : "<p>No payments recorded.</p>"}</div><div class="section"><h2>Photos / X-rays</h2><div class="photos">${(p.photos || []).length ? p.photos.map(ph => `<img src="${ph.url}">`).join("") : "<p>No photos recorded.</p>"}</div></div><div class="footer">Generated by ${safeText(clinicName)} Management System</div></div><div style="position:fixed;top:18px;right:18px;display:flex;gap:10px;z-index:9999;">
 <button onclick="window.close()" style="padding:12px 18px;border:none;border-radius:16px;background:#263241;color:white;font-weight:900;">Cancel</button>
 <button onclick="window.print()" style="padding:12px 18px;border:none;border-radius:16px;background:#d4af37;color:#111827;font-weight:900;">Print / Save PDF</button>
 </div></body></html>`);
