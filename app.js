@@ -553,6 +553,19 @@ function injectExtraStyles() {
     .baPick{border:2px solid #263241!important;border-radius:18px!important;overflow:hidden!important;padding:0!important;background:#111827!important;position:relative!important}
     .baPick img{width:100%!important;height:150px!important;object-fit:cover!important;display:block!important}
     .baTag{position:absolute!important;top:8px!important;left:8px!important;background:rgba(0,0,0,.7)!important;color:white!important;padding:6px 10px!important;border-radius:999px!important;font-size:12px!important;font-weight:900!important}
+  
+    /* Extra premium modules */
+    .premiumChip{display:inline-flex!important;align-items:center!important;gap:8px!important;padding:9px 12px!important;border-radius:999px!important;background:rgba(212,175,55,.12)!important;border:1px solid rgba(212,175,55,.25)!important;color:#d4af37!important;font-weight:1000!important;font-size:12px!important;margin:4px!important}
+    .dashboardList{display:grid!important;gap:12px!important;margin-top:12px!important}
+    .dashboardRow{background:#0f1620!important;border:1px solid #263241!important;border-radius:18px!important;padding:14px!important;display:flex!important;justify-content:space-between!important;gap:12px!important;align-items:center!important}
+    .dashboardRow b{color:#f8fafc!important}.dashboardRow small{color:#94a3b8!important;font-weight:800!important}
+    .templateGrid{display:grid!important;grid-template-columns:repeat(2,1fr)!important;gap:10px!important;margin:12px 0!important}
+    .templateBtn{border:none!important;border-radius:18px!important;background:#1f2937!important;color:#fff!important;padding:13px!important;font-weight:1000!important}
+    .calendarMini{display:grid!important;grid-template-columns:repeat(7,1fr)!important;gap:6px!important;margin-top:12px!important}
+    .calendarDay{border-radius:14px!important;background:#0f1620!important;border:1px solid #263241!important;min-height:54px!important;padding:8px!important;color:#e5e7eb!important;font-size:12px!important;font-weight:900!important}
+    .calendarDay.hasAppt{background:rgba(212,175,55,.14)!important;border-color:rgba(212,175,55,.35)!important;color:#d4af37!important}
+    .caseSummaryBox{background:linear-gradient(145deg,#0f172a,#111827)!important;border:1px solid rgba(212,175,55,.18)!important;border-radius:22px!important;padding:16px!important;color:#dbe6f3!important;font-weight:750!important;line-height:1.55!important}
+
   `;
   document.head.appendChild(style);
 }
@@ -746,8 +759,104 @@ window.openWhatsAppReminder = function(id) {
   const appointmentLine = next?.date ? `\nYour next appointment: ${next.date}` : "";
 
   const message = `Hello ${p.name || ""}, this is ${clinicName}. This is a reminder from the clinic.${appointmentLine}`;
-  window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, "_blank");
+  
+  const encoded = encodeURIComponent(message);
+  const appUrl = `whatsapp://send?phone=${phone}&text=${encoded}`;
+  const webUrl = `https://wa.me/${phone}?text=${encoded}`;
+  const openedAt = Date.now();
+
+  window.location.href = appUrl;
+
+  setTimeout(() => {
+    if (Date.now() - openedAt < 1800) {
+      window.open(webUrl, "_blank", "noopener,noreferrer");
+    }
+  }, 900);
 };
+
+
+function followUpItems() {
+  const now = new Date();
+  const items = [];
+
+  patients.forEach(p => {
+    const data = parseClinicData(p.progress_notes);
+    (data.appointments || []).forEach(a => {
+      const d = new Date(a.date);
+      if (!isNaN(d) && d < now) {
+        items.push({
+          id: p.id,
+          patient: p.name || "No name",
+          phone: p.phone || "",
+          date: a.date || "",
+          note: a.note || "Follow-up",
+          days: Math.max(0, Math.floor((now - d) / 86400000))
+        });
+      }
+    });
+  });
+
+  return items.sort((a, b) => b.days - a.days);
+}
+
+function monthAppointments() {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = today.getMonth();
+  const days = new Date(year, month + 1, 0).getDate();
+  const map = {};
+
+  patients.forEach(p => {
+    const data = parseClinicData(p.progress_notes);
+    (data.appointments || []).forEach(a => {
+      const d = new Date(a.date);
+      if (!isNaN(d) && d.getFullYear() === year && d.getMonth() === month) {
+        const key = d.getDate();
+        if (!map[key]) map[key] = [];
+        map[key].push({ patient: p.name || "No name", id: p.id, note: a.note || "" });
+      }
+    });
+  });
+
+  return Array.from({ length: days }, (_, i) => {
+    const day = i + 1;
+    const appts = map[day] || [];
+    return `<button class="calendarDay ${appts.length ? "hasAppt" : ""}" onclick="${appts[0] ? `openPatient('${appts[0].id}')` : ""}">
+      <div>${day}</div>
+      ${appts.length ? `<small>${appts.length} appt</small>` : ""}
+    </button>`;
+  }).join("");
+}
+
+function treatmentStats() {
+  const stats = {};
+  patients.forEach(p => {
+    const text = `${p.diagnosis || ""} ${p.treatment_plan || ""}`.toLowerCase();
+    ["rct", "crown", "implant", "extraction", "scaling", "filling"].forEach(k => {
+      if (text.includes(k)) stats[k] = (stats[k] || 0) + 1;
+    });
+  });
+  return stats;
+}
+
+function generateLocalCaseSummary(p) {
+  const data = parseClinicData(p.progress_notes);
+  const money = paymentTotals(data);
+  const lastVisit = (data.visits || [])[0];
+  const next = nextAppointmentInfo(data);
+
+  return [
+    `Patient: ${p.name || "No name"}`,
+    `Chief complaint: ${p.chief_complaint || "-"}`,
+    `Diagnosis: ${p.diagnosis || "-"}`,
+    `Treatment plan: ${p.treatment_plan || "-"}`,
+    `Visits: ${(data.visits || []).length}`,
+    `Photos: ${(p.photos || []).length}`,
+    `Financial: Total ${money.total}, Paid ${money.paid}, Remaining ${money.remaining}`,
+    lastVisit ? `Last visit: ${lastVisit.date || ""} - ${lastVisit.note || ""}` : "Last visit: none",
+    next?.date ? `Next appointment: ${next.date}` : "Next appointment: none"
+  ].join("\\n");
+}
 
 function renderDashboard() {
   const dash = $("dashboardContent");
@@ -828,6 +937,29 @@ function renderDashboard() {
       <span class="pill">${todayAppointments.length} today appointments</span>
       <span class="pill">${overdueAppointments.length} overdue appointments</span>
       <span class="pill">${unpaidPatients.length} unpaid priority</span>
+    </div>
+
+    <div class="dashboardPanel">
+      <h2>Follow-up Watch</h2>
+      ${followUpItems().slice(0, 6).length ? `<div class="dashboardList">${followUpItems().slice(0, 6).map(f => `
+        <div class="dashboardRow">
+          <div>
+            <b>${safeText(f.patient)}</b><br>
+            <small>${safeText(f.note)} - overdue ${f.days} day(s)</small>
+          </div>
+          <button class="secondary" onclick="openPatient('${f.id}')">Open</button>
+        </div>
+      `).join("")}</div>` : `<p style="color:var(--muted);font-weight:800">No missed follow-ups</p>`}
+    </div>
+
+    <div class="dashboardPanel">
+      <h2>This Month Calendar</h2>
+      <div class="calendarMini">${monthAppointments()}</div>
+    </div>
+
+    <div class="dashboardPanel">
+      <h2>Treatment Stats</h2>
+      ${Object.keys(treatmentStats()).length ? Object.entries(treatmentStats()).map(([k,v]) => `<span class="premiumChip">${safeText(k.toUpperCase())}: ${v}</span>`).join(" ") : `<p style="color:var(--muted);font-weight:800">No treatment stats yet</p>`}
     </div>
 
     ${dashboardPanel("Today Appointments", todayAppointments, "No appointments today")}
@@ -1063,6 +1195,13 @@ function patientDetailsHTML(p) {
       <div class="kv"><b>Diagnosis</b><span>${safeText(p.diagnosis || "-")}</span></div>
       <div class="kv"><b>Treatment plan</b><span>${safeText(p.treatment_plan || "-")}</span></div>
 
+      <div class="actions" style="margin:14px 0;">
+        <button class="secondary" onclick="sendWhatsAppReminder('${p.id}')">WhatsApp Reminder</button>
+        <button class="secondary" onclick="addTreatmentTemplate('${p.id}')">Treatment Template</button>
+        <button class="secondary" onclick="showCaseSummary('${p.id}')">Case Summary</button>
+        <button class="secondary" onclick="addVoiceNote('${p.id}')">Voice Note</button>
+      </div>
+
       <h3 class="sectionTitle">Visits History</h3>
       ${data.visits.length ? data.visits.map((v, i) => `<div class="kv"><b>Visit ${data.visits.length - i}</b><div class="visitDate">${safeText(v.date || "")}</div><span>${safeText(v.note || "-")}</span></div>`).join("") : `<div class="kv"><span>No visits yet</span></div>`}
 
@@ -1257,6 +1396,98 @@ async function refreshPatientKeepingScroll(patientId) {
     window.scrollTo({ top: scrollY, behavior: "instant" });
   });
 }
+
+
+window.addTreatmentTemplate = async function(id) {
+  const p = patients.find(x => x.id === id);
+  if (!p) return alert("Patient not found.");
+
+  const template = await luxuryPrompt(
+    "Treatment template",
+    "RCT / Scaling / Crown / Extraction / Implant / Filling / Follow-up",
+    "Follow-up"
+  );
+
+  if (!template) return;
+
+  const notes = {
+    "rct": "Root canal treatment visit: access, canal preparation/irrigation, working length and temporary restoration.",
+    "scaling": "Scaling and oral hygiene instructions were performed. Patient advised for maintenance.",
+    "crown": "Crown preparation/checking stage. Occlusion and margins reviewed.",
+    "extraction": "Extraction visit. Post-operative instructions explained.",
+    "implant": "Implant treatment stage. Healing and follow-up instructions discussed.",
+    "filling": "Restorative filling visit. Caries removed and restoration placed.",
+    "follow-up": "Follow-up visit. Healing/progress checked and next steps discussed."
+  };
+
+  const key = String(template).toLowerCase();
+  const note = notes[key] || template;
+
+  const data = parseClinicData(p.progress_notes);
+  data.visits.unshift({
+    date: new Date().toLocaleString(),
+    treatment: template,
+    note
+  });
+
+  await api(`patients?id=eq.${id}`, {
+    method: "PATCH",
+    body: JSON.stringify({ progress_notes: saveClinicData(data) })
+  });
+
+  await refreshPatientKeepingScroll(id);
+};
+
+window.showCaseSummary = async function(id) {
+  const p = patients.find(x => x.id === id);
+  if (!p) return alert("Patient not found.");
+
+  const summary = generateLocalCaseSummary(p);
+
+  const modal = document.createElement("div");
+  modal.className = "luxuryModal";
+  modal.innerHTML = `
+    <div class="luxuryBox">
+      <h2>Case Summary</h2>
+      <pre class="caseSummaryBox" style="white-space:pre-wrap;text-align:left;">${safeText(summary)}</pre>
+      <div class="luxuryActions">
+        <button type="button" class="secondary">Close</button>
+        <button type="button" class="primary">Copy</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+
+  modal.querySelector(".secondary").onclick = () => modal.remove();
+  modal.querySelector(".primary").onclick = async () => {
+    try { await navigator.clipboard.writeText(summary); } catch {}
+    modal.remove();
+    await luxuryConfirm("Copied", "Case summary copied.");
+  };
+};
+
+window.addVoiceNote = async function(id) {
+  const p = patients.find(x => x.id === id);
+  if (!p) return alert("Patient not found.");
+
+  const note = await luxuryPrompt("Voice note text", "Type a dictated note here", "");
+  if (!note) return;
+
+  const data = parseClinicData(p.progress_notes);
+  data.visits.unshift({
+    date: new Date().toLocaleString(),
+    treatment: "Voice note",
+    note
+  });
+
+  await api(`patients?id=eq.${id}`, {
+    method: "PATCH",
+    body: JSON.stringify({ progress_notes: saveClinicData(data) })
+  });
+
+  await refreshPatientKeepingScroll(id);
+};
+
 
 window.addAppointment = async function(id) {
   const p = patients.find(x => x.id === id);
@@ -1500,7 +1731,23 @@ window.closePhotoViewer = closePhotoViewer;
 window.nextPhoto = nextPhoto;
 window.prevPhoto = prevPhoto;
 
-window.backupData = function() { const backup = { exported_at: new Date().toISOString(), user: currentUser, patients }; const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" }); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = `masri-dental-clinic-backup-${Date.now()}.json`; a.click(); URL.revokeObjectURL(url); };
+window.backupData = function() {
+  const backup = {
+    exported_at: new Date().toISOString(),
+    clinic: currentUser?.clinic_name || "Masri Dental Clinic",
+    user: currentUser,
+    patients
+  };
+
+  const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `masri-dental-clinic-backup-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+};
+
 window.restoreBackup = function() { const input = document.createElement("input"); input.type = "file"; input.accept = ".json,application/json"; input.onchange = async e => { const file = e.target.files[0]; if (!file) return; if (!confirm("Restore backup? This will upload patients from the backup file.")) return; try { const backup = JSON.parse(await file.text()); if (!backup.patients || !Array.isArray(backup.patients)) return alert("Invalid backup file."); for (const p of backup.patients) { const newPatient = { owner_id: currentUser.role === "admin" ? (p.owner_id || currentUser.id) : currentUser.id, case_id: p.case_id || makeId(), name: p.name || "", phone: p.phone || "", age: p.age || "", gender: p.gender || "", chief_complaint: p.chief_complaint || "", medical_alerts: p.medical_alerts || "", diagnosis: p.diagnosis || "", treatment_plan: p.treatment_plan || "", progress_notes: p.progress_notes || "", photos: p.photos || [] }; await api("patients", { method: "POST", body: JSON.stringify(newPatient) }); } alert("Backup restored successfully."); await loadPatients(); showPage("patients"); } catch (err) { alert("Restore failed: " + err.message); } }; input.click(); };
 
 window.saveClinicBranding = async function() {
