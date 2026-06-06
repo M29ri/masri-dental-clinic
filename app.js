@@ -567,49 +567,24 @@ function injectExtraStyles() {
     .caseSummaryBox{background:linear-gradient(145deg,#0f172a,#111827)!important;border:1px solid rgba(212,175,55,.18)!important;border-radius:22px!important;padding:16px!important;color:#dbe6f3!important;font-weight:750!important;line-height:1.55!important}
 
   
-    /* Premium tooth chart v2 */
+    /* Premium tooth chart rescue upgrade */
     .proMouthChart{
-      box-shadow:inset 0 0 80px rgba(212,175,55,.04),0 24px 70px rgba(0,0,0,.35)!important;
+      box-shadow:inset 0 0 90px rgba(212,175,55,.05),0 24px 70px rgba(0,0,0,.35)!important;
       background:
-        radial-gradient(circle at 50% 38%,rgba(212,175,55,.09),transparent 28%),
-        radial-gradient(circle at 50% 62%,rgba(96,165,250,.07),transparent 30%),
+        radial-gradient(circle at 50% 38%,rgba(212,175,55,.10),transparent 28%),
+        radial-gradient(circle at 50% 62%,rgba(96,165,250,.07),transparent 32%),
         linear-gradient(145deg,#0b111a,#111827 48%,#070b10)!important;
     }
-    .proTooth{
-      transition:transform .18s ease,filter .18s ease!important;
-    }
-    .proTooth:active{
-      transform:translate(-50%,-50%) scale(.92)!important;
-    }
-    .proToothSvg{
-      filter:drop-shadow(0 10px 12px rgba(0,0,0,.42))!important;
-    }
-    .proToothSvg path:first-child{
-      fill:url(#toothGradient)!important;
-      stroke:rgba(255,255,255,.55)!important;
-      stroke-width:2.2!important;
-    }
-    .proTooth.caries path:first-child{fill:#ef4444!important}
-    .proTooth.filling path:first-child{fill:#60a5fa!important}
-    .proTooth.rct path:first-child{fill:#8b5cf6!important}
-    .proTooth.crown path:first-child{fill:#d4af37!important}
-    .proTooth.missing path:first-child{fill:#4b5563!important}
-    .proTooth.extraction path:first-child{fill:#fb7185!important}
-    .proTooth.implant path:first-child{fill:#2dd4bf!important}
-    .toothNo{
-      text-shadow:0 2px 8px rgba(0,0,0,.8)!important;
-    }
-    .proMouthLabel{
-      color:rgba(212,175,55,.75)!important;
-    }
+    .proTooth{transition:transform .18s ease,filter .18s ease!important}
+    .proTooth:active{transform:translate(-50%,-50%) scale(.92)!important}
+    .proToothSvg{filter:drop-shadow(0 10px 12px rgba(0,0,0,.42))!important}
+    .proToothSvg path:first-child{stroke:rgba(255,255,255,.55)!important;stroke-width:2.2!important}
+    .toothNo{text-shadow:0 2px 8px rgba(0,0,0,.8)!important}
+    .proMouthLabel{color:rgba(212,175,55,.72)!important}
 
   
     body.lightMode{background:#f5f7fb!important;color:#111827!important}
-    body.lightMode .card,body.lightMode .patientCard,body.lightMode .dashboardPanel,body.lightMode .kv,body.lightMode .miniCard{
-      background:#ffffff!important;
-      color:#111827!important;
-      border-color:#e5e7eb!important;
-    }
+    body.lightMode .card,body.lightMode .patientCard,body.lightMode .dashboardPanel,body.lightMode .kv,body.lightMode .miniCard{background:#ffffff!important;color:#111827!important;border-color:#e5e7eb!important}
     body.lightMode .kv span,body.lightMode .timelineText{color:#111827!important}
 
   `;
@@ -812,7 +787,7 @@ function buildWhatsAppReminder(patient) {
   };
 }
 
-window.sendWhatsAppReminder = function(id) {
+window.openWhatsAppReminder = function(id) {
   const p = patients.find(x => x.id === id);
   if (!p) return alert("Patient not found.");
 
@@ -852,101 +827,18 @@ window.sendWhatsAppReminder = function(id) {
   };
 
   modal.querySelector("#openWhatsappApp").onclick = () => {
-    // App-only deep link to avoid leaving the clinic app on a Safari wa.me page.
+    // Use the WhatsApp app deep-link only. This avoids leaving the clinic app on a Safari wa.me page.
     window.location.href = reminder.appUrl;
   };
 };
 
-window.openWhatsAppReminder = window.sendWhatsAppReminder;
+// Backward-compatible name used by the patient button.
+window.sendWhatsAppReminder = window.openWhatsAppReminder;
 
-
-function applyClinicTheme() {
-  const theme = localStorage.getItem("clinicTheme") || "dark";
-  document.body.classList.toggle("lightMode", theme === "light");
-}
 
 window.toggleClinicTheme = function() {
-  const current = localStorage.getItem("clinicTheme") || "dark";
-  const next = current === "dark" ? "light" : "dark";
-  localStorage.setItem("clinicTheme", next);
-  applyClinicTheme();
-};
-
-window.enableClinicNotifications = async function() {
-  if (!("Notification" in window)) {
-    return alert("Notifications are not supported on this device/browser.");
-  }
-
-  const permission = await Notification.requestPermission();
-  if (permission !== "granted") {
-    return alert("Notifications were not enabled.");
-  }
-
-  localStorage.setItem("clinicNotifications", "on");
-  await luxuryConfirm("Notifications enabled", "Today appointments can now show browser notifications.");
-  showTodayAppointmentNotifications();
-};
-
-function showTodayAppointmentNotifications() {
-  if (localStorage.getItem("clinicNotifications") !== "on") return;
-  if (!("Notification" in window) || Notification.permission !== "granted") return;
-
-  const today = new Date().toDateString();
-  const shownKey = "clinicNotificationsShown-" + today;
-  if (localStorage.getItem(shownKey)) return;
-
-  const todayItems = [];
-
-  patients.forEach(p => {
-    const data = parseClinicData(p.progress_notes);
-    (data.appointments || []).forEach(a => {
-      const d = new Date(a.date);
-      if (!isNaN(d) && d.toDateString() === today) {
-        todayItems.push(`${p.name || "Patient"} - ${a.date}`);
-      }
-    });
-  });
-
-  if (todayItems.length) {
-    new Notification("Today's clinic appointments", {
-      body: todayItems.slice(0, 4).join("\\n")
-    });
-    localStorage.setItem(shownKey, "1");
-  }
-}
-
-window.generateAITreatmentPlan = async function(id) {
-  const p = patients.find(x => x.id === id);
-  if (!p) return alert("Patient not found.");
-
-  const text = `${p.chief_complaint || ""} ${p.diagnosis || ""}`.toLowerCase();
-
-  let plan = "Examination, diagnosis confirmation, treatment discussion, consent, and follow-up.";
-  if (text.includes("caries") || text.includes("decay")) plan = "Clinical/radiographic assessment, caries removal, restoration, occlusion check, oral hygiene instructions, and follow-up.";
-  if (text.includes("rct") || text.includes("pulp") || text.includes("pain")) plan = "Endodontic assessment, pre-operative radiograph, access cavity, canal preparation/irrigation, obturation, final restoration/crown planning, and follow-up.";
-  if (text.includes("crown")) plan = "Crown assessment, tooth preparation, impression/scan, temporary crown, try-in, cementation, occlusion adjustment, and follow-up.";
-  if (text.includes("implant")) plan = "Implant assessment, radiographic planning, surgical phase, healing period, prosthetic phase, maintenance, and follow-up.";
-  if (text.includes("extraction")) plan = "Extraction assessment, consent, atraumatic extraction, post-operative instructions, medications if indicated, and follow-up.";
-  if (text.includes("perio") || text.includes("scaling")) plan = "Periodontal assessment, scaling/root debridement, oral hygiene instructions, re-evaluation, and maintenance plan.";
-
-  const accepted = await luxuryConfirm("AI Treatment Plan", plan);
-  if (!accepted) return;
-
-  p.treatment_plan = plan;
-
-  await api(`patients?id=eq.${id}`, {
-    method: "PATCH",
-    body: JSON.stringify({ treatment_plan: plan })
-  });
-
-  await refreshPatientKeepingScroll(id);
-};
-
-window.saveClinicAdvancedSettings = async function() {
-  const branch = await luxuryPrompt("Clinic branch / room", "Main branch / Room 1", localStorage.getItem("clinicBranch") || "");
-  if (branch === null) return;
-  localStorage.setItem("clinicBranch", branch);
-  await luxuryConfirm("Saved", "Clinic advanced settings saved.");
+  const isLight = document.body.classList.toggle("lightMode");
+  localStorage.setItem("clinicTheme", isLight ? "light" : "dark");
 };
 
 
@@ -1103,7 +995,7 @@ function renderDashboard() {
       <button class="primary" onclick="fillForm();showPage('form')">+ New Patient</button>
       <button class="secondary" onclick="showPage('scan')">Scan QR</button>
       <button class="secondary" onclick="backupData()">Backup</button>
-      <button class="secondary" onclick="restoreBackup()">Restore</button><button class="secondary" onclick="toggleClinicTheme()">Theme</button><button class="secondary" onclick="enableClinicNotifications()">Notifications</button><button class="secondary" onclick="saveClinicAdvancedSettings()">Clinic Settings</button>
+      <button class="secondary" onclick="restoreBackup()">Restore</button><button class="secondary" onclick="toggleClinicTheme()">Theme</button>
     </div>
 
     <div class="dashboardPanel">
@@ -1278,19 +1170,8 @@ function getToothType(n) {
 }
 
 function toothSvg(type = "molar") {
-  const defs = `
-    <defs>
-      <linearGradient id="toothGradient" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="#fffaf0"/>
-        <stop offset="55%" stop-color="#f7ead1"/>
-        <stop offset="100%" stop-color="#e8d4aa"/>
-      </linearGradient>
-    </defs>
-  `;
-
   if (type === "incisor") {
     return `<svg viewBox="-42 -58 84 116" class="proToothSvg">
-      ${defs}
       <path d="M-18,-36 C-13,-50 13,-50 18,-36 C22,-12 18,14 10,35 C6,48 2,55 0,55 C-2,55 -6,48 -10,35 C-18,14 -22,-12 -18,-36 Z"/>
       <path class="shine" d="M-7,-28 C-10,-10 -9,9 -5,28"/>
       <path class="groove" d="M0,-32 C-2,-12 -2,12 0,34"/>
@@ -1299,7 +1180,6 @@ function toothSvg(type = "molar") {
 
   if (type === "canine") {
     return `<svg viewBox="-44 -58 88 116" class="proToothSvg">
-      ${defs}
       <path d="M-20,-33 C-13,-51 14,-51 21,-33 C28,-9 17,20 7,40 C3,50 1,56 -3,56 C-8,56 -10,43 -14,32 C-24,10 -28,-10 -20,-33 Z"/>
       <path class="shine" d="M-8,-27 C-13,-7 -11,13 -6,30"/>
       <path class="groove" d="M3,-30 C-1,-7 -2,17 -4,38"/>
@@ -1307,7 +1187,6 @@ function toothSvg(type = "molar") {
   }
 
   return `<svg viewBox="-56 -52 112 104" class="proToothSvg">
-    ${defs}
     <path d="M-32,-23 C-25,-44 -7,-42 0,-30 C9,-43 28,-41 34,-21 C43,4 32,30 16,42 C7,50 -5,42 0,26 C-9,45 -27,51 -36,30 C-46,8 -43,-8 -32,-23 Z"/>
     <path class="groove" d="M-19,-8 C-5,4 12,4 27,-8"/>
     <path class="groove" d="M-24,16 C-7,8 13,9 27,18"/>
@@ -1529,8 +1408,7 @@ window.showQR = function(id) {
   }
 };
 window.editPatient = function(id) { const p = patients.find(x => x.id === id); if (!p) return alert("Patient not found or you do not have access."); fillForm(p); showPage("form"); };
-window.deletePatient = async function(id) { if (!canDelete()) return alert("Only admin can delete patients"); if (!confirm("Delete this patient?")) return; await api(`patients?id=eq.${id}`, { method: "DELETE" }); await loadPatients();
-    showTodayAppointmentNotifications(); showPage("patients"); };
+window.deletePatient = async function(id) { if (!canDelete()) return alert("Only admin can delete patients"); if (!confirm("Delete this patient?")) return; await api(`patients?id=eq.${id}`, { method: "DELETE" }); await loadPatients(); showPage("patients"); };
 let selectedToothPatientId = null;
 let selectedToothNumber = null;
 
@@ -1588,6 +1466,33 @@ async function refreshPatientKeepingScroll(patientId) {
     window.scrollTo({ top: scrollY, behavior: "instant" });
   });
 }
+
+
+
+window.generateAITreatmentPlan = async function(id) {
+  const p = patients.find(x => x.id === id);
+  if (!p) return alert("Patient not found.");
+
+  const text = `${p.chief_complaint || ""} ${p.diagnosis || ""} ${p.treatment_plan || ""}`.toLowerCase();
+
+  let plan = "Examination, diagnosis confirmation, treatment discussion, consent, treatment, and follow-up.";
+  if (text.includes("caries") || text.includes("decay")) plan = "Clinical/radiographic assessment, caries removal, restoration, occlusion check, oral hygiene instructions, and follow-up.";
+  if (text.includes("rct") || text.includes("pulp") || text.includes("pain")) plan = "Endodontic assessment, pre-operative radiograph, access cavity, canal preparation/irrigation, obturation, final restoration/crown planning, and follow-up.";
+  if (text.includes("crown")) plan = "Crown assessment, tooth preparation, impression/scan, temporary crown, try-in, cementation, occlusion adjustment, and follow-up.";
+  if (text.includes("implant")) plan = "Implant assessment, radiographic planning, surgical phase, healing period, prosthetic phase, maintenance, and follow-up.";
+  if (text.includes("extraction")) plan = "Extraction assessment, consent, atraumatic extraction, post-operative instructions, medications if indicated, and follow-up.";
+  if (text.includes("perio") || text.includes("scaling")) plan = "Periodontal assessment, scaling/root debridement, oral hygiene instructions, re-evaluation, and maintenance plan.";
+
+  const accepted = await luxuryConfirm("AI Treatment Plan", plan);
+  if (!accepted) return;
+
+  await api(`patients?id=eq.${id}`, {
+    method: "PATCH",
+    body: JSON.stringify({ treatment_plan: plan })
+  });
+
+  await refreshPatientKeepingScroll(id);
+};
 
 
 window.addTreatmentTemplate = async function(id) {
@@ -1989,7 +1894,6 @@ async function stopScan() { try { if (scanner) { await scanner.stop(); scanner.c
 window.addEventListener("load", async () => {
   try {
     injectExtraStyles();
-    applyClinicTheme();
     if (location.search.includes("logout=1")) { localStorage.removeItem("clinicUser"); showLoginScreen(); return; }
     currentUser = getSavedUser();
     if (!currentUser || !currentUser.id || !currentUser.role) { localStorage.removeItem("clinicUser"); showLoginScreen(); return; }
@@ -1998,3 +1902,4 @@ window.addEventListener("load", async () => {
   } catch (err) {
     document.body.innerHTML = "<pre style='padding:20px;color:red;white-space:pre-wrap'>" + safeText(err.message) + "</pre>";
   }
+});
