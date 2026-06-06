@@ -899,65 +899,51 @@ function patientDetailsHTML(p) {
 
       <h3 class="sectionTitle">Photos / X-rays</h3>
 
-<div class="actions">
+<div class="actions" style="margin-bottom:12px;">
+  <button class="secondary" onclick="setPhotoTab('all')">All</button>
+  <button class="secondary" onclick="setPhotoTab('clinical')">Clinical</button>
+  <button class="secondary" onclick="setPhotoTab('xray')">X-rays</button>
   <button class="secondary" onclick="showBeforeAfter('${p.id}')">Before / After</button>
 </div>
 
 <div class="photoGrid">
-  ${
-    photos.length
-      ? photos.map((ph, i) => {
-          const url = photoUrl(ph);
-          const category = ph.category || "Other";
+${
+  photos.length
+    ? photos.map((ph, i) => {
+        const url = photoUrl(ph);
+        const category = ph.category || "Clinical";
+        const isXray = ["x-ray", "xray", "x ray"].includes(String(category).toLowerCase());
+        const group = isXray ? "xray" : "clinical";
 
-          return `
-            <div class="photoItem">
-              <span style="
-                position:absolute;
-                left:10px;
-                top:10px;
-                z-index:8;
-                background:rgba(0,0,0,.68);
-                color:white;
-                padding:6px 10px;
-                border-radius:999px;
-                font-size:12px;
-                font-weight:900;
-              ">
-                ${safeText(category)}
-              </span>
+        return `
+          <div class="photoItem photoTabItem ${group}">
+            <span onclick="event.stopPropagation();setPhotoCategory('${p.id}', ${i})" style="
+              position:absolute;
+              left:10px;
+              top:10px;
+              z-index:8;
+              background:rgba(0,0,0,.68);
+              color:white;
+              padding:6px 10px;
+              border-radius:999px;
+              font-size:12px;
+              font-weight:900;
+            ">
+              ${safeText(category)}
+            </span>
 
-              <img src="${url}" onclick="viewPhoto('${url}')">
+            <img src="${url}" onclick="viewPhotoGroup('${p.id}', ${i}, '${group}')">
 
-              ${
-                canEdit()
-                  ? `<button type="button" onclick="event.stopPropagation();deletePhoto('${p.id}', ${i})" aria-label="Delete photo">X</button>`
-                  : ""
-              }
-
-              ${
-                canEdit()
-                  ? `<button type="button" style="
-                      left:10px!important;
-                      right:auto!important;
-                      bottom:10px!important;
-                      top:auto!important;
-                      width:auto!important;
-                      height:34px!important;
-                      border-radius:999px!important;
-                      padding:0 12px!important;
-                      font-size:12px!important;
-                      color:white!important;
-                    " onclick="event.stopPropagation();setPhotoCategory('${p.id}', ${i})">
-                      Tag
-                    </button>`
-                  : ""
-              }
-            </div>
-          `;
-        }).join("")
-      : "<p>No photos</p>"
-  }
+            ${
+              canEdit()
+                ? `<button type="button" onclick="event.stopPropagation();deletePhoto('${p.id}', ${i})" aria-label="Delete photo">X</button>`
+                : ""
+            }
+          </div>
+        `;
+      }).join("")
+    : "<p>No photos</p>"
+}
 </div>
 
       <h3 class="sectionTitle">Patient Timeline</h3>
@@ -1399,6 +1385,36 @@ function prevPhoto() {
   const img = document.getElementById("viewerImage");
   if (img) img.src = currentPhotoList[currentPhotoIndex];
 }
+window.setPhotoTab = function(tab) {
+  document.querySelectorAll(".photoTabItem").forEach(item => {
+    if (tab === "all") {
+      item.style.display = "";
+    } else {
+      item.style.display = item.classList.contains(tab) ? "" : "none";
+    }
+  });
+};
+
+window.viewPhotoGroup = function(patientId, index, group) {
+  const p = patients.find(x => x.id === patientId);
+  if (!p) return;
+
+  const grouped = (p.photos || [])
+    .map((ph, i) => ({ ph, i, url: photoUrl(ph) }))
+    .filter(item => {
+      const category = item.ph.category || "Clinical";
+      const isXray = ["x-ray", "xray", "x ray"].includes(String(category).toLowerCase());
+      return group === "xray" ? isXray : !isXray;
+    })
+    .filter(item => item.url);
+
+  currentPhotoList = grouped.map(item => item.url);
+
+  const clickedUrl = photoUrl(p.photos[index]);
+  currentPhotoIndex = Math.max(0, currentPhotoList.indexOf(clickedUrl));
+
+  openPhotoViewer(currentPhotoIndex);
+};
 
 window.viewPhoto = function(url) {
   const p = patients.find(patient => (patient.photos || []).some(photo => photoUrl(photo) === url));
