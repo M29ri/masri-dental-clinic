@@ -748,6 +748,38 @@ function injectExtraStyles() {
       font-weight:1000!important;
     }
 
+  
+    /* Bugfix polish */
+    .kv b::before,.progressStep span:first-child::before,.alertBanner::before{content:none!important}
+    .alertBanner{font-size:18px!important;letter-spacing:0!important}
+    .cleanField b{font-size:15px!important;color:#d4af37!important;letter-spacing:.2px!important}
+    .cleanField span{font-size:19px!important;line-height:1.45!important;color:#eef2f7!important}
+
+    .proMouthChart{
+      height:650px!important;
+      max-width:780px!important;
+      border-radius:40px!important;
+      background:
+        radial-gradient(ellipse at 50% 28%,rgba(212,175,55,.12),transparent 26%),
+        radial-gradient(ellipse at 50% 72%,rgba(96,165,250,.08),transparent 28%),
+        linear-gradient(145deg,#05070a,#111827 50%,#05070a)!important;
+      box-shadow:inset 0 0 90px rgba(212,175,55,.05),0 28px 80px rgba(0,0,0,.45)!important;
+    }
+    .proTooth{width:48px!important;height:60px!important}
+    .proToothSvg{width:44px!important;height:46px!important}
+    .proTooth.molar .proToothSvg{width:48px!important;height:48px!important}
+    .proToothSvg path:first-child{fill:#fff2d7!important;stroke:rgba(255,255,255,.75)!important;stroke-width:2.2!important}
+    .proTooth.caries path:first-child{fill:#ef4444!important}.proTooth.filling path:first-child{fill:#60a5fa!important}.proTooth.rct path:first-child{fill:#8b5cf6!important}.proTooth.crown path:first-child{fill:#d4af37!important}.proTooth.missing path:first-child{fill:#4b5563!important}.proTooth.extraction path:first-child{fill:#fb7185!important}.proTooth.implant path:first-child{fill:#2dd4bf!important}
+
+    .toothPopupBox{max-width:520px!important}
+    .toothStatusGrid{display:grid!important;grid-template-columns:repeat(2,1fr)!important;gap:10px!important;margin-top:12px!important}
+    .toothStatusGrid button,.surfaceBtn{cursor:pointer!important;touch-action:manipulation!important}
+    .surfaceGrid{display:grid!important;grid-template-columns:repeat(5,1fr)!important;gap:8px!important;margin:12px 0!important}
+    .surfaceBtn{min-height:48px!important;border:none!important;border-radius:16px!important;background:#1f2937!important;color:white!important;font-weight:1000!important}
+    .surfaceBtn.active{background:linear-gradient(135deg,#f5d76e,#b8860b)!important;color:#050505!important}
+
+    .labRow button{min-height:40px!important;border-radius:14px!important;font-size:12px!important;padding:8px 10px!important}
+
   `;
   document.head.appendChild(style);
 }
@@ -1015,12 +1047,19 @@ function treatmentProgressItems(patient) {
 
 function medicalAlertBanner(patient) {
   const text = `${patient.medical_alerts || ""}`.trim();
-  if (!text || text === "-") return "";
-  return `<div class="alertBanner">ð¨ Medical alert: ${safeText(text)}</div>`;
+  if (!text || text === "-" || /^n\/?a$/i.test(text) || /^nad$/i.test(text) || /^none$/i.test(text) || /^no$/i.test(text)) return "";
+  return `<div class="alertBanner">Medical alert: ${safeText(text)}</div>`;
 }
 
 function renderTreatmentProgress(patient) {
-  return `<div class="progressSteps">${treatmentProgressItems(patient).map(s => `<div class="progressStep ${s.state}"><span>${s.state==="done"?"â":s.state==="active"?"â³":"â"} ${safeText(s.name)}</span><span>${s.state==="done"?"Done":s.state==="active"?"Current":"Pending"}</span></div>`).join("")}</div>`;
+  return `<div class="progressSteps">
+    ${treatmentProgressItems(patient).map(s => `
+      <div class="progressStep ${s.state}">
+        <span>${s.state === "done" ? "Done" : s.state === "active" ? "Current" : "Pending"} - ${safeText(s.name)}</span>
+        <span>${s.state === "done" ? "Done" : s.state === "active" ? "Current" : "Pending"}</span>
+      </div>
+    `).join("")}
+  </div>`;
 }
 
 function renderMonthlyFinanceBars() {
@@ -1077,8 +1116,20 @@ function renderInventoryMini() {
 }
 
 function renderLabMini(patientId) {
-  const lab = JSON.parse(localStorage.getItem("clinicLab") || "[]").filter(x => x.patientId === patientId);
-  return lab.length ? lab.map(it=>`<div class="labRow"><b>${safeText(it.item)}</b><span class="pill">${safeText(it.status)}</span></div>`).join("") : `<p style="color:var(--muted);font-weight:800">No lab work yet</p>`;
+  const lab = JSON.parse(localStorage.getItem("clinicLab") || "[]")
+    .map((x, i) => ({ ...x, index: i }))
+    .filter(x => x.patientId === patientId);
+
+  return lab.length ? lab.map(it => `
+    <div class="labRow">
+      <b>${safeText(it.item)}</b>
+      <span class="pill">${safeText(it.status)}</span>
+      <div style="display:flex;gap:8px;">
+        <button class="secondary" onclick="editLabWork('${patientId}', ${it.index})">Edit</button>
+        <button class="danger" onclick="deleteLabWork('${patientId}', ${it.index})">Delete</button>
+      </div>
+    </div>
+  `).join("") : `<p style="color:var(--muted);font-weight:800">No lab work yet</p>`;
 }
 
 window.toggleClinicTheme = function() {
@@ -1105,6 +1156,30 @@ window.removeInventoryItem = function(index) {
   items.splice(index, 1);
   localStorage.setItem("clinicInventory", JSON.stringify(items));
   renderDashboard();
+};
+
+
+window.editLabWork = async function(patientId, index) {
+  const lab = JSON.parse(localStorage.getItem("clinicLab") || "[]");
+  if (!lab[index]) return;
+  const item = await luxuryPrompt("Lab work", "Crown / Bridge / Night guard", lab[index].item || "");
+  if (!item) return;
+  const status = await luxuryPrompt("Lab status", "Sent / Waiting / Returned / Delivered", lab[index].status || "Sent");
+  if (!status) return;
+  lab[index].item = item;
+  lab[index].status = status;
+  lab[index].updated_at = new Date().toISOString();
+  localStorage.setItem("clinicLab", JSON.stringify(lab));
+  await refreshPatientKeepingScroll(patientId);
+};
+
+window.deleteLabWork = async function(patientId, index) {
+  const lab = JSON.parse(localStorage.getItem("clinicLab") || "[]");
+  if (!lab[index]) return;
+  if (!(await luxuryConfirm("Delete lab work?", "This will remove the lab item."))) return;
+  lab.splice(index, 1);
+  localStorage.setItem("clinicLab", JSON.stringify(lab));
+  await refreshPatientKeepingScroll(patientId);
 };
 
 window.addLabWork = async function(id) {
@@ -1576,7 +1651,6 @@ function toothSvg(type = "molar") {
       <path class="groove" d="M0,-35 C-2,-10 -2,18 0,42"/>
     </svg>`;
   }
-
   if (type === "canine") {
     return `<svg viewBox="-50 -65 100 130" class="proToothSvg">
       <path d="M-22,-39 C-14,-58 14,-58 22,-39 C31,-12 17,24 7,48 C3,59 -4,61 -9,48 C-24,18 -31,-12 -22,-39 Z"/>
@@ -1584,7 +1658,6 @@ function toothSvg(type = "molar") {
       <path class="groove" d="M4,-34 C0,-10 -2,18 -5,43"/>
     </svg>`;
   }
-
   return `<svg viewBox="-64 -58 128 116" class="proToothSvg">
     <path d="M-38,-25 C-31,-49 -10,-48 0,-34 C11,-49 33,-47 39,-24 C48,5 37,34 18,47 C8,55 -5,47 0,28 C-10,51 -31,57 -42,33 C-53,8 -51,-9 -38,-25 Z"/>
     <path class="groove" d="M-24,-9 C-8,5 12,5 30,-9"/>
@@ -1627,7 +1700,8 @@ function renderToothChart(p) {
       <div class="proHorizontalLine"></div>
 
       ${toothData.map(([n,x,y,r]) => {
-        const status = teeth[n] || "healthy";
+        const toothInfo = teeth[n] || "healthy";
+        const status = typeof toothInfo === "string" ? toothInfo : (toothInfo.status || "healthy");
         const type = getToothType(n);
 
         return `
@@ -1659,10 +1733,10 @@ function patientDetailsHTML(p) {
       <span class="pill">${safeText(p.age || "-")} yrs</span>
       <span class="pill">${safeText(p.gender || "-")}</span>
 
-      <div class="kv"><b>Chief complaint</b><span>${safeText(p.chief_complaint || "-")}</span></div>
-      <div class="kv"><b>Medical alerts</b><span>${safeText(p.medical_alerts || "-")}</span></div>
-      <div class="kv"><b>Diagnosis</b><span>${safeText(p.diagnosis || "-")}</span></div>
-      <div class="kv"><b>Treatment plan</b><span>${safeText(p.treatment_plan || "-")}</span></div>
+      <div class="kv cleanField"><b>Chief complaint</b><span>${safeText(p.chief_complaint || "-")}</span></div>
+      <div class="kv cleanField"><b>Medical alerts</b><span>${safeText(p.medical_alerts || "-")}</span></div>
+      <div class="kv cleanField"><b>Diagnosis</b><span>${safeText(p.diagnosis || "-")}</span></div>
+      <div class="kv cleanField"><b>Treatment plan</b><span>${safeText(p.treatment_plan || "-")}</span></div>
       ${medicalAlertBanner(p)}
       <h3 class="sectionTitle">Treatment Progress</h3>
       ${renderTreatmentProgress(p)}
@@ -1817,45 +1891,54 @@ window.deletePatient = async function(id) { if (!canDelete()) return alert("Only
 let selectedToothPatientId = null;
 let selectedToothNumber = null;
 
+window.closeToothPopup = function() {
+  document.getElementById("toothPopup")?.remove();
+};
+
 window.openToothPopup = function(patientId, toothNumber) {
   selectedToothPatientId = patientId;
   selectedToothNumber = toothNumber;
 
-  const old = document.getElementById("toothPopup");
-  if (old) old.remove();
+  document.getElementById("toothPopup")?.remove();
 
   const modal = document.createElement("div");
   modal.id = "toothPopup";
   modal.className = "luxuryModal";
   modal.innerHTML = `
-    <div class="luxuryBox">
+    <div class="luxuryBox toothPopupBox">
       <h2>Tooth ${safeText(toothNumber)}</h2>
-      <p>Choose tooth status and surfaces.</p>
+      <p>Choose surfaces, then choose status.</p>
 
       <div class="surfaceGrid">
         <button type="button" class="surfaceBtn" data-surface="M">M</button>
         <button type="button" class="surfaceBtn" data-surface="D">D</button>
-        <button type="button" class="surfaceBtn" data-surface="O">O/I</button>
+        <button type="button" class="surfaceBtn" data-surface="O/I">O/I</button>
         <button type="button" class="surfaceBtn" data-surface="B">B</button>
         <button type="button" class="surfaceBtn" data-surface="L">L</button>
       </div>
 
       <div class="toothStatusGrid">
         ${["healthy","caries","filling","rct","crown","missing","extraction","implant"].map(s => `
-          <button type="button" onclick="setToothStatus('${s}')">${safeText(s.toUpperCase())}</button>
+          <button type="button" data-status="${s}">${safeText(s.toUpperCase())}</button>
         `).join("")}
       </div>
 
       <div class="luxuryActions">
-        <button type="button" class="secondary" onclick="closeToothPopup()">Cancel</button>
+        <button type="button" class="secondary" id="toothCancelBtn">Cancel</button>
       </div>
     </div>
   `;
 
   document.body.appendChild(modal);
 
+  modal.querySelector("#toothCancelBtn").addEventListener("click", window.closeToothPopup);
+
   modal.querySelectorAll(".surfaceBtn").forEach(btn => {
-    btn.onclick = () => btn.classList.toggle("active");
+    btn.addEventListener("click", () => btn.classList.toggle("active"));
+  });
+
+  modal.querySelectorAll("[data-status]").forEach(btn => {
+    btn.addEventListener("click", () => window.setToothStatus(btn.dataset.status));
   });
 };
 
@@ -1866,20 +1949,25 @@ window.setToothStatus = async function(status) {
   if (!p) return alert("Patient not found.");
 
   const data = parseClinicData(p.progress_notes);
+  if (!data.teeth) data.teeth = {};
 
-  data.teeth[selectedToothNumber] = status;
+  const selectedSurfaces = [...document.querySelectorAll("#toothPopup .surfaceBtn.active")]
+    .map(btn => btn.dataset.surface);
+
+  data.teeth[selectedToothNumber] = {
+    status,
+    surfaces: selectedSurfaces
+  };
 
   await api(`patients?id=eq.${selectedToothPatientId}`, {
     method: "PATCH",
-    body: JSON.stringify({
-      progress_notes: saveClinicData(data)
-    })
+    body: JSON.stringify({ progress_notes: saveClinicData(data) })
   });
 
-  closeToothPopup();
-
+  window.closeToothPopup();
   await refreshPatientKeepingScroll(selectedToothPatientId);
 };
+
 window.changeTooth = async function(patientId, toothNumber) {
   window.openToothPopup(patientId, toothNumber);
 };
@@ -2273,19 +2361,46 @@ window.backupData = function() {
 
 window.restoreBackup = function() { const input = document.createElement("input"); input.type = "file"; input.accept = ".json,application/json"; input.onchange = async e => { const file = e.target.files[0]; if (!file) return; if (!confirm("Restore backup? This will upload patients from the backup file.")) return; try { const backup = JSON.parse(await file.text()); if (!backup.patients || !Array.isArray(backup.patients)) return alert("Invalid backup file."); for (const p of backup.patients) { const newPatient = { owner_id: currentUser.role === "admin" ? (p.owner_id || currentUser.id) : currentUser.id, case_id: p.case_id || makeId(), name: p.name || "", phone: p.phone || "", age: p.age || "", gender: p.gender || "", chief_complaint: p.chief_complaint || "", medical_alerts: p.medical_alerts || "", diagnosis: p.diagnosis || "", treatment_plan: p.treatment_plan || "", progress_notes: p.progress_notes || "", photos: p.photos || [] }; await api("patients", { method: "POST", body: JSON.stringify(newPatient) }); } alert("Backup restored successfully."); await loadPatients(); showPage("patients"); } catch (err) { alert("Restore failed: " + err.message); } }; input.click(); };
 
+function fileToDataURL(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
 window.saveClinicBranding = async function() {
   try {
     const clinicName = $("clinicName")?.value?.trim() || "";
     let logoUrl = currentUser.clinic_logo || "";
     const logoFile = $("clinicLogo")?.files?.[0];
+
     if (logoFile) {
-      const clean = logoFile.name.replace(/[^a-zA-Z0-9.]/g, "-");
-      const path = `${currentUser.id}/logo-${Date.now()}-${clean}`;
-      logoUrl = await uploadToBucket(LOGO_BUCKET, path, logoFile, logoFile.type || "image/png");
+      try {
+        const clean = logoFile.name.replace(/[^a-zA-Z0-9.]/g, "-");
+        const path = `${currentUser.id}/logo-${Date.now()}-${clean}`;
+        logoUrl = await uploadToBucket(LOGO_BUCKET, path, logoFile, logoFile.type || "image/png");
+      } catch (uploadErr) {
+        // Fallback: save logo locally as data URL if Supabase bucket/policy fails.
+        logoUrl = await fileToDataURL(logoFile);
+      }
     }
-    await api(`clinic_users?id=eq.${currentUser.id}`, { method: "PATCH", body: JSON.stringify({ clinic_name: clinicName, clinic_logo: logoUrl }) });
-    currentUser.clinic_name = clinicName; currentUser.clinic_logo = logoUrl; saveUser(currentUser); applyUserBar(); await luxuryConfirm("Clinic branding", "Clinic branding saved successfully.");
-  } catch (err) { alert("Save failed: " + err.message); }
+
+    await api(`clinic_users?id=eq.${currentUser.id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ clinic_name: clinicName, clinic_logo: logoUrl })
+    });
+
+    currentUser.clinic_name = clinicName;
+    currentUser.clinic_logo = logoUrl;
+    saveUser(currentUser);
+    applyUserBar();
+
+    await luxuryConfirm("Clinic branding", "Clinic branding saved successfully.");
+  } catch (err) {
+    alert("Save failed: " + err.message);
+  }
 };
 
 window.exportPDF = async function(id) {
@@ -2323,10 +2438,4 @@ window.addEventListener("load", async () => {
     applyClinicTheme();
     if (location.search.includes("logout=1")) { localStorage.removeItem("clinicUser"); showLoginScreen(); return; }
     currentUser = getSavedUser();
-    if (!currentUser || !currentUser.id || !currentUser.role) { localStorage.removeItem("clinicUser"); showLoginScreen(); return; }
-    applyUserBar();
-    await loadPatients();
-  } catch (err) {
-    document.body.innerHTML = "<pre style='padding:20px;color:red;white-space:pre-wrap'>" + safeText(err.message) + "</pre>";
-  }
-});
+    if (!currentUser || !currentUser.id || !currentUser.role) { localStorage.removeItem("clinicUser"); showLogi
