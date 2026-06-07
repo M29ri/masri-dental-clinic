@@ -587,6 +587,24 @@ function injectExtraStyles() {
     body.lightMode .card,body.lightMode .patientCard,body.lightMode .dashboardPanel,body.lightMode .kv,body.lightMode .miniCard{background:#ffffff!important;color:#111827!important;border-color:#e5e7eb!important}
     body.lightMode .kv span,body.lightMode .timelineText{color:#111827!important}
 
+  
+    .proBadge{display:inline-flex!important;align-items:center!important;border-radius:999px!important;padding:8px 11px!important;font-size:12px!important;font-weight:1000!important;background:rgba(212,175,55,.12)!important;color:#d4af37!important;border:1px solid rgba(212,175,55,.25)!important;margin:4px!important}
+    .alertBanner{background:linear-gradient(135deg,rgba(239,68,68,.20),rgba(127,29,29,.22))!important;border:1px solid rgba(248,113,113,.45)!important;color:#fecaca!important;border-radius:22px!important;padding:16px!important;margin:14px 0!important;font-weight:1000!important}
+    .progressSteps{display:grid!important;gap:10px!important;margin:14px 0!important}
+    .progressStep{display:flex!important;align-items:center!important;justify-content:space-between!important;background:#0f1620!important;border:1px solid #263241!important;border-radius:18px!important;padding:12px 14px!important;color:#dbe6f3!important;font-weight:900!important}
+    .progressStep.done{border-color:rgba(34,197,94,.35)!important;background:rgba(34,197,94,.08)!important}
+    .progressStep.active{border-color:rgba(212,175,55,.45)!important;background:rgba(212,175,55,.10)!important;color:#d4af37!important}
+    .calendarBoard{display:grid!important;grid-template-columns:repeat(7,1fr)!important;gap:7px!important;margin:14px 0!important}
+    .calendarCell{min-height:58px!important;border-radius:16px!important;background:#0f1620!important;border:1px solid #263241!important;color:#e5e7eb!important;font-weight:900!important;padding:8px!important;text-align:left!important}
+    .calendarCell.hasAppt{background:rgba(212,175,55,.13)!important;border-color:rgba(212,175,55,.42)!important;color:#d4af37!important}
+    .calendarCell small{display:block!important;color:#94a3b8!important;font-size:10px!important;margin-top:4px!important}
+    .financeChart{display:flex!important;align-items:end!important;gap:8px!important;height:130px!important;margin:14px 0!important;padding:12px!important;background:#0f1620!important;border:1px solid #263241!important;border-radius:22px!important}
+    .financeBar{flex:1!important;border-radius:12px 12px 4px 4px!important;background:linear-gradient(180deg,#f5d76e,#b8860b)!important;min-height:8px!important;position:relative!important}
+    .financeBar span{position:absolute!important;bottom:-24px!important;left:50%!important;transform:translateX(-50%)!important;color:#94a3b8!important;font-size:10px!important;font-weight:900!important}
+    .inventoryRow,.labRow{display:flex!important;justify-content:space-between!important;align-items:center!important;gap:12px!important;background:#0f1620!important;border:1px solid #263241!important;border-radius:18px!important;padding:12px!important;margin:10px 0!important}
+    body.lightMode{background:#f5f7fb!important;color:#111827!important}
+    body.lightMode .card,body.lightMode .patientCard,body.lightMode .dashboardPanel,body.lightMode .kv,body.lightMode .miniCard,body.lightMode .progressStep,body.lightMode .inventoryRow,body.lightMode .labRow{background:#ffffff!important;color:#111827!important;border-color:#e5e7eb!important}
+
   `;
   document.head.appendChild(style);
 }
@@ -842,6 +860,165 @@ window.toggleClinicTheme = function() {
 };
 
 
+
+function treatmentProgressItems(patient) {
+  const text = `${patient.diagnosis || ""} ${patient.treatment_plan || ""}`.toLowerCase();
+  if (text.includes("rct") || text.includes("pulp")) return ["Diagnosis", "Access", "Cleaning & shaping", "Obturation", "Final restoration"].map((x,i)=>({name:x,state:i<2?"done":i===2?"active":""}));
+  if (text.includes("crown")) return ["Diagnosis", "Preparation", "Impression/scan", "Try-in", "Cementation"].map((x,i)=>({name:x,state:i<2?"done":i===2?"active":""}));
+  if (text.includes("implant")) return ["Assessment", "Planning", "Surgery", "Healing", "Prosthetic phase"].map((x,i)=>({name:x,state:i<2?"done":i===2?"active":""}));
+  if (text.includes("extraction")) return ["Assessment", "Consent", "Extraction", "Instructions", "Follow-up"].map((x,i)=>({name:x,state:i<3?"done":i===3?"active":""}));
+  return ["Diagnosis", "Treatment plan", "Treatment started", "Review", "Completed"].map((x,i)=>({name:x,state:i<2?"done":i===2?"active":""}));
+}
+
+function medicalAlertBanner(patient) {
+  const text = `${patient.medical_alerts || ""}`.trim();
+  if (!text || text === "-") return "";
+  return `<div class="alertBanner">ð¨ Medical alert: ${safeText(text)}</div>`;
+}
+
+function renderTreatmentProgress(patient) {
+  return `<div class="progressSteps">${treatmentProgressItems(patient).map(s => `<div class="progressStep ${s.state}"><span>${s.state==="done"?"â":s.state==="active"?"â³":"â"} ${safeText(s.name)}</span><span>${s.state==="done"?"Done":s.state==="active"?"Current":"Pending"}</span></div>`).join("")}</div>`;
+}
+
+function renderMonthlyFinanceBars() {
+  const months = {};
+  patients.forEach(p => {
+    const data = parseClinicData(p.progress_notes);
+    (data.payments || []).forEach(pay => {
+      const d = new Date(pay.date);
+      const key = isNaN(d) ? "Unknown" : d.toLocaleString("en", { month: "short" });
+      months[key] = (months[key] || 0) + Number(pay.paid || 0);
+    });
+  });
+  const rows = Object.entries(months).slice(-6);
+  const max = Math.max(1, ...rows.map(x => x[1]));
+  return `<div class="financeChart">${rows.length ? rows.map(([m,v]) => `<div class="financeBar" style="height:${Math.max(8,(v/max)*100)}%"><span>${safeText(m)}</span></div>`).join("") : `<p style="color:var(--muted);font-weight:800">No finance data yet</p>`}</div>`;
+}
+
+function renderAppointmentCalendar() {
+  const today = new Date(), year = today.getFullYear(), month = today.getMonth(), days = new Date(year, month + 1, 0).getDate();
+  const map = {};
+  patients.forEach(p => {
+    const data = parseClinicData(p.progress_notes);
+    (data.appointments || []).forEach(a => {
+      const d = new Date(a.date);
+      if (!isNaN(d) && d.getFullYear() === year && d.getMonth() === month) {
+        const day = d.getDate();
+        if (!map[day]) map[day] = [];
+        map[day].push({ id:p.id, patient:p.name || "Patient" });
+      }
+    });
+  });
+  return `<div class="calendarBoard">${Array.from({length:days},(_,i)=>{const day=i+1,list=map[day]||[];return `<button class="calendarCell ${list.length?"hasAppt":""}" onclick="${list[0]?`openPatient('${list[0].id}')`:""}">${day}${list.length?`<small>${list.length} appt</small>`:""}</button>`}).join("")}</div>`;
+}
+
+function renderInventoryMini() {
+  const items = JSON.parse(localStorage.getItem("clinicInventory") || "[]");
+  return items.length ? items.map((it,i)=>`<div class="inventoryRow"><b>${safeText(it.name)}</b><span class="pill">${safeText(it.qty)} left</span><button class="secondary" onclick="removeInventoryItem(${i})">Remove</button></div>`).join("") : `<p style="color:var(--muted);font-weight:800">No inventory items yet</p>`;
+}
+
+function renderLabMini(patientId) {
+  const lab = JSON.parse(localStorage.getItem("clinicLab") || "[]").filter(x => x.patientId === patientId);
+  return lab.length ? lab.map(it=>`<div class="labRow"><b>${safeText(it.item)}</b><span class="pill">${safeText(it.status)}</span></div>`).join("") : `<p style="color:var(--muted);font-weight:800">No lab work yet</p>`;
+}
+
+window.toggleClinicTheme = function() {
+  const isLight = document.body.classList.toggle("lightMode");
+  localStorage.setItem("clinicTheme", isLight ? "light" : "dark");
+};
+
+function applyClinicTheme() {
+  if (localStorage.getItem("clinicTheme") === "light") document.body.classList.add("lightMode");
+}
+
+window.addInventoryItem = async function() {
+  const name = await luxuryPrompt("Inventory item", "Composite / Anesthesia / Implant kit");
+  if (!name) return;
+  const qty = await luxuryPrompt("Quantity", "Example: 10", "1");
+  const items = JSON.parse(localStorage.getItem("clinicInventory") || "[]");
+  items.push({ name, qty: qty || "1", created_at: new Date().toISOString() });
+  localStorage.setItem("clinicInventory", JSON.stringify(items));
+  renderDashboard();
+};
+
+window.removeInventoryItem = function(index) {
+  const items = JSON.parse(localStorage.getItem("clinicInventory") || "[]");
+  items.splice(index, 1);
+  localStorage.setItem("clinicInventory", JSON.stringify(items));
+  renderDashboard();
+};
+
+window.addLabWork = async function(id) {
+  const item = await luxuryPrompt("Lab work", "Crown / Bridge / Night guard");
+  if (!item) return;
+  const status = await luxuryPrompt("Lab status", "Sent / Waiting / Returned", "Sent");
+  const lab = JSON.parse(localStorage.getItem("clinicLab") || "[]");
+  lab.push({ patientId:id, item, status, created_at:new Date().toISOString() });
+  localStorage.setItem("clinicLab", JSON.stringify(lab));
+  await refreshPatientKeepingScroll(id);
+};
+
+window.generateConsentForm = function(id) {
+  const p = patients.find(x => x.id === id);
+  if (!p) return;
+  const type = prompt("Consent type: extraction / rct / implant / crown", "extraction") || "treatment";
+  const clinicName = currentUser?.clinic_name || "Masri Dental Clinic";
+  const win = window.open("", "_blank");
+  win.document.write(`<html><head><title>Consent Form</title><style>body{font-family:Arial;padding:28px;color:#111}.box{border:1px solid #ddd;border-radius:18px;padding:22px;margin:14px 0}h1{color:#111827}@media print{button{display:none}}</style></head><body><button onclick="window.print()">Print / Save PDF</button><h1>${safeText(clinicName)}</h1><h2>${safeText(type.toUpperCase())} Consent Form</h2><div class="box"><b>Patient:</b> ${safeText(p.name || "-")}<br><b>ID:</b> ${safeText(p.case_id || p.id)}</div><div class="box">I acknowledge that the planned dental treatment, alternatives, benefits, risks, and possible complications have been explained to me. I had the chance to ask questions and agree to proceed.</div><br><p>Patient signature: ________________________</p><p>Doctor signature: ________________________</p><p>Date: ________________________</p></body></html>`);
+  win.document.close();
+};
+
+window.generatePrescription = function(id) {
+  const p = patients.find(x => x.id === id);
+  if (!p) return;
+  const type = prompt("Prescription type: pain / infection / extraction / implant", "pain") || "pain";
+  let meds = "Analgesic as prescribed\\nFollow doctor's instructions";
+  if (type.toLowerCase().includes("infection")) meds = "Antibiotic as prescribed\\nAnalgesic as needed\\nWarm saline rinse";
+  if (type.toLowerCase().includes("extraction")) meds = "Analgesic as prescribed\\nPost-operative instructions\\nAvoid smoking and vigorous rinsing for 24 hours";
+  const clinicName = currentUser?.clinic_name || "Masri Dental Clinic";
+  const win = window.open("", "_blank");
+  win.document.write(`<html><head><title>Prescription</title><style>body{font-family:Arial;padding:28px;color:#111}.rx{font-size:42px;font-weight:bold;color:#b8860b}.box{border:1px solid #ddd;border-radius:18px;padding:22px;margin:14px 0;white-space:pre-wrap}@media print{button{display:none}}</style></head><body><button onclick="window.print()">Print / Save PDF</button><h1>${safeText(clinicName)}</h1><h2>Prescription</h2><p><b>Patient:</b> ${safeText(p.name || "-")}</p><div class="rx">Rx</div><div class="box">${safeText(meds)}</div><p>Doctor signature: ________________________</p></body></html>`);
+  win.document.close();
+};
+
+window.generateSmartNote = async function(id) {
+  const p = patients.find(x => x.id === id);
+  if (!p) return;
+  const keyword = await luxuryPrompt("Smart note", "extraction / rct / crown / scaling / filling", "follow-up");
+  if (!keyword) return;
+  const k = keyword.toLowerCase();
+  let note = "Follow-up visit completed. Patient progress reviewed and instructions explained.";
+  if (k.includes("extraction")) note = "Extraction completed atraumatically. Hemostasis achieved. Post-operative instructions explained.";
+  if (k.includes("rct")) note = "RCT visit completed: canal preparation/irrigation performed, temporary restoration placed, next visit planned.";
+  if (k.includes("crown")) note = "Crown procedure visit completed. Margins, occlusion and shade were reviewed.";
+  if (k.includes("scaling")) note = "Scaling and oral hygiene instructions completed. Patient advised for maintenance visit.";
+  if (k.includes("filling")) note = "Caries removed and restoration placed. Occlusion checked and polished.";
+  const data = parseClinicData(p.progress_notes);
+  data.visits.unshift({ date:new Date().toLocaleString(), treatment:keyword, note });
+  await api(`patients?id=eq.${id}`, { method:"PATCH", body:JSON.stringify({ progress_notes:saveClinicData(data) }) });
+  await refreshPatientKeepingScroll(id);
+};
+
+window.setCasePriority = async function(id) {
+  const priority = await luxuryPrompt("Case priority", "urgent / medium / routine", "routine");
+  if (!priority) return;
+  await api(`patients?id=eq.${id}`, { method:"PATCH", body:JSON.stringify({ priority }) });
+  await refreshPatientKeepingScroll(id);
+};
+
+window.addInstallmentPlan = async function(id) {
+  const p = patients.find(x => x.id === id);
+  if (!p) return;
+  const total = await luxuryPrompt("Installment total", "Example: 10000");
+  if (!total) return;
+  const first = await luxuryPrompt("First payment", "Example: 2000", "0");
+  const data = parseClinicData(p.progress_notes);
+  data.payments.unshift({ date:new Date().toLocaleString(), total:Number(total||0), paid:Number(first||0), note:"Installment plan" });
+  await api(`patients?id=eq.${id}`, { method:"PATCH", body:JSON.stringify({ progress_notes:saveClinicData(data) }) });
+  await refreshPatientKeepingScroll(id);
+};
+
+
 function followUpItems() {
   const now = new Date();
   const items = [];
@@ -1027,6 +1204,23 @@ function renderDashboard() {
     <div class="dashboardPanel">
       <h2>Treatment Stats</h2>
       ${Object.keys(treatmentStats()).length ? Object.entries(treatmentStats()).map(([k,v]) => `<span class="premiumChip">${safeText(k.toUpperCase())}: ${v}</span>`).join(" ") : `<p style="color:var(--muted);font-weight:800">No treatment stats yet</p>`}
+    </div>
+
+    
+    <div class="dashboardPanel">
+      <h2>Finance Pro</h2>
+      ${renderMonthlyFinanceBars()}
+    </div>
+
+    <div class="dashboardPanel">
+      <h2>Appointment Calendar</h2>
+      ${renderAppointmentCalendar()}
+    </div>
+
+    <div class="dashboardPanel">
+      <h2>Inventory</h2>
+      <button class="secondary" onclick="addInventoryItem()">+ Add inventory</button>
+      ${renderInventoryMini()}
     </div>
 
     ${dashboardPanel("Today Appointments", todayAppointments, "No appointments today")}
@@ -1264,12 +1458,15 @@ function patientDetailsHTML(p) {
       <div class="kv"><b>Medical alerts</b><span>${safeText(p.medical_alerts || "-")}</span></div>
       <div class="kv"><b>Diagnosis</b><span>${safeText(p.diagnosis || "-")}</span></div>
       <div class="kv"><b>Treatment plan</b><span>${safeText(p.treatment_plan || "-")}</span></div>
+      ${medicalAlertBanner(p)}
+      <h3 class="sectionTitle">Treatment Progress</h3>
+      ${renderTreatmentProgress(p)}
 
       <div class="actions" style="margin:14px 0;">
         <button class="secondary" onclick="sendWhatsAppReminder('${p.id}')">WhatsApp Reminder</button>
         <button class="secondary" onclick="addTreatmentTemplate('${p.id}')">Treatment Template</button><button class="secondary" onclick="generateAITreatmentPlan('${p.id}')">AI Plan</button>
         <button class="secondary" onclick="showCaseSummary('${p.id}')">Case Summary</button>
-        <button class="secondary" onclick="addVoiceNote('${p.id}')">Voice Note</button>
+        <button class="secondary" onclick="addVoiceNote('${p.id}')">Voice Note</button><button class="secondary" onclick="generateSmartNote('${p.id}')">Smart Note</button><button class="secondary" onclick="generateConsentForm('${p.id}')">Consent</button><button class="secondary" onclick="generatePrescription('${p.id}')">Prescription</button><button class="secondary" onclick="addLabWork('${p.id}')">Lab</button><button class="secondary" onclick="setCasePriority('${p.id}')">Priority</button>
       </div>
 
       <h3 class="sectionTitle">Visits History</h3>
@@ -1288,7 +1485,7 @@ function patientDetailsHTML(p) {
 
       <h3 class="sectionTitle">Payments</h3>
       <div class="miniGrid"><div class="miniCard"><b>Total</b><span class="money">${money.total}</span></div><div class="miniCard"><b>Paid</b><span class="money">${money.paid}</span></div><div class="miniCard"><b>Remaining</b><span class="money unpaid">${money.remaining}</span></div></div>
-      <div class="actions"><button class="primary" onclick="addPayment('${p.id}')">+ Add Payment</button></div>
+      <div class="actions"><button class="primary" onclick="addPayment('${p.id}')">+ Add Payment</button><button class="secondary" onclick="addInstallmentPlan('${p.id}')">Installments</button></div>
       ${data.payments.length ? data.payments.map((pay, i) => `<div class="appointment"><b>${safeText(pay.date || "")}</b><p>Total: ${Number(pay.total || 0)} | Paid: ${Number(pay.paid || 0)} | Remaining: ${Number(pay.total || 0) - Number(pay.paid || 0)}</p><button class="danger" onclick="deletePayment('${p.id}', ${i})">Delete</button></div>`).join("") : `<div class="kv"><span>No payments yet</span></div>`}
 
       <h3 class="sectionTitle">Photos / X-rays</h3>
@@ -1325,6 +1522,9 @@ function patientDetailsHTML(p) {
 
       <h3 class="sectionTitle">Patient Timeline</h3>
       <div class="patientCard">${renderTimeline(p)}</div>
+      <h3 class="sectionTitle">Lab Tracking</h3>
+      ${renderLabMini(p.id)}
+
       <div class="actions">
         ${canEdit() ? `<button class="primary" onclick="editPatient('${p.id}')">Edit</button>` : ""}
         <button class="secondary" onclick="showQR('${p.id}')">QR</button>
@@ -1894,6 +2094,7 @@ async function stopScan() { try { if (scanner) { await scanner.stop(); scanner.c
 window.addEventListener("load", async () => {
   try {
     injectExtraStyles();
+    applyClinicTheme();
     if (location.search.includes("logout=1")) { localStorage.removeItem("clinicUser"); showLoginScreen(); return; }
     currentUser = getSavedUser();
     if (!currentUser || !currentUser.id || !currentUser.role) { localStorage.removeItem("clinicUser"); showLoginScreen(); return; }
