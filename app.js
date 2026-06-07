@@ -617,6 +617,82 @@ function injectExtraStyles() {
     .surfaceBtn.active{background:linear-gradient(135deg,#f5d76e,#b8860b)!important;color:#050505!important}
     .labRow button{min-height:40px!important;border-radius:14px!important;font-size:12px!important;padding:8px 10px!important}
 
+  
+    /* Premium form + tooth popup final polish */
+    .toothPopupBox .toothStatusGrid button{
+      background:linear-gradient(145deg,#101722,#0b111a)!important;
+      border:1px solid rgba(148,163,184,.18)!important;
+      color:#eef2f7!important;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 10px 22px rgba(0,0,0,.22)!important;
+      letter-spacing:.4px!important;
+    }
+    .toothPopupBox .toothStatusGrid button:active{
+      background:linear-gradient(135deg,#f5d76e,#b8860b)!important;
+      color:#050505!important;
+      transform:scale(.97)!important;
+    }
+    .toothPopupBox .surfaceBtn{
+      background:linear-gradient(145deg,#243041,#1d2735)!important;
+      border:1px solid rgba(148,163,184,.15)!important;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.05)!important;
+    }
+    .toothPopupBox .surfaceBtn.active{
+      background:linear-gradient(135deg,#f5d76e,#b8860b)!important;
+      color:#050505!important;
+    }
+    .premiumDocBackdrop{
+      position:fixed!important;
+      inset:0!important;
+      background:rgba(0,0,0,.82)!important;
+      backdrop-filter:blur(16px)!important;
+      z-index:999999!important;
+      overflow:auto!important;
+      padding:70px 18px 34px!important;
+      box-sizing:border-box!important;
+    }
+    .premiumDoc{
+      max-width:880px!important;
+      margin:0 auto!important;
+      background:#f7f8fb!important;
+      color:#111827!important;
+      border-radius:28px!important;
+      padding:26px!important;
+      box-shadow:0 28px 80px rgba(0,0,0,.55)!important;
+      font-family:Arial,sans-serif!important;
+    }
+    .premiumDoc h1{margin:0!important;color:#111827!important;font-size:32px!important}
+    .premiumDoc h2{color:#111827!important;border-bottom:3px solid #d4af37!important;padding-bottom:10px!important}
+    .premiumDocBox{
+      border:1px solid #e5e7eb!important;
+      border-radius:18px!important;
+      padding:18px!important;
+      background:white!important;
+      margin:14px 0!important;
+      line-height:1.55!important;
+    }
+    .premiumDocActions{
+      position:fixed!important;
+      top:14px!important;
+      right:14px!important;
+      display:flex!important;
+      gap:10px!important;
+      z-index:1000000!important;
+    }
+    .premiumDocActions button{
+      border:none!important;
+      border-radius:16px!important;
+      padding:12px 16px!important;
+      font-weight:1000!important;
+      min-height:44px!important;
+    }
+    .premiumDocActions .closeDoc{background:#263241!important;color:white!important}
+    .premiumDocActions .printDoc{background:#d4af37!important;color:#111827!important}
+    @media print{
+      .premiumDocActions{display:none!important}
+      .premiumDocBackdrop{position:static!important;background:white!important;padding:0!important}
+      .premiumDoc{box-shadow:none!important;border-radius:0!important;max-width:none!important}
+    }
+
   `;
   document.head.appendChild(style);
 }
@@ -1013,27 +1089,122 @@ window.addLabWork = async function(id) {
   await refreshPatientKeepingScroll(id);
 };
 
-window.generateConsentForm = function(id) {
-  const p = patients.find(x => x.id === id);
-  if (!p) return;
-  const type = prompt("Consent type: extraction / rct / implant / crown", "extraction") || "treatment";
-  const clinicName = currentUser?.clinic_name || "Masri Dental Clinic";
-  const win = window.open("", "_blank");
-  win.document.write(`<html><head><title>Consent Form</title><style>body{font-family:Arial;padding:28px;color:#111}.box{border:1px solid #ddd;border-radius:18px;padding:22px;margin:14px 0}h1{color:#111827}@media print{button{display:none}}</style></head><body><button onclick="window.print()">Print / Save PDF</button><h1>${safeText(clinicName)}</h1><h2>${safeText(type.toUpperCase())} Consent Form</h2><div class="box"><b>Patient:</b> ${safeText(p.name || "-")}<br><b>ID:</b> ${safeText(p.case_id || p.id)}</div><div class="box">I acknowledge that the planned dental treatment, alternatives, benefits, risks, and possible complications have been explained to me. I had the chance to ask questions and agree to proceed.</div><br><p>Patient signature: ________________________</p><p>Doctor signature: ________________________</p><p>Date: ________________________</p></body></html>`);
-  win.document.close();
+
+window.closePremiumDoc = function() {
+  document.getElementById("premiumDocModal")?.remove();
 };
 
-window.generatePrescription = function(id) {
+function openPremiumDocument(title, bodyHtml) {
+  document.getElementById("premiumDocModal")?.remove();
+
+  const modal = document.createElement("div");
+  modal.id = "premiumDocModal";
+  modal.className = "premiumDocBackdrop";
+  modal.innerHTML = `
+    <div class="premiumDocActions">
+      <button type="button" class="closeDoc" onclick="closePremiumDoc()">Cancel / Close</button>
+      <button type="button" class="printDoc" onclick="window.print()">Print / Save PDF</button>
+    </div>
+    <div class="premiumDoc">
+      ${bodyHtml}
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+}
+
+
+window.generateConsentForm = async function(id) {
   const p = patients.find(x => x.id === id);
   if (!p) return;
-  const type = prompt("Prescription type: pain / infection / extraction / implant", "pain") || "pain";
-  let meds = "Analgesic as prescribed\\nFollow doctor's instructions";
-  if (type.toLowerCase().includes("infection")) meds = "Antibiotic as prescribed\\nAnalgesic as needed\\nWarm saline rinse";
-  if (type.toLowerCase().includes("extraction")) meds = "Analgesic as prescribed\\nPost-operative instructions\\nAvoid smoking and vigorous rinsing for 24 hours";
+
+  const type = await luxuryPrompt(
+    "Consent type",
+    "extraction / rct / implant / crown",
+    "extraction"
+  );
+
+  if (!type) return;
+
   const clinicName = currentUser?.clinic_name || "Masri Dental Clinic";
-  const win = window.open("", "_blank");
-  win.document.write(`<html><head><title>Prescription</title><style>body{font-family:Arial;padding:28px;color:#111}.rx{font-size:42px;font-weight:bold;color:#b8860b}.box{border:1px solid #ddd;border-radius:18px;padding:22px;margin:14px 0;white-space:pre-wrap}@media print{button{display:none}}</style></head><body><button onclick="window.print()">Print / Save PDF</button><h1>${safeText(clinicName)}</h1><h2>Prescription</h2><p><b>Patient:</b> ${safeText(p.name || "-")}</p><div class="rx">Rx</div><div class="box">${safeText(meds)}</div><p>Doctor signature: ________________________</p></body></html>`);
-  win.document.close();
+
+  openPremiumDocument("Consent Form", `
+    <h1>${safeText(clinicName)}</h1>
+    <p style="color:#b8860b;font-weight:900;margin-top:6px;">Dental consent document</p>
+
+    <h2>${safeText(type.toUpperCase())} Consent Form</h2>
+
+    <div class="premiumDocBox">
+      <b>Patient:</b> ${safeText(p.name || "-")}<br>
+      <b>ID:</b> ${safeText(p.case_id || p.id)}<br>
+      <b>Phone:</b> ${safeText(p.phone || "-")}
+    </div>
+
+    <div class="premiumDocBox">
+      I acknowledge that the planned dental treatment, alternatives, benefits,
+      risks, and possible complications have been explained to me. I had the
+      chance to ask questions and agree to proceed.
+    </div>
+
+    <div class="premiumDocBox">
+      <b>Treatment:</b> ${safeText(type)}<br>
+      <b>Diagnosis:</b> ${safeText(p.diagnosis || "-")}<br>
+      <b>Treatment plan:</b> ${safeText(p.treatment_plan || "-")}
+    </div>
+
+    <br><br>
+    <p>Patient signature: ________________________</p>
+    <p>Doctor signature: ________________________</p>
+    <p>Date: ________________________</p>
+  `);
+};
+
+window.generatePrescription = async function(id) {
+  const p = patients.find(x => x.id === id);
+  if (!p) return;
+
+  const type = await luxuryPrompt(
+    "Prescription type",
+    "pain / infection / extraction / implant",
+    "pain"
+  );
+
+  if (!type) return;
+
+  let meds = "Analgesic as prescribed\nFollow doctor's instructions";
+  if (type.toLowerCase().includes("infection")) {
+    meds = "Antibiotic as prescribed\nAnalgesic as needed\nWarm saline rinse";
+  }
+  if (type.toLowerCase().includes("extraction")) {
+    meds = "Analgesic as prescribed\nPost-operative instructions\nAvoid smoking and vigorous rinsing for 24 hours";
+  }
+  if (type.toLowerCase().includes("implant")) {
+    meds = "Analgesic as prescribed\nAntibiotic as prescribed if indicated\nCold packs for the first day\nFollow-up appointment";
+  }
+
+  const clinicName = currentUser?.clinic_name || "Masri Dental Clinic";
+
+  openPremiumDocument("Prescription", `
+    <h1>${safeText(clinicName)}</h1>
+    <p style="color:#b8860b;font-weight:900;margin-top:6px;">Dental prescription</p>
+
+    <h2>Prescription</h2>
+
+    <div class="premiumDocBox">
+      <b>Patient:</b> ${safeText(p.name || "-")}<br>
+      <b>ID:</b> ${safeText(p.case_id || p.id)}<br>
+      <b>Date:</b> ${new Date().toLocaleString()}
+    </div>
+
+    <div style="font-size:48px;font-weight:1000;color:#b8860b;margin:18px 0;">Rx</div>
+
+    <div class="premiumDocBox" style="white-space:pre-wrap;font-size:18px;">
+      ${safeText(meds)}
+    </div>
+
+    <br><br>
+    <p>Doctor signature: ________________________</p>
+  `);
 };
 
 window.generateSmartNote = async function(id) {
