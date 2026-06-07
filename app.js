@@ -605,6 +605,149 @@ function injectExtraStyles() {
     body.lightMode{background:#f5f7fb!important;color:#111827!important}
     body.lightMode .card,body.lightMode .patientCard,body.lightMode .dashboardPanel,body.lightMode .kv,body.lightMode .miniCard,body.lightMode .progressStep,body.lightMode .inventoryRow,body.lightMode .labRow{background:#ffffff!important;color:#111827!important;border-color:#e5e7eb!important}
 
+  
+    /* Final polish: clean action buttons */
+    .actions{
+      display:grid!important;
+      grid-template-columns:repeat(2,minmax(0,1fr))!important;
+      gap:12px!important;
+      align-items:stretch!important;
+    }
+    .actions button{
+      min-height:58px!important;
+      border-radius:22px!important;
+      padding:14px 16px!important;
+      font-size:16px!important;
+      line-height:1.15!important;
+      white-space:normal!important;
+      text-align:center!important;
+      display:flex!important;
+      align-items:center!important;
+      justify-content:center!important;
+    }
+    @media(max-width:420px){
+      .actions{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}
+      .actions button{font-size:14px!important;min-height:54px!important;padding:12px 10px!important}
+    }
+
+    /* Finance Pro v2 */
+    .financeChart{
+      height:auto!important;
+      min-height:unset!important;
+      display:grid!important;
+      grid-template-columns:1fr!important;
+      gap:12px!important;
+      align-items:stretch!important;
+      padding:16px!important;
+    }
+    .financeRow{
+      display:grid!important;
+      grid-template-columns:52px 1fr 78px!important;
+      gap:10px!important;
+      align-items:center!important;
+      color:#e5e7eb!important;
+      font-weight:900!important;
+    }
+    .financeTrack{
+      height:16px!important;
+      border-radius:999px!important;
+      background:#0b111a!important;
+      border:1px solid #263241!important;
+      overflow:hidden!important;
+    }
+    .financeFill{
+      height:100%!important;
+      border-radius:999px!important;
+      background:linear-gradient(90deg,#f5d76e,#b8860b)!important;
+      min-width:4px!important;
+    }
+    .financeValue{
+      text-align:right!important;
+      color:#d4af37!important;
+      font-size:12px!important;
+      font-weight:1000!important;
+    }
+
+    /* Extreme premium tooth chart v3 */
+    .proMouthChart{
+      border-radius:38px!important;
+      background:
+        radial-gradient(circle at 50% 20%,rgba(212,175,55,.16),transparent 18%),
+        radial-gradient(circle at 50% 50%,rgba(96,165,250,.08),transparent 32%),
+        linear-gradient(145deg,#070b10,#111827 45%,#05070a)!important;
+      box-shadow:inset 0 0 90px rgba(212,175,55,.05),0 28px 80px rgba(0,0,0,.45)!important;
+    }
+    .proMouthChart::before{
+      content:"";
+      position:absolute;
+      inset:8%;
+      border-radius:50%;
+      border:1px solid rgba(212,175,55,.08);
+      pointer-events:none;
+    }
+    .proTooth{
+      width:46px!important;
+      height:58px!important;
+      border-radius:18px!important;
+    }
+    .proTooth:hover,.proTooth:focus{
+      filter:brightness(1.08)!important;
+      outline:none!important;
+    }
+    .proToothSvg{
+      width:42px!important;
+      height:44px!important;
+      filter:drop-shadow(0 12px 14px rgba(0,0,0,.48))!important;
+    }
+    .proTooth.molar .proToothSvg{
+      width:46px!important;
+      height:46px!important;
+    }
+    .proToothSvg path:first-child{
+      fill:#fff4dc!important;
+      stroke:rgba(255,255,255,.70)!important;
+      stroke-width:2.3!important;
+    }
+    .proTooth.caries path:first-child{fill:#ef4444!important}
+    .proTooth.filling path:first-child{fill:#60a5fa!important}
+    .proTooth.rct path:first-child{fill:#8b5cf6!important}
+    .proTooth.crown path:first-child{fill:#d4af37!important}
+    .proTooth.missing path:first-child{fill:#4b5563!important}
+    .proTooth.extraction path:first-child{fill:#fb7185!important}
+    .proTooth.implant path:first-child{fill:#2dd4bf!important}
+    .surfaceGrid{
+      display:grid!important;
+      grid-template-columns:repeat(5,1fr)!important;
+      gap:8px!important;
+      margin:12px 0!important;
+    }
+    .surfaceBtn{
+      min-height:44px!important;
+      border:none!important;
+      border-radius:16px!important;
+      background:#1f2937!important;
+      color:white!important;
+      font-weight:1000!important;
+    }
+    .surfaceBtn.active{
+      background:linear-gradient(135deg,#f5d76e,#b8860b)!important;
+      color:#050505!important;
+    }
+    .toothStatusGrid{
+      display:grid!important;
+      grid-template-columns:repeat(2,1fr)!important;
+      gap:10px!important;
+      margin-top:12px!important;
+    }
+    .toothStatusGrid button{
+      min-height:48px!important;
+      border-radius:18px!important;
+      border:1px solid #263241!important;
+      background:#0f1620!important;
+      color:white!important;
+      font-weight:1000!important;
+    }
+
   `;
   document.head.appendChild(style);
 }
@@ -886,13 +1029,29 @@ function renderMonthlyFinanceBars() {
     const data = parseClinicData(p.progress_notes);
     (data.payments || []).forEach(pay => {
       const d = new Date(pay.date);
-      const key = isNaN(d) ? "Unknown" : d.toLocaleString("en", { month: "short" });
+      const key = isNaN(d) ? "Other" : d.toLocaleString("en", { month: "short" });
       months[key] = (months[key] || 0) + Number(pay.paid || 0);
     });
   });
+
   const rows = Object.entries(months).slice(-6);
   const max = Math.max(1, ...rows.map(x => x[1]));
-  return `<div class="financeChart">${rows.length ? rows.map(([m,v]) => `<div class="financeBar" style="height:${Math.max(8,(v/max)*100)}%"><span>${safeText(m)}</span></div>`).join("") : `<p style="color:var(--muted);font-weight:800">No finance data yet</p>`}</div>`;
+
+  if (!rows.length) {
+    return `<div class="financeChart"><p style="color:var(--muted);font-weight:800">No finance data yet</p></div>`;
+  }
+
+  return `<div class="financeChart">
+    ${rows.map(([m, v]) => `
+      <div class="financeRow">
+        <span>${safeText(m)}</span>
+        <div class="financeTrack">
+          <div class="financeFill" style="width:${Math.max(4, (v / max) * 100)}%"></div>
+        </div>
+        <span class="financeValue">${Number(v || 0)}</span>
+      </div>
+    `).join("")}
+  </div>`;
 }
 
 function renderAppointmentCalendar() {
@@ -964,7 +1123,31 @@ window.generateConsentForm = function(id) {
   const type = prompt("Consent type: extraction / rct / implant / crown", "extraction") || "treatment";
   const clinicName = currentUser?.clinic_name || "Masri Dental Clinic";
   const win = window.open("", "_blank");
-  win.document.write(`<html><head><title>Consent Form</title><style>body{font-family:Arial;padding:28px;color:#111}.box{border:1px solid #ddd;border-radius:18px;padding:22px;margin:14px 0}h1{color:#111827}@media print{button{display:none}}</style></head><body><button onclick="window.print()">Print / Save PDF</button><h1>${safeText(clinicName)}</h1><h2>${safeText(type.toUpperCase())} Consent Form</h2><div class="box"><b>Patient:</b> ${safeText(p.name || "-")}<br><b>ID:</b> ${safeText(p.case_id || p.id)}</div><div class="box">I acknowledge that the planned dental treatment, alternatives, benefits, risks, and possible complications have been explained to me. I had the chance to ask questions and agree to proceed.</div><br><p>Patient signature: ________________________</p><p>Doctor signature: ________________________</p><p>Date: ________________________</p></body></html>`);
+  win.document.write(`<html><head><title>Consent Form</title><style>
+    body{font-family:Arial;padding:28px;color:#111;background:#f6f7fb}
+    .paper{max-width:850px;margin:auto;background:white;border-radius:24px;padding:28px;box-shadow:0 20px 50px rgba(0,0,0,.08)}
+    .box{border:1px solid #ddd;border-radius:18px;padding:22px;margin:14px 0}
+    h1{color:#111827;margin-bottom:4px}.gold{color:#b8860b}
+    .topBtns{position:fixed;top:14px;right:14px;display:flex;gap:10px;z-index:9999}
+    button{border:none;border-radius:14px;padding:12px 16px;font-weight:900}
+    .print{background:#d4af37;color:#111}.close{background:#263241;color:white}
+    @media print{.topBtns{display:none}body{background:white}.paper{box-shadow:none}}
+  </style></head><body>
+    <div class="topBtns">
+      <button class="close" onclick="window.close()">Cancel / Close</button>
+      <button class="print" onclick="window.print()">Print / Save PDF</button>
+    </div>
+    <div class="paper">
+      <h1>${safeText(clinicName)}</h1>
+      <p class="gold">Dental consent document</p>
+      <h2>${safeText(type.toUpperCase())} Consent Form</h2>
+      <div class="box"><b>Patient:</b> ${safeText(p.name || "-")}<br><b>ID:</b> ${safeText(p.case_id || p.id)}</div>
+      <div class="box">I acknowledge that the planned dental treatment, alternatives, benefits, risks, and possible complications have been explained to me. I had the chance to ask questions and agree to proceed.</div>
+      <br><p>Patient signature: ________________________</p>
+      <p>Doctor signature: ________________________</p>
+      <p>Date: ________________________</p>
+    </div>
+  </body></html>`);
   win.document.close();
 };
 
@@ -977,7 +1160,29 @@ window.generatePrescription = function(id) {
   if (type.toLowerCase().includes("extraction")) meds = "Analgesic as prescribed\\nPost-operative instructions\\nAvoid smoking and vigorous rinsing for 24 hours";
   const clinicName = currentUser?.clinic_name || "Masri Dental Clinic";
   const win = window.open("", "_blank");
-  win.document.write(`<html><head><title>Prescription</title><style>body{font-family:Arial;padding:28px;color:#111}.rx{font-size:42px;font-weight:bold;color:#b8860b}.box{border:1px solid #ddd;border-radius:18px;padding:22px;margin:14px 0;white-space:pre-wrap}@media print{button{display:none}}</style></head><body><button onclick="window.print()">Print / Save PDF</button><h1>${safeText(clinicName)}</h1><h2>Prescription</h2><p><b>Patient:</b> ${safeText(p.name || "-")}</p><div class="rx">Rx</div><div class="box">${safeText(meds)}</div><p>Doctor signature: ________________________</p></body></html>`);
+  win.document.write(`<html><head><title>Prescription</title><style>
+    body{font-family:Arial;padding:28px;color:#111;background:#f6f7fb}
+    .paper{max-width:760px;margin:auto;background:white;border-radius:24px;padding:28px;box-shadow:0 20px 50px rgba(0,0,0,.08)}
+    .rx{font-size:46px;font-weight:bold;color:#b8860b}
+    .box{border:1px solid #ddd;border-radius:18px;padding:22px;margin:14px 0;white-space:pre-wrap;line-height:1.6}
+    .topBtns{position:fixed;top:14px;right:14px;display:flex;gap:10px;z-index:9999}
+    button{border:none;border-radius:14px;padding:12px 16px;font-weight:900}
+    .print{background:#d4af37;color:#111}.close{background:#263241;color:white}
+    @media print{.topBtns{display:none}body{background:white}.paper{box-shadow:none}}
+  </style></head><body>
+    <div class="topBtns">
+      <button class="close" onclick="window.close()">Cancel / Close</button>
+      <button class="print" onclick="window.print()">Print / Save PDF</button>
+    </div>
+    <div class="paper">
+      <h1>${safeText(clinicName)}</h1>
+      <h2>Prescription</h2>
+      <p><b>Patient:</b> ${safeText(p.name || "-")}</p>
+      <div class="rx">Rx</div>
+      <div class="box">${safeText(meds)}</div>
+      <p>Doctor signature: ________________________</p>
+    </div>
+  </body></html>`);
   win.document.close();
 };
 
@@ -1365,27 +1570,27 @@ function getToothType(n) {
 
 function toothSvg(type = "molar") {
   if (type === "incisor") {
-    return `<svg viewBox="-42 -58 84 116" class="proToothSvg">
-      <path d="M-18,-36 C-13,-50 13,-50 18,-36 C22,-12 18,14 10,35 C6,48 2,55 0,55 C-2,55 -6,48 -10,35 C-18,14 -22,-12 -18,-36 Z"/>
-      <path class="shine" d="M-7,-28 C-10,-10 -9,9 -5,28"/>
-      <path class="groove" d="M0,-32 C-2,-12 -2,12 0,34"/>
+    return `<svg viewBox="-50 -65 100 130" class="proToothSvg">
+      <path d="M-18,-42 C-13,-57 13,-57 18,-42 C24,-12 18,24 8,48 C4,59 -4,59 -8,48 C-18,24 -24,-12 -18,-42 Z"/>
+      <path class="shine" d="M-7,-34 C-11,-10 -9,18 -4,38"/>
+      <path class="groove" d="M0,-35 C-2,-10 -2,18 0,42"/>
     </svg>`;
   }
 
   if (type === "canine") {
-    return `<svg viewBox="-44 -58 88 116" class="proToothSvg">
-      <path d="M-20,-33 C-13,-51 14,-51 21,-33 C28,-9 17,20 7,40 C3,50 1,56 -3,56 C-8,56 -10,43 -14,32 C-24,10 -28,-10 -20,-33 Z"/>
-      <path class="shine" d="M-8,-27 C-13,-7 -11,13 -6,30"/>
-      <path class="groove" d="M3,-30 C-1,-7 -2,17 -4,38"/>
+    return `<svg viewBox="-50 -65 100 130" class="proToothSvg">
+      <path d="M-22,-39 C-14,-58 14,-58 22,-39 C31,-12 17,24 7,48 C3,59 -4,61 -9,48 C-24,18 -31,-12 -22,-39 Z"/>
+      <path class="shine" d="M-9,-31 C-15,-6 -11,20 -5,38"/>
+      <path class="groove" d="M4,-34 C0,-10 -2,18 -5,43"/>
     </svg>`;
   }
 
-  return `<svg viewBox="-56 -52 112 104" class="proToothSvg">
-    <path d="M-32,-23 C-25,-44 -7,-42 0,-30 C9,-43 28,-41 34,-21 C43,4 32,30 16,42 C7,50 -5,42 0,26 C-9,45 -27,51 -36,30 C-46,8 -43,-8 -32,-23 Z"/>
-    <path class="groove" d="M-19,-8 C-5,4 12,4 27,-8"/>
-    <path class="groove" d="M-24,16 C-7,8 13,9 27,18"/>
-    <path class="groove" d="M0,-25 C-3,-5 -3,16 0,33"/>
-    <path class="shine" d="M-22,-20 C-27,-5 -23,8 -15,16"/>
+  return `<svg viewBox="-64 -58 128 116" class="proToothSvg">
+    <path d="M-38,-25 C-31,-49 -10,-48 0,-34 C11,-49 33,-47 39,-24 C48,5 37,34 18,47 C8,55 -5,47 0,28 C-10,51 -31,57 -42,33 C-53,8 -51,-9 -38,-25 Z"/>
+    <path class="groove" d="M-24,-9 C-8,5 12,5 30,-9"/>
+    <path class="groove" d="M-30,16 C-9,8 14,9 31,18"/>
+    <path class="groove" d="M0,-29 C-4,-5 -3,17 0,37"/>
+    <path class="shine" d="M-26,-23 C-32,-7 -27,9 -18,19"/>
   </svg>`;
 }
 
@@ -1616,21 +1821,42 @@ window.openToothPopup = function(patientId, toothNumber) {
   selectedToothPatientId = patientId;
   selectedToothNumber = toothNumber;
 
-  const modal = document.getElementById("toothModal");
-  const title = document.getElementById("toothModalTitle");
+  const old = document.getElementById("toothPopup");
+  if (old) old.remove();
 
-  if (title) {
-    title.textContent = "Tooth " + toothNumber;
-  }
+  const modal = document.createElement("div");
+  modal.id = "toothPopup";
+  modal.className = "luxuryModal";
+  modal.innerHTML = `
+    <div class="luxuryBox">
+      <h2>Tooth ${safeText(toothNumber)}</h2>
+      <p>Choose tooth status and surfaces.</p>
 
-  if (modal) {
-    modal.classList.remove("hidden");
-  }
-};
+      <div class="surfaceGrid">
+        <button type="button" class="surfaceBtn" data-surface="M">M</button>
+        <button type="button" class="surfaceBtn" data-surface="D">D</button>
+        <button type="button" class="surfaceBtn" data-surface="O">O/I</button>
+        <button type="button" class="surfaceBtn" data-surface="B">B</button>
+        <button type="button" class="surfaceBtn" data-surface="L">L</button>
+      </div>
 
-window.closeToothPopup = function() {
-  const modal = document.getElementById("toothModal");
-  if (modal) modal.classList.add("hidden");
+      <div class="toothStatusGrid">
+        ${["healthy","caries","filling","rct","crown","missing","extraction","implant"].map(s => `
+          <button type="button" onclick="setToothStatus('${s}')">${safeText(s.toUpperCase())}</button>
+        `).join("")}
+      </div>
+
+      <div class="luxuryActions">
+        <button type="button" class="secondary" onclick="closeToothPopup()">Cancel</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  modal.querySelectorAll(".surfaceBtn").forEach(btn => {
+    btn.onclick = () => btn.classList.toggle("active");
+  });
 };
 
 window.setToothStatus = async function(status) {
