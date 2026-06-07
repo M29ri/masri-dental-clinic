@@ -64,17 +64,39 @@ async function login(username, password) {
 async function registerDoctor() {
   const full_name = await luxuryPrompt("Your full name", "Doctor name");
   if (!full_name) return;
-  const username = await luxuryPrompt("Choose username", "Username");
-  if (!username) return;
+
+  const usernameRaw = await luxuryPrompt("Choose username", "Username");
+  if (!usernameRaw) return;
+
+  const username = usernameRaw.trim().toLowerCase();
+
   const password = await luxuryPrompt("Choose password", "Password");
   if (!password) return;
+
   try {
+    const existing = await api(
+      `clinic_users?username=eq.${encodeURIComponent(username)}&select=*`
+    );
+
+    if (existing.length) {
+      return alert("This username already exists. Please login or choose another username.");
+    }
+
     await api("clinic_users", {
       method: "POST",
-      body: JSON.stringify({ username: username.trim(), password: password.trim(), full_name: full_name.trim(), role: "doctor", clinic_name: "", clinic_logo: "" })
+      body: JSON.stringify({
+        username,
+        password: password.trim(),
+        full_name: full_name.trim(),
+        role: "doctor",
+        clinic_name: `${full_name.trim()}'s Clinic`
+      })
     });
-    alert("Account created successfully. Login now.");
-  } catch (err) { alert("Username already exists or account creation failed"); }
+
+    alert("Account created successfully. Please login now.");
+  } catch (err) {
+    alert("Account creation failed: " + err.message);
+  }
 }
 
 async function addUser() {
