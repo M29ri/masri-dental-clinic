@@ -62,30 +62,41 @@ async function login(username, password) {
 }
 
 async function registerDoctor() {
-  const full_name = await luxuryPrompt("Your full name", "Doctor name");
+  const full_name = await luxuryPrompt(
+    "Your full name",
+    "Doctor name"
+  );
   if (!full_name) return;
 
-  const usernameRaw = await luxuryPrompt("Choose username", "Username");
-  if (!usernameRaw) return;
+  const username = await luxuryPrompt(
+    "Choose username",
+    "Any username you want"
+  );
+  if (!username) return;
 
-  const username = usernameRaw.trim().toLowerCase();
-
-  const password = await luxuryPrompt("Choose password", "Password");
+  const password = await luxuryPrompt(
+    "Choose password",
+    "Password"
+  );
   if (!password) return;
 
   try {
+    const cleanUsername = username.trim();
+
     const existing = await api(
-      `clinic_users?username=eq.${encodeURIComponent(username)}&select=*`
+      `clinic_users?select=id&username=eq.${encodeURIComponent(cleanUsername)}`
     );
 
     if (existing.length) {
-      return alert("This username already exists. Please login or choose another username.");
+      return alert(
+        "This username already exists. Please login or choose another username."
+      );
     }
 
     await api("clinic_users", {
       method: "POST",
       body: JSON.stringify({
-        username,
+        username: cleanUsername,
         password: password.trim(),
         full_name: full_name.trim(),
         role: "doctor",
@@ -94,11 +105,11 @@ async function registerDoctor() {
     });
 
     alert("Account created successfully. Please login now.");
+
   } catch (err) {
     alert("Account creation failed: " + err.message);
   }
 }
-
 async function addUser() {
   if (!currentUser || currentUser.role !== "admin") return alert("Only admin can add users");
   const username = await luxuryPrompt("New username", "Username");
@@ -1444,11 +1455,7 @@ function renderDashboard() {
       `).join("")}</div>` : `<p style="color:var(--muted);font-weight:800">No missed follow-ups</p>`}
     </div>
 
-    <div class="dashboardPanel">
-      <h2>This Month Calendar</h2>
-      <div class="calendarMini">${monthAppointments()}</div>
-    </div>
-
+   
     <div class="dashboardPanel">
       <h2>Treatment Stats</h2>
       ${Object.keys(treatmentStats()).length ? Object.entries(treatmentStats()).map(([k,v]) => `<span class="premiumChip">${safeText(k.toUpperCase())}: ${v}</span>`).join(" ") : `<p style="color:var(--muted);font-weight:800">No treatment stats yet</p>`}
