@@ -95,6 +95,7 @@ async function registerDoctor() {
 
     await api("clinic_users", {
       method: "POST",
+      headers: { Prefer: "return=minimal" },
       body: JSON.stringify({
         username: cleanUsername,
         password: password.trim(),
