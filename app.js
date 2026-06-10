@@ -2720,6 +2720,153 @@ nav button[onclick*="settings"],.tabs button[onclick*="settings"],.tabBar button
   .toothNo{font-size:7px!important}
 }
 
+  
+/* FINAL TIDY: true drawer X + prettier odontogram */
+.drawerClose,
+.sideDrawer .drawerClose,
+#sideDrawer .drawerClose{
+  width:48px!important;
+  height:48px!important;
+  min-width:48px!important;
+  border-radius:16px!important;
+  background:linear-gradient(135deg,var(--theme1,#f5d76e),var(--theme2,#b8860b))!important;
+  color:#050505!important;
+  border:0!important;
+  font-size:30px!important;
+  font-weight:1000!important;
+  line-height:1!important;
+  display:grid!important;
+  place-items:center!important;
+  padding:0!important;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif!important;
+  text-indent:0!important;
+  overflow:hidden!important;
+}
+.drawerClose::before,
+.drawerClose::after,
+.sideDrawer .drawerClose::before,
+.sideDrawer .drawerClose::after,
+#sideDrawer .drawerClose::before,
+#sideDrawer .drawerClose::after{
+  content:""!important;
+  display:none!important;
+}
+
+/* tooth chart: clear two clinical rows, less crowding, centered */
+.proMouthChart{
+  height:auto!important;
+  padding:18px 14px 20px!important;
+  border-radius:28px!important;
+  background:
+    radial-gradient(ellipse at 50% 50%, rgba(8,145,178,.10), transparent 42%),
+    linear-gradient(145deg,#050914,#0b1220 60%,#030507)!important;
+  display:block!important;
+  overflow:visible!important;
+}
+.proMouthChart::before,.proMouthChart::after{display:none!important}
+
+.odontogramWrap{
+  display:grid!important;
+  gap:22px!important;
+}
+.odontogramJaw{
+  border:1px solid rgba(148,163,184,.16)!important;
+  background:linear-gradient(180deg,rgba(15,23,42,.82),rgba(2,6,23,.72))!important;
+  border-radius:24px!important;
+  padding:16px 12px 14px!important;
+  overflow:visible!important;
+}
+.odontogramTitle{
+  text-align:center!important;
+  color:var(--accent,#d4af37)!important;
+  font-weight:1000!important;
+  letter-spacing:4px!important;
+  font-size:13px!important;
+  margin-bottom:14px!important;
+}
+.odontogramRow{
+  display:grid!important;
+  grid-template-columns:
+    1.18fr 1.18fr 1.18fr 1fr 1fr .82fr .72fr .72fr
+    .72fr .72fr .82fr 1fr 1fr 1.18fr 1.18fr 1.18fr!important;
+  gap:8px!important;
+  align-items:end!important;
+  justify-items:center!important;
+}
+.odontogramRow.lower{align-items:start!important}
+
+.dentalArch,.dentalArch.upper,.dentalArch.lower{
+  height:auto!important;
+  width:100%!important;
+  max-width:none!important;
+  margin:0!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  clip-path:none!important;
+  overflow:visible!important;
+}
+.dentalArch::before{display:none!important}
+.archLabel{display:none!important}
+
+.proTooth{
+  position:relative!important;
+  left:auto!important;
+  top:auto!important;
+  border:0!important;
+  background:transparent!important;
+  padding:0!important;
+  transform:none!important;
+  z-index:2!important;
+  display:grid!important;
+  place-items:center!important;
+  gap:4px!important;
+  min-width:0!important;
+  overflow:visible!important;
+}
+.proTooth:hover,.proTooth:focus{
+  transform:scale(1.12)!important;
+  filter:drop-shadow(0 0 12px var(--accent,#d4af37))!important;
+  z-index:10!important;
+}
+.proTooth.hiddenByQuad{opacity:.16!important;pointer-events:none!important;filter:grayscale(1)!important}
+.toothArt,.proTooth svg{
+  display:block!important;
+  overflow:visible!important;
+  filter:drop-shadow(0 5px 6px rgba(0,0,0,.36))!important;
+}
+.proTooth.incisor .toothArt,.proTooth.incisor svg{width:20px!important;height:42px!important}
+.proTooth.canine .toothArt,.proTooth.canine svg{width:23px!important;height:44px!important}
+.proTooth.premolar .toothArt,.proTooth.premolar svg{width:30px!important;height:34px!important}
+.proTooth.molar .toothArt,.proTooth.molar svg{width:36px!important;height:35px!important}
+.toothNo{
+  display:block!important;
+  position:static!important;
+  transform:none!important;
+  color:#f8fafc!important;
+  font-size:10px!important;
+  line-height:1!important;
+  font-weight:1000!important;
+  text-shadow:0 2px 5px #000!important;
+}
+.toothSurfaceText{
+  top:-10px!important;
+  right:-5px!important;
+  font-size:8px!important;
+  min-width:18px!important;
+  height:18px!important;
+}
+@media(max-width:480px){
+  .proMouthChart{padding:12px 8px 14px!important}
+  .odontogramJaw{padding:13px 7px 11px!important}
+  .odontogramRow{gap:4px!important}
+  .proTooth.incisor .toothArt,.proTooth.incisor svg{width:15px!important;height:34px!important}
+  .proTooth.canine .toothArt,.proTooth.canine svg{width:17px!important;height:36px!important}
+  .proTooth.premolar .toothArt,.proTooth.premolar svg{width:23px!important;height:28px!important}
+  .proTooth.molar .toothArt,.proTooth.molar svg{width:27px!important;height:29px!important}
+  .toothNo{font-size:8px!important}
+}
+
   `;
   document.head.appendChild(style);
 }
@@ -3708,7 +3855,6 @@ function toothExtraOverlay(status) {
 function renderToothChart(p) {
   const data = parseClinicData(p.progress_notes);
   const teeth = data.teeth || {};
-
   const upper = [18,17,16,15,14,13,12,11,21,22,23,24,25,26,27,28];
   const lower = [48,47,46,45,44,43,42,41,31,32,33,34,35,36,37,38];
 
@@ -3733,7 +3879,6 @@ function renderToothChart(p) {
       <button data-quad="lowerL" onclick="setQuadrantFilter('lowerL')">LL</button>
       <button data-quad="lowerR" onclick="setQuadrantFilter('lowerR')">LR</button>
     </div>
-
     <div class="proMouthChart">
       <div class="odontogramWrap">
         <div class="odontogramJaw dentalArch upper">
@@ -6078,6 +6223,43 @@ window.showBeforeAfter = function(id) {
 
 
 /* ABSOLUTE FINAL DRAWER OVERRIDE */
+window.openClinicMenu = function() {
+  closeClinicMenu();
+  const overlay = document.createElement("div");
+  overlay.className = "drawerOverlay";
+  overlay.id = "drawerOverlay";
+  overlay.onclick = closeClinicMenu;
+
+  const drawer = document.createElement("aside");
+  drawer.className = "sideDrawer";
+  drawer.id = "sideDrawer";
+  drawer.innerHTML = `
+    <div class="drawerHead">
+      <h2>Menu</h2>
+      <button class="drawerClose" onclick="closeClinicMenu()" aria-label="Close">Ã</button>
+    </div>
+    <div class="drawerUser">
+      <div>${safeText(currentUser?.full_name || currentUser?.username || "Doctor")}</div>
+      <small>${safeText((currentUser?.role || "doctor").toUpperCase())}</small>
+    </div>
+    <div class="drawerMenu">
+      <button class="primaryItem" onclick="closeClinicMenu(); showPage('dashboard')">Dashboard</button>
+      <button onclick="closeClinicMenu(); showPage('patients')">Patients</button>
+      <button onclick="closeClinicMenu(); showPage('settings')">Profile / Branding</button>
+      <button onclick="closeClinicMenu(); backupData()">Backup</button>
+      <button onclick="closeClinicMenu(); restoreBackup()">Restore</button>
+      <button onclick="closeClinicMenu(); alert('Open a patient file and use WhatsApp Reminder from patient tools.')">Reminders</button>
+      <button onclick="closeClinicMenu(); backupData()">Daily Backup</button>
+      <button onclick="closeClinicMenu(); typeof addUser==='function' ? addUser() : alert('Users are managed by admin setup.')">Users</button>
+      <button onclick="closeClinicMenu(); openThemeMenu()">Themes</button>
+      <button class="dangerItem" onclick="logout()">Logout</button>
+    </div>`;
+  document.body.appendChild(overlay);
+  document.body.appendChild(drawer);
+};
+
+
+/* FINAL TIDY DRAWER OVERRIDE */
 window.openClinicMenu = function() {
   closeClinicMenu();
   const overlay = document.createElement("div");
