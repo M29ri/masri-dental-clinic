@@ -271,7 +271,7 @@ function enhancePremiumHeader() {
     const btn = document.createElement("button");
     btn.id = "hamburgerBtn";
     btn.className = "hamburgerBtn";
-    btn.innerHTML = "Menu";
+    btn.textContent = "";
     btn.onclick = openClinicMenu;
     rightArea.appendChild(btn);
   }
@@ -2261,6 +2261,155 @@ nav button[onclick*="settings"],.tabs button[onclick*="settings"],.tabBar button
   .toothNo{font-size:8px!important}
 }
 
+  
+/* HOTFIX: menu no duplicate, visible Close, cleaner orthodontic chart */
+#hamburgerBtn,.hamburgerBtn{
+  min-width:82px!important;
+  width:82px!important;
+  height:48px!important;
+  padding:0!important;
+  border-radius:18px!important;
+  font-size:0!important;
+  color:transparent!important;
+  background:linear-gradient(135deg,var(--theme1,#f5d76e),var(--theme2,#b8860b))!important;
+  border:0!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  box-shadow:0 16px 36px rgba(0,0,0,.35)!important;
+}
+#hamburgerBtn::before,.hamburgerBtn::before{
+  content:"Menu"!important;
+  font-size:16px!important;
+  line-height:1!important;
+  color:#050505!important;
+  font-weight:1000!important;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif!important;
+}
+
+.drawerClose{
+  font-size:0!important;
+}
+.drawerClose::before{
+  content:"Ã"!important;
+  font-size:26px!important;
+  color:#fff!important;
+}
+
+.fullPhotoTop button{
+  min-width:92px!important;
+  width:92px!important;
+  height:52px!important;
+  border-radius:18px!important;
+  padding:0!important;
+  font-size:0!important;
+  color:transparent!important;
+  background:linear-gradient(135deg,var(--theme1,#f5d76e),var(--theme2,#b8860b))!important;
+}
+.fullPhotoTop button::before{
+  content:"Close"!important;
+  font-size:15px!important;
+  font-weight:1000!important;
+  color:#050505!important;
+}
+.fullPhotoNav button{
+  min-width:126px!important;
+  height:54px!important;
+  border-radius:20px!important;
+  background:linear-gradient(145deg,#202b3f,#111827)!important;
+  border:1px solid color-mix(in srgb,var(--accent,#d4af37) 48%, transparent)!important;
+  color:#fff!important;
+  font-weight:1000!important;
+  box-shadow:0 18px 42px rgba(0,0,0,.48), inset 0 1px 0 rgba(255,255,255,.10)!important;
+}
+
+/* cleaner two-row dental chart */
+.proMouthChart{
+  height:auto!important;
+  min-height:0!important;
+  padding:22px 12px 26px!important;
+  display:grid!important;
+  gap:34px!important;
+  border-radius:28px!important;
+  background:
+    radial-gradient(ellipse at 50% 52%,rgba(80,10,25,.13),transparent 42%),
+    linear-gradient(145deg,#050914,#0b1220 55%,#030507)!important;
+}
+.proMouthChart::before,.proMouthChart::after{display:none!important}
+.dentalArch{
+  position:relative!important;
+  height:178px!important;
+  width:min(100%,650px)!important;
+  margin:0 auto!important;
+  border-radius:34px!important;
+  background:linear-gradient(180deg,rgba(184,73,86,.92),rgba(105,34,47,.95))!important;
+  border:1px solid rgba(255,220,220,.22)!important;
+  box-shadow:inset 0 16px 24px rgba(255,255,255,.12), inset 0 -18px 28px rgba(80,0,10,.30), 0 22px 48px rgba(0,0,0,.35)!important;
+  overflow:visible!important;
+}
+.dentalArch.upper{
+  clip-path:polygon(4% 26%, 9% 13%, 18% 7%, 31% 3%, 50% 0%, 69% 3%, 82% 7%, 91% 13%, 96% 26%, 96% 92%, 4% 92%)!important;
+}
+.dentalArch.lower{
+  clip-path:polygon(4% 8%, 96% 8%, 96% 74%, 91% 87%, 82% 93%, 69% 97%, 50% 100%, 31% 97%, 18% 93%, 9% 87%, 4% 74%)!important;
+}
+.archLabel{
+  position:absolute!important;
+  left:50%!important;
+  transform:translateX(-50%)!important;
+  color:rgba(255,255,255,.75)!important;
+  font-size:12px!important;
+  font-weight:1000!important;
+  letter-spacing:5px!important;
+  z-index:2!important;
+}
+.dentalArch.upper .archLabel{top:18px!important}
+.dentalArch.lower .archLabel{bottom:18px!important}
+
+.proTooth{
+  position:absolute!important;
+  border:none!important;
+  background:transparent!important;
+  padding:0!important;
+  transform:translate(-50%,-50%) rotate(var(--rot,0deg))!important;
+  z-index:8!important;
+  overflow:visible!important;
+  transition:transform .15s ease, filter .15s ease!important;
+}
+.proTooth:hover,.proTooth:focus{
+  transform:translate(-50%,-50%) rotate(var(--rot,0deg)) scale(1.14)!important;
+  filter:drop-shadow(0 0 13px var(--accent,#d4af37))!important;
+  z-index:20!important;
+}
+.proTooth.hiddenByQuad{opacity:.12!important;pointer-events:none!important;filter:grayscale(1)!important}
+.toothArt,.proTooth svg{display:block!important;overflow:visible!important;filter:drop-shadow(0 7px 8px rgba(0,0,0,.42))!important}
+.proTooth.incisor .toothArt,.proTooth.incisor svg{width:18px!important;height:45px!important}
+.proTooth.canine .toothArt,.proTooth.canine svg{width:23px!important;height:47px!important}
+.proTooth.premolar .toothArt,.proTooth.premolar svg{width:31px!important;height:39px!important}
+.proTooth.molar .toothArt,.proTooth.molar svg{width:38px!important;height:40px!important}
+.toothNo{
+  display:block!important;
+  position:absolute!important;
+  left:50%!important;
+  transform:translateX(-50%)!important;
+  color:#fff!important;
+  font-size:8px!important;
+  font-weight:1000!important;
+  text-shadow:0 2px 6px #000!important;
+}
+.dentalArch.upper .toothNo{top:calc(100% + 2px)!important}
+.dentalArch.lower .toothNo{bottom:calc(100% + 2px)!important}
+.toothSurfaceText{font-size:7px!important;min-width:17px!important;height:17px!important}
+
+@media(max-width:480px){
+  .dentalArch{height:145px!important}
+  .proTooth.incisor .toothArt,.proTooth.incisor svg{width:15px!important;height:38px!important}
+  .proTooth.canine .toothArt,.proTooth.canine svg{width:19px!important;height:40px!important}
+  .proTooth.premolar .toothArt,.proTooth.premolar svg{width:25px!important;height:33px!important}
+  .proTooth.molar .toothArt,.proTooth.molar svg{width:30px!important;height:34px!important}
+  .toothNo{font-size:7px!important}
+}
+
   `;
   document.head.appendChild(style);
 }
@@ -3249,17 +3398,19 @@ function toothExtraOverlay(status) {
 function renderToothChart(p) {
   const data = parseClinicData(p.progress_notes);
   const teeth = data.teeth || {};
+
   const upper = [
-    [18,7,73,-18],[17,15,58,-14],[16,24,45,-10],[15,34,35,-7],
-    [14,44,29,-4],[13,52,25,-2],[12,60,22,-1],[11,68,21,0],
-    [21,32,21,0],[22,40,22,1],[23,48,25,2],[24,56,29,4],
-    [25,66,35,7],[26,76,45,10],[27,85,58,14],[28,93,73,18]
+    [18,7,66,-20],[17,14,52,-15],[16,22,41,-10],[15,31,32,-7],
+    [14,40,26,-4],[13,48,22,-2],[12,56,20,-1],[11,64,20,0],
+    [21,36,20,0],[22,44,20,1],[23,52,22,2],[24,60,26,4],
+    [25,69,32,7],[26,78,41,10],[27,86,52,15],[28,93,66,20]
   ];
+
   const lower = [
-    [48,7,27,18],[47,15,42,14],[46,24,55,10],[45,34,65,7],
-    [44,44,71,4],[43,52,75,2],[42,60,78,1],[41,68,79,0],
-    [31,32,79,0],[32,40,78,-1],[33,48,75,-2],[34,56,71,-4],
-    [35,66,65,-7],[36,76,55,-10],[37,85,42,-14],[38,93,27,-18]
+    [48,7,34,20],[47,14,48,15],[46,22,59,10],[45,31,68,7],
+    [44,40,74,4],[43,48,78,2],[42,56,80,1],[41,64,80,0],
+    [31,36,80,0],[32,44,80,-1],[33,52,78,-2],[34,60,74,-4],
+    [35,69,68,-7],[36,78,59,-10],[37,86,48,-15],[38,93,34,-20]
   ];
 
   const toothButton = ([n,x,y,r]) => {
@@ -3267,6 +3418,7 @@ function renderToothChart(p) {
     const status = typeof toothInfo === "string" ? toothInfo : (toothInfo.status || "healthy");
     const surfaces = typeof toothInfo === "string" ? [] : (toothInfo.surfaces || []);
     const type = getToothType(n);
+
     return `
       <button type="button" class="proTooth ${safeText(status)} ${type}" data-tooth="${n}" style="left:${x}%;top:${y}%;--rot:${r}deg" onclick="window.openToothPopup('${p.id}', '${n}')">
         <span class="toothArt">${toothSvg(type)}${surfaceOverlayHTML(toothInfo)}${toothExtraOverlay(status)}</span>
@@ -3282,12 +3434,18 @@ function renderToothChart(p) {
       <button data-quad="lowerL" onclick="setQuadrantFilter('lowerL')">LL</button>
       <button data-quad="lowerR" onclick="setQuadrantFilter('lowerR')">LR</button>
     </div>
+
     <div class="proMouthChart">
-      <div class="dentalArch upper"><span class="archLabel">UPPER</span>${upper.map(toothButton).join("")}</div>
-      <div class="dentalArch lower"><span class="archLabel">LOWER</span>${lower.map(toothButton).join("")}</div>
+      <div class="dentalArch upper">
+        <span class="archLabel">UPPER</span>
+        ${upper.map(toothButton).join("")}
+      </div>
+      <div class="dentalArch lower">
+        <span class="archLabel">LOWER</span>
+        ${lower.map(toothButton).join("")}
+      </div>
     </div>`;
 }
-
 function treatmentProgressItems(patient) {
   const items = [];
   const hasDiagnosis = !!String(patient.diagnosis || "").trim();
@@ -5424,7 +5582,7 @@ function enhancePremiumHeader() {
     btn.id = "hamburgerBtn";
     btn.className = "hamburgerBtn";
     btn.type = "button";
-    btn.textContent = "Menu";
+    btn.textContent = "";
     btn.onclick = openClinicMenu;
     holder.appendChild(btn);
   } else {
@@ -5441,6 +5599,63 @@ window.openSimplePhotoViewer = function(patientId, index = 0) {
   const fallback = currentType === "xray" ? cats.clinical : cats.xrays;
   const photos = (list.length ? list : fallback).map(x => x.url);
   if (!photos.length) return;
+  window.simplePhotoState = window.simplePhotoState || {};
+  window.simplePhotoState[patientId] = { type: currentType, photos, index };
+
+  document.getElementById("fullPhotoViewer")?.remove();
+  const viewer = document.createElement("div");
+  viewer.className = "fullPhotoViewer";
+  viewer.id = "fullPhotoViewer";
+  viewer.innerHTML = `
+    <div class="fullPhotoTop">
+      <span class="fullPhotoCounter">${index + 1} / ${photos.length}</span>
+      <button onclick="closeSimplePhotoViewer()" aria-label="Close"></button>
+    </div>
+    <img src="${photos[index]}">
+    <div class="fullPhotoNav">
+      <button onclick="moveSimplePhoto('${patientId}', -1)">Previous</button>
+      <button onclick="moveSimplePhoto('${patientId}', 1)">Next</button>
+    </div>`;
+  document.body.appendChild(viewer);
+};
+
+try { enhancePremiumHeader(); } catch(e) {}
+
+
+/* HOTFIX FUNCTION OVERRIDES */
+function enhancePremiumHeader() {
+  const brand = document.querySelector(".brand");
+  if (brand) {
+    const h1 = brand.querySelector("h1");
+    if (h1 && !brand.querySelector(".clinicLogoPremium")) h1.insertAdjacentHTML("beforebegin", clinicLogoMarkup());
+    brand.classList.add("brandWrapPremium");
+  }
+
+  const holder = brand?.parentElement || document.body;
+  let btn = document.getElementById("hamburgerBtn");
+  if (!btn) {
+    btn = document.createElement("button");
+    btn.id = "hamburgerBtn";
+    btn.className = "hamburgerBtn";
+    btn.type = "button";
+    btn.onclick = openClinicMenu;
+    holder.appendChild(btn);
+  }
+  btn.textContent = "";
+  btn.setAttribute("aria-label", "Menu");
+}
+
+window.openSimplePhotoViewer = function(patientId, index = 0) {
+  const p = patients.find(x => x.id === patientId);
+  if (!p) return;
+
+  const currentType = window.simplePhotoState?.[patientId]?.type || "clinical";
+  const cats = categorizedPhotos(p);
+  const list = currentType === "xray" ? cats.xrays : cats.clinical;
+  const fallback = currentType === "xray" ? cats.clinical : cats.xrays;
+  const photos = (list.length ? list : fallback).map(x => x.url);
+  if (!photos.length) return;
+
   window.simplePhotoState = window.simplePhotoState || {};
   window.simplePhotoState[patientId] = { type: currentType, photos, index };
 
