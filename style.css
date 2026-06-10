@@ -462,59 +462,43 @@ textarea{
 }
 .brandWrapPremium{
   display:grid !important;
-  grid-template-columns: 90px minmax(220px, 1fr) auto !important;
-  align-items:center !important;
-  gap:18px !important;
+  grid-template-columns: 70px 1fr auto !important;
+  align-items:start !important;
+  gap:14px !important;
+  width:100% !important;
 }
 
 .brandWrapPremium h1{
-  font-size:52px !important;
-  line-height:.92 !important;
-  max-width:300px !important;
+  font-size:34px !important;
+  line-height:.9 !important;
+  max-width:180px !important;
+  margin:0 !important;
 }
 
-.brandWrapPremium .clinicLogoPremium,
-.brandWrapPremium .brandLogoMini{
-  width:78px !important;
-  height:78px !important;
-  flex-shrink:0 !important;
+.clinicLogoPremium,
+.brandLogoMini{
+  width:58px !important;
+  height:58px !important;
+  border-radius:18px !important;
 }
 
 .headerRight{
   display:flex !important;
   align-items:center !important;
-  gap:14px !important;
-  margin-left:0 !important;
-  flex-shrink:0 !important;
+  gap:10px !important;
 }
 
-.headerRight .userBox,
-.headerRight .userCard{
-  min-width:210px !important;
-  max-width:230px !important;
+.headerRight .userCard,
+.headerRight .userBox{
+  min-width:170px !important;
+  max-width:170px !important;
+  padding:14px !important;
 }
 
 .hamburgerBtn{
-  min-width:130px !important;
-  height:72px !important;
-  border-radius:28px !important;
-  font-size:24px !important;
-  font-weight:900 !important;
-}
-
-@media(max-width:700px){
-  .brandWrapPremium{
-    grid-template-columns: 64px 1fr !important;
-  }
-
-  .brandWrapPremium h1{
-    font-size:42px !important;
-    max-width:230px !important;
-  }
-
-  .headerRight{
-    grid-column:1 / -1 !important;
-    width:100% !important;
-    justify-content:space-between !important;
-  }
+  min-width:100px !important;
+  height:58px !important;
+  border-radius:20px !important;
+  font-size:18px !important;
+  padding:0 18px !important;
 }
