@@ -1,425 +1,688 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Masri Dental Clinic | Professional Dental Management</title>
-    <link rel="manifest" href="manifest.webmanifest">
-    <meta name="theme-color" content="#00d4aa">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#070b10">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Masri Dental Clinic</title>
+
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="style.css">
+
+  <style>
+    :root{
+      --bg:#070b10;
+      --card:#121821;
+      --border:#263241;
+      --text:#f8fafc;
+      --muted:#9ca9b8;
+      --gold:#d4af37;
+      --gold2:#8f6b10;
+      --danger:#dc3b35;
+      --green:#19c37d;
+      --soft:#202a39;
+    }
+
+    *{box-sizing:border-box}
+
+    html,body{
+      margin:0;
+      min-height:100%;
+      background:
+        radial-gradient(circle at top right,rgba(212,175,55,.10),transparent 35%),
+        linear-gradient(180deg,#070b10 0%,#0b1118 55%,#06090d 100%);
+      color:var(--text);
+      font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Arial,sans-serif;
+    }
+
+    body{padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+
+    .app{
+      width:100%;
+      max-width:980px;
+      margin:0 auto;
+      padding:18px;
+    }
+
+    header{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:14px;
+      margin-bottom:18px;
+    }
+
+    .brand h1{
+      margin:0;
+      font-size:clamp(34px,7vw,58px);
+      line-height:.95;
+      letter-spacing:-1.8px;
+      font-weight:1000;
+    }
+
+    #status{
+      display:block;
+      color:var(--muted);
+      margin-top:10px;
+      font-size:18px;
+      font-weight:800;
+    }
+.topActions{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.doctorBox{
+  background:linear-gradient(180deg,#172030,#111827);
+  border:1px solid var(--border);
+  border-radius:22px;
+  padding:12px 16px;
+  min-width:130px;
+}
+
+.doctorName{
+  font-size:15px;
+  font-weight:1000;
+  color:white;
+}
+
+.doctorRole{
+  color:var(--muted);
+  font-size:12px;
+  font-weight:800;
+  margin-top:4px;
+}
+
+.logoutBtn{
+  border:none;
+  border-radius:20px;
+  padding:14px 18px;
+  background:linear-gradient(135deg,#e34a43,#a91f1a);
+  color:white;
+  font-weight:1000;
+  min-height:52px;
+}
+    
+    #refreshBtn{
+      width:58px;
+      height:58px;
+      border-radius:22px;
+      border:1px solid var(--border);
+      background:linear-gradient(180deg,#202a39,#121821);
+      color:var(--text);
+      font-size:26px;
+      font-weight:900;
+      box-shadow:0 12px 35px rgba(0,0,0,.25);
+    }
+
+    .tabs{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:10px;
+      position:sticky;
+      top:0;
+      z-index:80;
+      background:rgba(7,11,16,.82);
+      backdrop-filter:blur(18px);
+      padding:10px 0 12px;
+      margin-bottom:16px;
+    }
+
+    .tab{
+      border:none;
+      border-radius:22px;
+      padding:15px 10px;
+      background:var(--soft);
+      color:var(--muted);
+      font-size:16px;
+      font-weight:1000;
+      min-height:54px;
+    }
+
+    .tab.active{
+      background:linear-gradient(135deg,var(--gold),var(--gold2));
+      color:#050505;
+      box-shadow:0 14px 30px rgba(212,175,55,.20);
+    }
+
+    .page{display:none}
+    .page.active{display:block}
+
+    .heroGrid{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:12px;
+      margin-bottom:16px;
+    }
+
+    .statCard{
+      background:linear-gradient(180deg,#172030,#111827);
+      border:1px solid var(--border);
+      border-radius:28px;
+      padding:18px;
+      min-height:120px;
+      box-shadow:0 18px 45px rgba(0,0,0,.25);
+    }
+
+    .statCard small{
+      display:block;
+      color:var(--muted);
+      font-size:13px;
+      font-weight:900;
+      margin-bottom:8px;
+      text-transform:uppercase;
+      letter-spacing:.5px;
+    }
+
+    .statCard strong{
+      display:block;
+      font-size:34px;
+      font-weight:1000;
+      color:var(--text);
+      letter-spacing:-1px;
+    }
+
+    .quickActions{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+      margin-bottom:16px;
+    }
+
+    .dashboardPanel,
+    .card,
+    .patientCard{
+      background:linear-gradient(180deg,#172030,#111827);
+      border:1px solid var(--border);
+      border-radius:30px;
+      padding:20px;
+      box-shadow:0 18px 45px rgba(0,0,0,.28);
+      margin-bottom:16px;
+    }
+
+    .dashboardPanel h2,
+    .card h2,
+    .patientCard h3{
+      margin:0 0 14px;
+      font-size:clamp(28px,6vw,44px);
+      line-height:1.05;
+      letter-spacing:-1px;
+      font-weight:1000;
+    }
+
+    input,textarea,select{
+      width:100%;
+      border:1px solid var(--border);
+      background:#0f1620;
+      color:var(--text);
+      border-radius:22px;
+      padding:17px;
+      font-size:17px;
+      outline:none;
+    }
+
+    textarea{
+      min-height:110px;
+      resize:vertical;
+      line-height:1.5;
+    }
+
+    label{
+      display:block;
+      color:var(--muted);
+      font-weight:900;
+      margin:14px 0 8px;
+    }
+
+    .formGrid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+    }
+
+    .full{grid-column:1/-1}
+
+    .searchWrap{margin-bottom:16px}
+
+    #search{
+      font-size:21px;
+      border-radius:28px;
+      padding:20px 22px;
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      background:#202b3a;
+      color:#dbe6f3;
+      border-radius:999px;
+      padding:9px 14px;
+      font-weight:900;
+      margin:4px 5px 4px 0;
+    }
+
+    .actions{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:10px;
+      margin-top:18px;
+    }
+
+    button{
+      cursor:pointer;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    .primary,.secondary,.danger{
+      border:none;
+      border-radius:22px;
+      padding:16px 14px;
+      min-height:52px;
+      font-size:16px;
+      font-weight:1000;
+    }
+
+    .primary{
+      background:linear-gradient(135deg,var(--gold),var(--gold2));
+      color:#050505;
+    }
+
+    .secondary{
+      background:#202a39;
+      color:var(--text);
+    }
+
+    .danger{
+      background:linear-gradient(135deg,#e34a43,#a91f1a);
+      color:#fff;
+    }
+
+    .scanBox{
+      background:#0f1620;
+      border:1px dashed var(--border);
+      border-radius:28px;
+      padding:18px;
+      min-height:280px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:var(--muted);
+      margin-bottom:16px;
+    }
+
+    #reader{
+      width:100%;
+      overflow:hidden;
+      border-radius:24px;
+    }
+
+    .photoUpload{
+      border:1px dashed var(--border);
+      border-radius:28px;
+      padding:20px;
+      text-align:center;
+      background:#0f1620;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:12px;
+      margin-top:12px;
+    }
+
+    .thumbWrap{position:relative}
+
+    .thumb{
+      width:100%;
+      aspect-ratio:1/1;
+      object-fit:cover;
+      border-radius:22px;
+      border:1px solid var(--border);
+      background:#0f1620;
+    }
+
+    .x{
+      position:absolute;
+      top:8px;
+      right:8px;
+      width:38px;
+      height:38px;
+      border:none;
+      border-radius:50%;
+      background:rgba(0,0,0,.72);
+      color:white;
+      font-size:24px;
+      font-weight:1000;
+    }
+
+    .hidden{display:none!important}
+
+    .modal{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.92);
+      z-index:999;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:18px;
+    }
+
+    .modal.hidden{display:none!important}
+
+    .modal img{
+      max-width:100%;
+      max-height:85vh;
+      border-radius:24px;
+    }
+
+    .modalClose{
+      position:absolute;
+      top:18px;
+      right:18px;
+      width:50px;
+      height:50px;
+      border-radius:50%;
+      border:none;
+      background:#1f2937;
+      color:white;
+      font-size:28px;
+    }
+
+    .qrBox{
+      background:#111827;
+      border:1px solid var(--gold);
+      border-radius:28px;
+      padding:24px;
+      text-align:center;
+    }
+
+    #qrcode{
+      background:white;
+      padding:16px;
+      border-radius:20px;
+      margin:20px auto;
+      width:max-content;
+    }
+
+    @media(max-width:620px){
+      .app{padding:14px}
+      .tabs{gap:8px}
+      .tab{font-size:13px;padding:13px 6px;border-radius:18px}
+      .formGrid{grid-template-columns:1fr}
+      .actions{grid-template-columns:1fr 1fr}
+      .actions .danger{grid-column:1/-1}
+      #refreshBtn{width:52px;height:52px}
+    }
+  </style>
 </head>
+
 <body>
-    <!-- Navigation Toggle for Mobile -->
-    <div class="nav-toggle" id="navToggle">
-        <i class="fas fa-bars"></i>
+  <main class="app"><header class="topHeader">
+  <div class="brand">
+    <h1>Masri Dental Clinic</h1>
+    <span id="status">Loading cloud...</span>
+  </div>
+
+  <div class="topActions">
+    <div class="doctorBox">
+      <div class="doctorName" id="doctorName">
+        Doctor
+      </div>
+      <div class="doctorRole" id="doctorRole">
+        Loading...
+      </div>
     </div>
 
-    <!-- Header -->
-    <header class="header">
-        <div class="header-container">
-            <div class="logo">
-                <div class="logo-icon">
-                    <i class="fas fa-tooth"></i>
-                </div>
-                <div class="logo-text">
-                    <span class="logo-name">Masri Dental</span>
-                    <span class="logo-tagline">Clinic Management</span>
-                </div>
-            </div>
-            
-            <nav class="nav-menu" id="navMenu">
-                <a href="#" class="nav-link active" data-tab="dashboard">
-                    <i class="fas fa-home"></i>
-                    <span>Dashboard</span>
-                </a>
-                <a href="#" class="nav-link" data-tab="patients">
-                    <i class="fas fa-users"></i>
-                    <span>Patients</span>
-                </a>
-                <a href="#" class="nav-link" data-tab="appointments">
-                    <i class="fas fa-calendar-check"></i>
-                    <span>Appointments</span>
-                </a>
-                <a href="#" class="nav-link" data-tab="prescriptions">
-                    <i class="fas fa-prescription"></i>
-                    <span>Prescriptions</span>
-                </a>
-                <a href="#" class="nav-link" data-tab="settings">
-                    <i class="fas fa-cog"></i>
-                    <span>Settings</span>
-                </a>
-            </nav>
+    <button id="refreshBtn" aria-label="Refresh">
+      ↻
+    </button>
 
-            <div class="header-actions">
-                <div class="search-box">
-                    <i class="fas fa-search"></i>
-                    <input type="text" placeholder="Search patients..." id="globalSearch">
-                </div>
-                <div class="notification-bell">
-                    <i class="fas fa-bell"></i>
-                    <span class="notification-badge">3</span>
-                </div>
-                <div class="user-profile">
-                    <div class="user-avatar">
-                        <i class="fas fa-user-md"></i>
-                    </div>
-                </div>
-            </div>
+    <button id="logoutBtn" class="logoutBtn">
+      Logout
+    </button>
+  </div>
+</header>
+
+    <nav class="tabs">
+      <button class="tab active" data-page="dashboard">Dashboard</button>
+      <button class="tab" data-page="patients">Patients</button>
+      <button class="tab" data-page="form">Add</button>
+      <button class="tab" data-page="scan">Scan QR</button>
+     <button class="tab" data-page="settings">
+  Settings
+</button> 
+    </nav>
+
+    <section id="dashboard" class="page active">
+      <div id="dashboardContent">
+        <div class="heroGrid">
+          <div class="statCard"><small>Total patients</small><strong>—</strong></div>
+          <div class="statCard"><small>Photos</small><strong>—</strong></div>
+          <div class="statCard"><small>Unpaid</small><strong>—</strong></div>
+          <div class="statCard"><small>Visits</small><strong>—</strong></div>
         </div>
-    </header>
 
-    <!-- Main Content -->
-    <main class="main-content">
-        <!-- Dashboard Tab -->
-        <section class="tab-content active" id="dashboard">
-            <div class="dashboard-header">
-                <div class="dashboard-welcome">
-                    <h1>Welcome Back, Dr. Masri! 🦷</h1>
-                    <p>Here's what's happening at your clinic today</p>
-                </div>
-                <div class="date-display">
-                    <i class="fas fa-calendar"></i>
-                    <span id="currentDate"></span>
-                </div>
-            </div>
+        <div class="quickActions">
+          <button class="primary" onclick="showPage('form')">+ New Patient</button>
+          <button class="secondary" onclick="showPage('scan')">Scan QR</button>
+          <button class="secondary" onclick="backupData()">
+  Backup
+</button>
 
-            <!-- Stats Cards -->
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-icon patients">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <div class="stat-info">
-                        <span class="stat-number" id="totalPatients">0</span>
-                        <span class="stat-label">Total Patients</span>
-                    </div>
-                    <div class="stat-trend up">
-                        <i class="fas fa-arrow-up"></i>
-                        <span>12%</span>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon appointments">
-                        <i class="fas fa-calendar-check"></i>
-                    </div>
-                    <div class="stat-info">
-                        <span class="stat-number" id="todayAppointments">0</span>
-                        <span class="stat-label">Today's Appointments</span>
-                    </div>
-                    <div class="stat-badge">
-                        <span>Today</span>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon completed">
-                        <i class="fas fa-check-circle"></i>
-                    </div>
-                    <div class="stat-info">
-                        <span class="stat-number" id="completedToday">0</span>
-                        <span class="stat-label">Completed Today</span>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon pending">
-                        <i class="fas fa-clock"></i>
-                    </div>
-                    <div class="stat-info">
-                        <span class="stat-number" id="pendingAppointments">0</span>
-                        <span class="stat-label">Pending</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Teeth Chart Section -->
-            <div class="teeth-chart-section">
-                <div class="section-header">
-                    <h2><i class="fas fa-tooth"></i> Dental Chart</h2>
-                    <div class="section-actions">
-                        <button class="btn btn-secondary" id="clearTeeth">
-                            <i class="fas fa-undo"></i> Clear
-                        </button>
-                        <button class="btn btn-primary" id="saveTeeth">
-                            <i class="fas fa-save"></i> Save Chart
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="teeth-chart-container">
-                    <div class="teeth-chart">
-                        <!-- Upper Jaw -->
-                        <div class="jaw jaw-upper">
-                            <div class="jaw-label">Upper Jaw (Maxillary)</div>
-                            <div class="teeth-row" id="upperTeeth">
-                                <!-- Teeth will be generated by JavaScript -->
-                            </div>
-                        </div>
-                        
-                        <!-- Mouth Division -->
-                        <div class="mouth-division">
-                            <div class="division-line"></div>
-                            <div class="tongue">
-                                <i class="fas fa-smile"></i>
-                            </div>
-                        </div>
-                        
-                        <!-- Lower Jaw -->
-                        <div class="jaw jaw-lower">
-                            <div class="teeth-row" id="lowerTeeth">
-                                <!-- Teeth will be generated by JavaScript -->
-                            </div>
-                            <div class="jaw-label">Lower Jaw (Mandibular)</div>
-                        </div>
-                    </div>
-                    
-                    <!-- Tooth Legend -->
-                    <div class="tooth-legend">
-                        <h4>Condition Legend</h4>
-                        <div class="legend-items">
-                            <div class="legend-item">
-                                <div class="legend-tooth healthy"></div>
-                                <span>Healthy</span>
-                            </div>
-                            <div class="legend-item">
-                                <div class="legend-tooth cavity"></div>
-                                <span>Cavity</span>
-                            </div>
-                            <div class="legend-item">
-                                <div class="legend-tooth filling"></div>
-                                <span>Filling</span>
-                            </div>
-                            <div class="legend-item">
-                                <div class="legend-tooth crown"></div>
-                                <span>Crown</span>
-                            </div>
-                            <div class="legend-item">
-                                <div class="legend-tooth extraction"></div>
-                                <span>Extraction</span>
-                            </div>
-                            <div class="legend-item">
-                                <div class="legend-tooth implant"></div>
-                                <span>Implant</span>
-                            </div>
-                            <div class="legend-item">
-                                <div class="legend-tooth root-canal"></div>
-                                <span>Root Canal</span>
-                            </div>
-                            <div class="legend-item">
-                                <div class="legend-tooth missing"></div>
-                                <span>Missing</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Selected Tooth Details -->
-                <div class="tooth-details-panel" id="toothDetailsPanel">
-                    <div class="panel-header">
-                        <h3><i class="fas fa-tooth"></i> Tooth #<span id="selectedToothNumber">-</span></h3>
-                        <button class="btn-close" id="closeToothPanel">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-                    <div class="panel-content">
-                        <div class="condition-selector">
-                            <label>Select Condition:</label>
-                            <div class="condition-buttons">
-                                <button class="condition-btn" data-condition="healthy">
-                                    <div class="condition-preview healthy"></div>
-                                    <span>Healthy</span>
-                                </button>
-                                <button class="condition-btn" data-condition="cavity">
-                                    <div class="condition-preview cavity"></div>
-                                    <span>Cavity</span>
-                                </button>
-                                <button class="condition-btn" data-condition="filling">
-                                    <div class="condition-preview filling"></div>
-                                    <span>Filling</span>
-                                </button>
-                                <button class="condition-btn" data-condition="crown">
-                                    <div class="condition-preview crown"></div>
-                                    <span>Crown</span>
-                                </button>
-                                <button class="condition-btn" data-condition="extraction">
-                                    <div class="condition-preview extraction"></div>
-                                    <span>Extract</span>
-                                </button>
-                                <button class="condition-btn" data-condition="implant">
-                                    <div class="condition-preview implant"></div>
-                                    <span>Implant</span>
-                                </button>
-                                <button class="condition-btn" data-condition="root-canal">
-                                    <div class="condition-preview root-canal"></div>
-                                    <span>Root Canal</span>
-                                </button>
-                                <button class="condition-btn" data-condition="missing">
-                                    <div class="condition-preview missing"></div>
-                                    <span>Missing</span>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="notes-input">
-                            <label>Notes:</label>
-                            <textarea id="toothNotes" placeholder="Add notes about this tooth..."></textarea>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Quick Actions -->
-            <div class="quick-actions">
-                <button class="action-card" id="quickAddPatient">
-                    <div class="action-icon">
-                        <i class="fas fa-user-plus"></i>
-                    </div>
-                    <span>Add Patient</span>
-                </button>
-                <button class="action-card" id="quickNewAppointment">
-                    <div class="action-icon">
-                        <i class="fas fa-calendar-plus"></i>
-                    </div>
-                    <span>New Appointment</span>
-                </button>
-                <button class="action-card" id="quickPrescription">
-                    <div class="action-icon">
-                        <i class="fas fa-prescription"></i>
-                    </div>
-                    <span>Write Prescription</span>
-                </button>
-            </div>
-        </section>
-
-        <!-- Patients Tab -->
-        <section class="tab-content" id="patients">
-            <div class="section-header">
-                <h2><i class="fas fa-users"></i> Patients</h2>
-                <button class="btn btn-primary" id="addPatientBtn">
-                    <i class="fas fa-plus"></i> Add Patient
-                </button>
-            </div>
-            
-            <div class="patients-table-container">
-                <table class="data-table" id="patientsTable">
-                    <thead>
-                        <tr>
-                            <th><input type="checkbox" id="selectAllPatients"></th>
-                            <th>ID</th>
-                            <th>Name</th>
-                            <th>Age</th>
-                            <th>Phone</th>
-                            <th>Email</th>
-                            <th>Last Visit</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="patientsTableBody">
-                        <!-- Patients will be populated here -->
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-        <!-- Appointments Tab -->
-        <section class="tab-content" id="appointments">
-            <div class="section-header">
-                <h2><i class="fas fa-calendar-check"></i> Appointments</h2>
-                <button class="btn btn-primary" id="addAppointmentBtn">
-                    <i class="fas fa-plus"></i> New Appointment
-                </button>
-            </div>
-            
-            <div class="appointments-grid" id="appointmentsGrid">
-                <!-- Appointments will be populated here -->
-            </div>
-        </section>
-
-        <!-- Prescriptions Tab -->
-        <section class="tab-content" id="prescriptions">
-            <div class="section-header">
-                <h2><i class="fas fa-prescription"></i> Prescriptions</h2>
-                <button class="btn btn-primary" id="addPrescriptionBtn">
-                    <i class="fas fa-plus"></i> New Prescription
-                </button>
-            </div>
-            
-            <div class="prescriptions-list" id="prescriptionsList">
-                <!-- Prescriptions will be populated here -->
-            </div>
-        </section>
-
-        <!-- Settings Tab -->
-        <section class="tab-content" id="settings">
-            <div class="section-header">
-                <h2><i class="fas fa-cog"></i> Settings</h2>
-            </div>
-            
-            <div class="settings-grid">
-                <div class="settings-card">
-                    <h3><i class="fas fa-user"></i> Profile Settings</h3>
-                    <div class="form-group">
-                        <label>Doctor Name</label>
-                        <input type="text" id="doctorName" placeholder="Dr. Name">
-                    </div>
-                    <div class="form-group">
-                        <label>Clinic Name</label>
-                        <input type="text" id="clinicName" placeholder="Clinic Name">
-                    </div>
-                    <div class="form-group">
-                        <label>Phone</label>
-                        <input type="tel" id="clinicPhone" placeholder="+1 234 567 8900">
-                    </div>
-                </div>
-                
-                <div class="settings-card">
-                    <h3><i class="fas fa-palette"></i> Theme Settings</h3>
-                    <div class="theme-options">
-                        <button class="theme-btn active" data-theme="light">
-                            <i class="fas fa-sun"></i> Light
-                        </button>
-                        <button class="theme-btn" data-theme="dark">
-                            <i class="fas fa-moon"></i> Dark
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="settings-card">
-                    <h3><i class="fas fa-database"></i> Data Management</h3>
-                    <div class="data-actions">
-                        <button class="btn btn-secondary" id="exportData">
-                            <i class="fas fa-download"></i> Export Data
-                        </button>
-                        <button class="btn btn-secondary" id="importData">
-                            <i class="fas fa-upload"></i> Import Data
-                        </button>
-                        <button class="btn btn-danger" id="clearAllData">
-                            <i class="fas fa-trash"></i> Clear All Data
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <!-- Sidebar for Patient Details -->
-    <aside class="sidebar" id="patientSidebar">
-        <div class="sidebar-header">
-            <h3>Patient Details</h3>
-            <button class="btn-close" id="closeSidebar">
-                <i class="fas fa-times"></i>
-            </button>
+<button class="secondary" onclick="restoreBackup()">
+  Restore
+</button>
         </div>
-        <div class="sidebar-content">
-            <div class="patient-info-card">
-                <div class="patient-avatar-large">
-                    <i class="fas fa-user"></i>
-                </div>
-                <h3 id="sidebarPatientName">-</h3>
-                <p id="sidebarPatientId">ID: -</p>
+
+        <div class="dashboardPanel">
+          <h2>Today</h2>
+          <p style="color:var(--muted);font-weight:800">
+            Dashboard will update after cloud data loads.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section id="patients" class="page">
+      <div class="searchWrap">
+        <input id="search" placeholder="Search name, phone, ID, diagnosis...">
+      </div>
+      <div id="list"></div>
+    </section>
+
+    <section id="form" class="page">
+      <div class="card">
+        <h2 id="formTitle">Add Patient</h2>
+
+        <form id="patientForm">
+          <input type="hidden" id="rowId">
+          <input type="hidden" id="caseId">
+
+          <div class="formGrid">
+            <div>
+              <label>Name</label>
+              <input id="name" required placeholder="Patient full name">
             </div>
-            
-            <div class="patient-details">
-                <div class="detail-item">
-                    <label>Age</label>
-                    <span id="sidebarPatientAge">-</span>
+
+            <div>
+              <label>Phone</label>
+              <input id="phone" placeholder="Phone number">
+            </div>
+
+            <div>
+              <label>Age</label>
+              <input id="age" type="number" placeholder="Age">
+            </div>
+
+            <div>
+              <label>Gender</label>
+              <select id="gender">
+                <option value="">Select gender</option>
+                <option>Male</option>
+                <option>Female</option>
+              </select>
+            </div>
+
+            <div class="full">
+              <label>Chief complaint</label>
+              <textarea id="chiefComplaint" placeholder="Main complaint"></textarea>
+            </div>
+
+            <div class="full">
+              <label>Medical alerts</label>
+              <textarea id="medicalAlerts" placeholder="Medical conditions, drugs, allergy..."></textarea>
+            </div>
+
+            <div class="full">
+              <label>Diagnosis</label>
+              <textarea id="diagnosis" placeholder="Diagnosis"></textarea>
+            </div>
+
+            <div class="full">
+              <label>Treatment plan</label>
+              <textarea id="treatmentPlan" placeholder="Treatment plan"></textarea>
+            </div>
+
+            <div class="full">
+              <label>Progress / Visit notes</label>
+              <textarea id="progressNotes" placeholder="Write visit note, date will be saved automatically"></textarea>
+            </div>
+
+            <div class="full">
+              <div class="photoUpload">
+                <h3>Photos / X-rays</h3>
+                <input id="photos" type="file" accept="image/*" multiple>
+                <p style="color:var(--muted);font-weight:800">
+                  Images are compressed and uploaded to Supabase cloud.
+                </p>
+                <div id="preview" class="grid"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button id="saveBtn" class="primary" type="submit">Save Patient</button>
+            <button class="secondary" type="button" onclick="fillForm();showPage('patients')">Cancel Edit</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <section id="detail" class="page">
+      <button id="backBtn" class="secondary" style="margin-bottom:14px">← Back</button>
+      <div id="details"></div>
+    </section>
+
+    <section id="scan" class="page">
+      <div class="card">
+        <h2>Scan Patient QR</h2>
+        <div class="scanBox">
+          <div id="reader">Scanner preview will appear here</div>
+        </div>
+
+        <div class="actions">
+          <button id="startScan" class="primary">Start Scanner</button>
+          <button id="stopScan" class="danger hidden">Stop Scanner</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="photoModal" class="modal hidden">
+    <button id="closePhoto" class="modalClose">×</button>
+    <img id="bigPhoto" alt="Patient photo">
+  </div>
+
+  <div id="qrModal" class="modal hidden">
+    <button id="closeQr" class="modalClose">×</button>
+    <div class="qrBox">
+      <h2>Patient QR</h2>
+      <div id="qrcode"></div>
+      <p style="color:var(--muted);font-weight:800">
+        Scan to open this patient file.
+      </p>
+    </div>
+  </div>
+<div id="photoViewer" class="photoViewer hidden">
+
+  <button class="photoClose" id="closeViewer">
+    ✕
+  </button>
+
+  <img id="viewerImage" />
+
+  <div class="photoControls">
+    <button id="prevPhoto">
+      ⬅ Prev
+    </button>
+
+    <button id="nextPhoto">
+      Next ➡
+    </button>
+  </div>
+
+</div>
+  <section id="settings" class="page">
+  <div class="card">
+    <h2>Clinic Branding</h2>
+
+    <label>Clinic Name</label>
+    <input id="clinicName" placeholder="Enter clinic name">
+
+    <label style="margin-top:16px">
+      Clinic Logo
+    </label>
+
+    <input
+      type="file"
+      id="clinicLogo"
+      accept="image/*"
+    >
+
+    <div class="actions" style="margin-top:16px">
+      <button
+        class="primary"
+        onclick="saveClinicBranding()"
+      >
+        Save Branding
+      </button>
+      <button
+  class="secondary"
+  onclick="changeMyPassword()"
+>
+  Change Password
+</button>
+    </div>
+  </div>
+</section>
+  <div id="toothModal" class="modal hidden">
+  <div class="qrBox" style="max-width:420px;width:100%">
+    <h2 id="toothModalTitle">Tooth</h2>
+
+    <div class="actions" style="grid-template-columns:1fr 1fr">
+      <button class="secondary" onclick="setToothStatus('healthy')">Healthy</button>
+      <button class="secondary" onclick="setToothStatus('caries')">Caries</button>
+      <button class="secondary" onclick="setToothStatus('filling')">Filling</button>
+      <button class="secondary" onclick="setToothStatus('rct')">RCT</button>
+      <button class="secondary" onclick="setToothStatus('crown')">Crown</button>
+      <button class="secondary" onclick="setToothStatus('missing')">Missing</button>
+      <button class="secondary" onclick="setToothStatus('extraction')">Extraction</button>
+      <button class="secondary" onclick="setToothStatus('implant')">Implant</button>
+    </div>
+
+    <button class="danger" style="width:100%;margin-top:14px" onclick="closeToothPopup()">
+      Cancel
+    </button>
+  </div>
+</div>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <script src="app.js"></script>
+</body>
+</html>
