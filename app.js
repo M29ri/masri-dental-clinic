@@ -156,7 +156,7 @@ window.openClinicMenu = function() {
   drawer.innerHTML = `
     <div class="drawerHead">
       <h2>Menu</h2>
-      <button class="drawerClose" onclick="closeClinicMenu()" aria-label="Close">Ã</button>
+     <button class="drawerClose" onclick="closeClinicMenu()" aria-label="Close">X</button>
     </div>
 
     <div class="drawerUser">
