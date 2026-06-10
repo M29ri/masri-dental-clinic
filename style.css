@@ -442,7 +442,7 @@ textarea{
   width:100%;
 }
 
-.brandWrapPremium{
+..brandWrapPremium{
 display:grid !important;
 grid-template-columns:70px 1fr auto !important;
 align-items:start !important;
@@ -465,12 +465,11 @@ border-radius:18px !important;
 }
 
 .headerRight{
-display:grid !important;
-grid-template-columns:auto !important;
-grid-template-rows:auto auto !important;
+display:flex !important;
+flex-direction:column !important;
+align-items:flex-end !important;
 gap:10px !important;
 margin-left:auto !important;
-align-items:end !important;
 }
 
 .headerRight .userCard,
@@ -480,16 +479,21 @@ max-width:170px !important;
 padding:14px !important;
 }
 
+.buttonStack{
+display:flex !important;
+flex-direction:column !important;
+gap:10px !important;
+align-items:flex-end !important;
+}
+
 .hamburgerBtn{
 min-width:100px !important;
 height:58px !important;
 border-radius:20px !important;
 font-size:18px !important;
 padding:0 18px !important;
-grid-row:1 !important;
 }
 
 .refreshBtn{
-grid-row:2 !important;
 justify-self:end !important;
 }
