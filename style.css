@@ -497,3 +497,6 @@ padding:0 18px !important;
 .refreshBtn{
 justify-self:end !important;
 }
+.refreshBtn{
+display:none !important;
+}
