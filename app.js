@@ -3879,16 +3879,14 @@ function renderToothChart(p) {
       <button data-quad="lowerL" onclick="setQuadrantFilter('lowerL')">LL</button>
       <button data-quad="lowerR" onclick="setQuadrantFilter('lowerR')">LR</button>
     </div>
-    <div class="proMouthChart">
-      <div class="odontogramWrap">
-        <div class="odontogramJaw dentalArch upper">
-          <div class="odontogramTitle">UPPER</div>
-          <div class="odontogramRow">${upper.map(toothButton).join("")}</div>
-        </div>
-        <div class="odontogramJaw dentalArch lower">
-          <div class="odontogramTitle">LOWER</div>
-          <div class="odontogramRow lower">${lower.map(toothButton).join("")}</div>
-        </div>
+    <div class="proMouthChart compactOdontogram">
+      <div class="odontogramJaw upper">
+        <div class="odontogramTitle">UPPER</div>
+        <div class="odontogramRow">${upper.map(toothButton).join("")}</div>
+      </div>
+      <div class="odontogramJaw lower">
+        <div class="odontogramTitle">LOWER</div>
+        <div class="odontogramRow">${lower.map(toothButton).join("")}</div>
       </div>
     </div>`;
 }
@@ -6293,4 +6291,124 @@ window.openClinicMenu = function() {
     </div>`;
   document.body.appendChild(overlay);
   document.body.appendChild(drawer);
+};
+
+
+/* ABSOLUTE LAST FIXES: drawer close and compact chart */
+(function(){
+  const finalCss = `
+    #sideDrawer .drawerClose,
+    .sideDrawer .drawerClose,
+    .drawerClose{
+      width:48px!important;height:48px!important;min-width:48px!important;
+      border-radius:16px!important;border:0!important;padding:0!important;
+      background:linear-gradient(135deg,var(--theme1,#f5d76e),var(--theme2,#b8860b))!important;
+      color:#050505!important;font-size:32px!important;font-weight:1000!important;
+      line-height:1!important;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif!important;
+      display:grid!important;place-items:center!important;text-indent:0!important;overflow:hidden!important;
+    }
+    #sideDrawer .drawerClose::before,#sideDrawer .drawerClose::after,
+    .sideDrawer .drawerClose::before,.sideDrawer .drawerClose::after,
+    .drawerClose::before,.drawerClose::after{content:""!important;display:none!important;}
+
+    .compactOdontogram{
+      width:100%!important;box-sizing:border-box!important;overflow:hidden!important;
+      padding:14px 10px 16px!important;border-radius:26px!important;
+      background:linear-gradient(145deg,#050914,#0b1220 60%,#030507)!important;
+      display:grid!important;gap:14px!important;
+    }
+    .compactOdontogram::before,.compactOdontogram::after{display:none!important;content:""!important}
+    .compactOdontogram .odontogramJaw{
+      width:100%!important;box-sizing:border-box!important;overflow:hidden!important;
+      margin:0!important;padding:12px 6px 10px!important;border-radius:20px!important;
+      background:linear-gradient(180deg,rgba(15,23,42,.86),rgba(2,6,23,.76))!important;
+      border:1px solid rgba(148,163,184,.14)!important;
+    }
+    .compactOdontogram .odontogramTitle{
+      text-align:center!important;margin:0 0 10px!important;font-size:12px!important;
+      letter-spacing:3px!important;font-weight:1000!important;color:var(--accent,#d4af37)!important;
+    }
+    .compactOdontogram .odontogramRow{
+      width:100%!important;box-sizing:border-box!important;display:grid!important;
+      grid-template-columns:repeat(16,minmax(0,1fr))!important;
+      gap:1px!important;align-items:end!important;justify-items:center!important;overflow:hidden!important;
+    }
+    .compactOdontogram .lower .odontogramRow{align-items:start!important;}
+    .compactOdontogram .proTooth{
+      position:relative!important;left:auto!important;top:auto!important;right:auto!important;bottom:auto!important;
+      transform:none!important;border:0!important;background:transparent!important;padding:0!important;margin:0!important;
+      display:grid!important;place-items:center!important;gap:2px!important;min-width:0!important;width:100%!important;
+      overflow:visible!important;
+    }
+    .compactOdontogram .proTooth:hover,.compactOdontogram .proTooth:focus{
+      transform:scale(1.08)!important;filter:drop-shadow(0 0 10px var(--accent,#d4af37))!important;z-index:10!important;
+    }
+    .compactOdontogram .toothArt,.compactOdontogram .proTooth svg{
+      display:block!important;overflow:visible!important;filter:drop-shadow(0 4px 5px rgba(0,0,0,.34))!important;
+    }
+    .compactOdontogram .proTooth.molar .toothArt,.compactOdontogram .proTooth.molar svg{width:22px!important;height:24px!important;}
+    .compactOdontogram .proTooth.premolar .toothArt,.compactOdontogram .proTooth.premolar svg{width:20px!important;height:23px!important;}
+    .compactOdontogram .proTooth.canine .toothArt,.compactOdontogram .proTooth.canine svg{width:14px!important;height:28px!important;}
+    .compactOdontogram .proTooth.incisor .toothArt,.compactOdontogram .proTooth.incisor svg{width:12px!important;height:27px!important;}
+    .compactOdontogram .toothNo{
+      display:block!important;position:static!important;transform:none!important;font-size:7px!important;
+      line-height:1!important;font-weight:1000!important;color:#f8fafc!important;text-shadow:0 2px 4px #000!important;
+    }
+    .compactOdontogram .toothSurfaceText{font-size:6px!important;min-width:14px!important;height:14px!important;top:-8px!important;right:-4px!important;}
+    @media(min-width:700px){
+      .compactOdontogram .odontogramRow{gap:4px!important;}
+      .compactOdontogram .proTooth.molar .toothArt,.compactOdontogram .proTooth.molar svg{width:34px!important;height:34px!important;}
+      .compactOdontogram .proTooth.premolar .toothArt,.compactOdontogram .proTooth.premolar svg{width:29px!important;height:32px!important;}
+      .compactOdontogram .proTooth.canine .toothArt,.compactOdontogram .proTooth.canine svg{width:22px!important;height:42px!important;}
+      .compactOdontogram .proTooth.incisor .toothArt,.compactOdontogram .proTooth.incisor svg{width:19px!important;height:40px!important;}
+      .compactOdontogram .toothNo{font-size:10px!important;}
+    }
+  `;
+  const old = document.getElementById("absoluteFinalFixStyle");
+  if (old) old.remove();
+  const style = document.createElement("style");
+  style.id = "absoluteFinalFixStyle";
+  style.textContent = finalCss;
+  document.head.appendChild(style);
+})();
+
+window.openClinicMenu = function() {
+  closeClinicMenu();
+  const overlay = document.createElement("div");
+  overlay.className = "drawerOverlay";
+  overlay.id = "drawerOverlay";
+  overlay.onclick = closeClinicMenu;
+
+  const drawer = document.createElement("aside");
+  drawer.className = "sideDrawer";
+  drawer.id = "sideDrawer";
+  drawer.innerHTML = `
+    <div class="drawerHead">
+      <h2>Menu</h2>
+      <button class="drawerClose" onclick="closeClinicMenu()" aria-label="Close">Ã</button>
+    </div>
+    <div class="drawerUser">
+      <div>${safeText(currentUser?.full_name || currentUser?.username || "Doctor")}</div>
+      <small>${safeText((currentUser?.role || "doctor").toUpperCase())}</small>
+    </div>
+    <div class="drawerMenu">
+      <button class="primaryItem" onclick="closeClinicMenu(); showPage('dashboard')">Dashboard</button>
+      <button onclick="closeClinicMenu(); showPage('patients')">Patients</button>
+      <button onclick="closeClinicMenu(); showPage('settings')">Profile / Branding</button>
+      <button onclick="closeClinicMenu(); backupData()">Backup</button>
+      <button onclick="closeClinicMenu(); restoreBackup()">Restore</button>
+      <button onclick="closeClinicMenu(); alert('Open a patient file and use WhatsApp Reminder from patient tools.')">Reminders</button>
+      <button onclick="closeClinicMenu(); backupData()">Daily Backup</button>
+      <button onclick="closeClinicMenu(); typeof addUser==='function' ? addUser() : alert('Users are managed by admin setup.')">Users</button>
+      <button onclick="closeClinicMenu(); openThemeMenu()">Themes</button>
+      <button class="dangerItem" onclick="logout()">Logout</button>
+    </div>`;
+  document.body.appendChild(overlay);
+  document.body.appendChild(drawer);
+
+  const closeBtn = drawer.querySelector(".drawerClose");
+  if (closeBtn) {
+    closeBtn.textContent = "Ã";
+    closeBtn.innerHTML = "Ã";
+  }
 };
