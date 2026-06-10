@@ -2264,3 +2264,17 @@ button[onclick*="showLab"]{
   left: auto !important;
   transform: none !important;
 }
+.baCloseBtn{
+  position: static !important;
+  width: 100% !important;
+  transform: none !important;
+}
+.fullscreenClose,
+.imageClose,
+.photoClose{
+  position: fixed !important;
+  top: 18px !important;
+  right: 18px !important;
+  left: auto !important;
+  transform: none !important;
+}
