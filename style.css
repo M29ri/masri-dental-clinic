@@ -1552,8 +1552,8 @@ width: 100%;
   -webkit-backdrop-filter: blur(14px);
   z-index: 1000;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: flex-start;
+  justify-content: flex-end;
   padding: 20px;
   animation: modalIn 0.2s ease;
 }
