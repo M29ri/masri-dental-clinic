@@ -297,7 +297,11 @@ if (!buttonStack) {
   rightArea.appendChild(buttonStack);
 }
 
-const refreshBtn = document.querySelector(".refreshBtn");
+// refresh button
+const refreshBtn =
+document.querySelector(".refreshBtn") ||
+document.querySelector("button[onclick*='refresh']") ||
+document.querySelector(".refresh");
 
 if (refreshBtn && !buttonStack.contains(refreshBtn)) {
   buttonStack.appendChild(refreshBtn);
