@@ -2010,6 +2010,7 @@ function renderToothChart(p) {
       ${toothData.map(([n,x,y,r]) => {
         const toothInfo = teeth[n] || "healthy";
         const status = typeof toothInfo === "string" ? toothInfo : (toothInfo.status || "healthy");
+        const surfaces = typeof toothInfo === "string" ? [] : (toothInfo.surfaces || []);
         const type = getToothType(n);
 
         return `
@@ -2029,6 +2030,81 @@ function renderToothChart(p) {
     </div>
   `;
 }
+
+function treatmentProgressItems(patient) {
+  const items = [];
+  const hasDiagnosis = !!String(patient.diagnosis || "").trim();
+  const hasPlan = !!String(patient.treatment_plan || "").trim();
+  items.push({ name: "Diagnosis", state: hasDiagnosis ? "done" : "pending" });
+  items.push({ name: "Treatment plan", state: hasPlan ? "done" : (hasDiagnosis ? "active" : "pending") });
+  const data = parseClinicData(patient.progress_notes);
+  const visits = data.visits || [];
+  items.push({ name: "Treatment started", state: visits.length ? "done" : (hasPlan ? "active" : "pending") });
+  items.push({ name: "Review", state: visits.length >= 2 ? "done" : (visits.length ? "active" : "pending") });
+  const completed = String(patient.status || "").toLowerCase().includes("complete") || String(patient.treatment_plan || "").toLowerCase().includes("complete") || visits.some(v => String(v.note || v.treatment || "").toLowerCase().includes("complete"));
+  items.push({ name: "Completed", state: completed ? "done" : "pending" });
+  return items;
+}
+
+function medicalAlertBanner(patient) {
+  const text = `${patient.medical_alerts || ""}`.trim();
+  if (!text || text === "-" || /^n\/?a$/i.test(text) || /^nad$/i.test(text) || /^none$/i.test(text) || /^no$/i.test(text)) return "";
+  return `<div class="alertBanner">Medical alert: ${safeText(text)}</div>`;
+}
+
+function renderTreatmentProgress(patient) {
+  return `<div class="progressSteps">
+    ${treatmentProgressItems(patient).map(s => `
+      <div class="progressStep ${s.state}">
+        <span>${s.state === "done" ? "Done" : s.state === "active" ? "Current" : "Pending"} - ${safeText(s.name)}</span>
+        <span>${s.state === "done" ? "Done" : s.state === "active" ? "Current" : "Pending"}</span>
+      </div>
+    `).join("")}
+  </div>`;
+}
+
+function renderLabMini(patientId) {
+  const lab = JSON.parse(localStorage.getItem("clinicLab") || "[]")
+    .map((x, i) => ({ ...x, index: i }))
+    .filter(x => x.patientId === patientId);
+
+  return lab.length ? lab.map(it => `
+    <div class="labRow">
+      <b>${safeText(it.item || "Lab work")}</b>
+      <span class="pill">${safeText(it.status || "Sent")}</span>
+      ${typeof labStepHTML === "function" ? labStepHTML(it.status || "Sent") : ""}
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+        <button class="secondary" onclick="editLabWork('${patientId}', ${it.index})">Edit</button>
+        <button class="danger" onclick="deleteLabWork('${patientId}', ${it.index})">Delete</button>
+      </div>
+    </div>
+  `).join("") : `<p style="color:var(--muted);font-weight:800">No lab work yet</p>`;
+}
+
+window.editLabWork = async function(patientId, index) {
+  const lab = JSON.parse(localStorage.getItem("clinicLab") || "[]");
+  if (!lab[index]) return;
+  const item = await luxuryPrompt("Lab work", "Crown / Bridge / Night guard", lab[index].item || "");
+  if (!item) return;
+  const status = await luxuryPrompt("Lab status", "Sent / Waiting / Ready / Delivered", lab[index].status || "Sent");
+  if (!status) return;
+  lab[index].item = item;
+  lab[index].status = status;
+  lab[index].updated_at = new Date().toISOString();
+  localStorage.setItem("clinicLab", JSON.stringify(lab));
+  await refreshPatientKeepingScroll(patientId);
+};
+
+window.deleteLabWork = async function(patientId, index) {
+  const lab = JSON.parse(localStorage.getItem("clinicLab") || "[]");
+  if (!lab[index]) return;
+  if (!(await luxuryConfirm("Delete lab work?", "This will remove the lab item."))) return;
+  lab.splice(index, 1);
+  localStorage.setItem("clinicLab", JSON.stringify(lab));
+  await refreshPatientKeepingScroll(patientId);
+};
+
+
 function patientDetailsHTML(p) {
   const data = parseClinicData(p.progress_notes);
   const money = paymentTotals(data);
