@@ -2085,6 +2085,52 @@ function injectExtraStyles() {
       .simplePhotoGrid img{height:155px!important}
     }
 
+  
+/* FINAL POLISH PATCH */
+:root{--accent:#d4af37;--gold:#d4af37;--primary:#d4af37;--theme1:#f5d76e;--theme2:#b8860b}
+body.theme-gold{--accent:#d4af37;--gold:#d4af37;--primary:#d4af37;--theme1:#f5d76e;--theme2:#b8860b}
+body.theme-pink{--accent:#ff4fa3;--gold:#ff4fa3;--primary:#ff4fa3;--theme1:#ff8ac5;--theme2:#db2777}
+body.theme-red{--accent:#ef4444;--gold:#ef4444;--primary:#ef4444;--theme1:#f87171;--theme2:#991b1b}
+body.theme-blue{--accent:#3b82f6;--gold:#3b82f6;--primary:#3b82f6;--theme1:#60a5fa;--theme2:#1d4ed8}
+body.theme-cyan{--accent:#06b6d4;--gold:#06b6d4;--primary:#06b6d4;--theme1:#22d3ee;--theme2:#0e7490}
+body.theme-purple{--accent:#8b5cf6;--gold:#8b5cf6;--primary:#8b5cf6;--theme1:#a78bfa;--theme2:#6d28d9}
+body.theme-green{--accent:#22c55e;--gold:#22c55e;--primary:#22c55e;--theme1:#4ade80;--theme2:#15803d}
+body.theme-orange{--accent:#f97316;--gold:#f97316;--primary:#f97316;--theme1:#fb923c;--theme2:#c2410c}
+.primary,button.primary,.quickActions .primary,.quadTabs button.active,.photoSectionTabs button.active,.drawerMenu button.primaryItem{background:linear-gradient(135deg,var(--theme1),var(--theme2))!important;color:#050505!important}
+h2,h3,.sectionTitle,.legendItem,.kv b{color:var(--accent)!important}
+.brand,.brandWrapPremium{display:flex!important;align-items:flex-start!important;gap:10px!important;min-width:0!important;max-width:100%!important}
+.clinicLogoPremium{width:42px!important;height:42px!important;border-radius:14px!important;display:grid!important;place-items:center!important;background:linear-gradient(135deg,var(--theme1),var(--theme2))!important;color:#050505!important;font-weight:1000!important;font-size:20px!important;overflow:hidden!important;margin-top:4px!important;flex:0 0 auto!important}
+.clinicLogoPremium img{width:100%!important;height:100%!important;object-fit:cover!important}
+.brand h1,.brandWrapPremium h1{font-size:clamp(30px,7vw,42px)!important;line-height:.95!important;letter-spacing:-1.7px!important;margin:0!important;max-width:165px!important}
+.userBox{max-width:105px!important;min-width:92px!important;padding:9px 11px!important;border-radius:19px!important;align-self:start!important;margin-top:0!important}
+.userBox strong,.userBox b{font-size:15px!important;line-height:1.05!important}.userBox small{font-size:10px!important}
+#refreshBtn{width:48px!important;height:48px!important;border-radius:16px!important}
+#logoutBtn{display:none!important}
+#hamburgerBtn,.hamburgerBtn{width:48px!important;height:48px!important;border-radius:16px!important;font-size:0!important;position:relative!important;overflow:hidden!important;background:linear-gradient(145deg,#172235,#0d1624)!important;border:1px solid rgba(148,163,184,.22)!important;flex:0 0 auto!important}
+#hamburgerBtn::before,.hamburgerBtn::before{content:"â°"!important;color:#fff!important;font-size:27px!important;font-weight:1000!important;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif!important}
+nav button[onclick*="settings"],.tabs button[onclick*="settings"],.tabBar button[onclick*="settings"],button[data-page="settings"]{display:none!important}
+.quickActions button[onclick*="backupData"],.quickActions button[onclick*="restoreBackup"],.quickActions button[onclick*="openThemeMenu"],.quickActions button[onclick*="showPage('settings')"],.quickActions button[onclick*="addUser"],.quickActions button:nth-child(n+5){display:none!important}
+.proMouthChart{height:560px!important;border-radius:28px!important;background:radial-gradient(ellipse at 50% 50%,rgba(80,10,25,.22),transparent 34%),linear-gradient(145deg,#050914,#0b1220 55%,#030507)!important;overflow:hidden!important;position:relative!important}
+.proMouthChart::before{content:"";position:absolute;left:50%;top:50%;width:250px;height:170px;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(ellipse at center,rgba(0,0,0,.55),rgba(0,0,0,.08) 62%,transparent 72%);pointer-events:none;z-index:1}
+.proMouthLabel,.proMidLine,.proHorizontalLine,.toothNo{display:none!important}
+.proTooth{position:absolute!important;border:none!important;background:transparent!important;padding:0!important;transform:translate(-50%,-50%) rotate(var(--rot,0deg))!important;z-index:5!important;transition:.15s!important;overflow:visible!important}
+.proTooth:hover,.proTooth:focus{transform:translate(-50%,-50%) rotate(var(--rot,0deg)) scale(1.16)!important;filter:drop-shadow(0 0 13px var(--accent))!important;z-index:20!important}
+.proTooth.hiddenByQuad{opacity:.12!important;pointer-events:none!important;filter:grayscale(1)!important}
+.toothArt,.proTooth svg{display:block!important;overflow:visible!important;filter:drop-shadow(0 7px 8px rgba(0,0,0,.35))!important}
+.proTooth.incisor .toothArt,.proTooth.incisor svg{width:21px!important;height:41px!important}.proTooth.canine .toothArt,.proTooth.canine svg{width:25px!important;height:43px!important}.proTooth.premolar .toothArt,.proTooth.premolar svg{width:32px!important;height:37px!important}.proTooth.molar .toothArt,.proTooth.molar svg{width:38px!important;height:38px!important}
+.proTooth svg path:first-child{stroke-width:1.6!important}
+.quadTabs{display:grid!important;grid-template-columns:repeat(5,1fr)!important;gap:8px!important;margin:10px 0 14px!important}.quadTabs button{min-height:42px!important;border:none!important;border-radius:15px!important;background:#1f2937!important;color:#e5e7eb!important;font-weight:1000!important}
+.photoSectionTabs{display:grid!important;grid-template-columns:repeat(2,1fr)!important;gap:8px!important;margin:10px 0!important}.photoSectionTabs button{min-height:44px!important;border:none!important;border-radius:14px!important;background:#1f2937!important;color:#e5e7eb!important;font-weight:1000!important}
+.simplePhotoGrid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important;margin:12px 0!important}.simplePhotoGrid img{width:100%!important;height:175px!important;object-fit:cover!important;border-radius:16px!important;background:#020617!important;border:1px solid #263241!important}
+.photoGalleryHeader,.premiumPhotoViewer,.photoThumbs{display:none!important}
+.fullPhotoViewer{position:fixed!important;inset:0!important;background:rgba(0,0,0,.94)!important;z-index:999999!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:16px!important}.fullPhotoViewer img{max-width:100%!important;max-height:84vh!important;object-fit:contain!important;border-radius:18px!important;box-shadow:0 25px 80px rgba(0,0,0,.55)!important}
+.fullPhotoTop{position:absolute!important;top:calc(12px + env(safe-area-inset-top))!important;left:12px!important;right:12px!important;display:flex!important;justify-content:space-between!important;align-items:center!important;z-index:2!important}
+.fullPhotoTop button,.fullPhotoNav button{border:none!important;border-radius:16px!important;background:linear-gradient(145deg,#1f2937,#111827)!important;color:white!important;font-weight:1000!important;min-height:48px!important;padding:0 18px!important;box-shadow:0 14px 35px rgba(0,0,0,.36)!important;border:1px solid rgba(255,255,255,.10)!important}
+.fullPhotoTop button{width:52px!important;height:52px!important;padding:0!important;background:linear-gradient(135deg,var(--theme1),var(--theme2))!important;color:#050505!important;font-size:28px!important}
+.fullPhotoNav{position:absolute!important;left:16px!important;right:16px!important;bottom:calc(18px + env(safe-area-inset-bottom))!important;display:flex!important;justify-content:space-between!important;z-index:2!important}.fullPhotoCounter{color:white!important;font-weight:1000!important;background:rgba(0,0,0,.5)!important;border:1px solid rgba(255,255,255,.12)!important;border-radius:999px!important;padding:8px 12px!important}
+.beforeAfterSwipe{position:relative!important;height:340px!important;border-radius:20px!important;overflow:hidden!important;background:#020617!important;border:1px solid rgba(148,163,184,.20)!important;margin:12px 0!important}.beforeAfterSwipe img{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;object-fit:contain!important;filter:none!important}.beforeAfterSwipe .afterClip{position:absolute!important;inset:0!important;clip-path:inset(0 0 0 50%)}.beforeAfterSwipe input{position:absolute!important;left:14px!important;right:14px!important;bottom:16px!important;width:calc(100% - 28px)!important;z-index:3!important}.beforeAfterSwipe .label{position:absolute!important;top:12px!important;z-index:4!important;background:rgba(0,0,0,.55)!important;color:#fff!important;border-radius:999px!important;padding:7px 11px!important;font-weight:1000!important}.beforeAfterSwipe .label.before{left:12px!important}.beforeAfterSwipe .label.after{right:12px!important}
+@media(max-width:480px){.brand h1,.brandWrapPremium h1{font-size:32px!important;max-width:150px!important}.clinicLogoPremium{width:38px!important;height:38px!important}.userBox{max-width:100px!important;min-width:88px!important}.proMouthChart{height:475px!important}.simplePhotoGrid img{height:150px!important}}
+
   `;
   document.head.appendChild(style);
 }
@@ -3074,15 +3120,14 @@ function renderToothChart(p) {
   const data = parseClinicData(p.progress_notes);
   const teeth = data.teeth || {};
   const toothData = [
-    [18,16,31,-32],[17,22,25,-27],[16,30,21,-20],[15,39,18,-13],
-    [14,48,16,-7],[13,57,15,-3],[12,65,14,0],[11,73,14,2],
-    [21,27,14,-2],[22,35,14,0],[23,43,15,3],[24,52,16,7],
-    [25,61,18,13],[26,70,21,20],[27,78,25,27],[28,84,31,32],
-
-    [48,16,69,32],[47,22,75,27],[46,30,79,20],[45,39,82,13],
-    [44,48,84,7],[43,57,85,3],[42,65,86,0],[41,73,86,-2],
-    [31,27,86,2],[32,35,86,0],[33,43,85,-3],[34,52,84,-7],
-    [35,61,82,-13],[36,70,79,-20],[37,78,75,-27],[38,84,69,-32]
+    [18,13,32,-33],[17,19,25,-27],[16,27,20,-20],[15,37,17,-12],
+    [14,47,15,-7],[13,57,14,-3],[12,66,13,0],[11,74,13,2],
+    [21,26,13,-2],[22,34,13,0],[23,43,14,3],[24,53,15,7],
+    [25,63,17,12],[26,73,20,20],[27,81,25,27],[28,87,32,33],
+    [48,13,68,33],[47,19,75,27],[46,27,80,20],[45,37,83,12],
+    [44,47,85,7],[43,57,86,3],[42,66,87,0],[41,74,87,-2],
+    [31,26,87,2],[32,34,87,0],[33,43,86,-3],[34,53,85,-7],
+    [35,63,83,-12],[36,73,80,-20],[37,81,75,-27],[38,87,68,-33]
   ];
 
   return `
@@ -3493,6 +3538,7 @@ function patientDetailsHTML(p) {
       ${data.payments.length ? data.payments.map((pay, i) => `<div class="appointment"><b>${safeText(pay.date || "")}</b><p>Total: ${Number(pay.total || 0)} | Paid: ${Number(pay.paid || 0)} | Remaining: ${Number(pay.total || 0) - Number(pay.paid || 0)}</p><button class="danger" onclick="deletePayment('${p.id}', ${i})">Delete</button></div>`).join("") : `<div class="kv"><span>No payments yet</span></div>`}
 
       <h3 class="sectionTitle">Photos / X-rays</h3>
+      <div class="actions"><button class="secondary" onclick="showBeforeAfter(\'${p.id}\')">Before / After</button></div>
       <div id="simplePhotosBox">${renderSimplePhotos(p, "clinical")}</div>
 
       <h3 class="sectionTitle">Patient Timeline</h3>
@@ -5119,3 +5165,111 @@ try { applySavedTheme(); } catch(e) {}
 try { enhancePremiumHeader(); } catch(e) {}
 
 try { enhancePremiumHeader(); } catch(e) {}
+
+/* FINAL POLISH FUNCTION OVERRIDES */
+window.setClinicTheme = function(theme) {
+  const themes = ["gold","pink","red","blue","cyan","purple","green","orange"];
+  themes.forEach(t => document.body.classList.remove(`theme-${t}`));
+  const clean = themes.includes(theme) ? theme : "gold";
+  document.body.classList.add(`theme-${clean}`);
+  localStorage.setItem("clinicTheme", clean);
+  document.querySelector(".luxuryModal")?.remove();
+};
+function applySavedTheme() { setClinicTheme(localStorage.getItem("clinicTheme") || "gold"); }
+function enhancePremiumHeader() {
+  const brand = document.querySelector(".brand");
+  if (brand) {
+    const h1 = brand.querySelector("h1");
+    if (h1 && !brand.querySelector(".clinicLogoPremium")) h1.insertAdjacentHTML("beforebegin", clinicLogoMarkup());
+    brand.classList.add("brandWrapPremium");
+  }
+  const holder = brand?.parentElement || document.body;
+  if (!document.getElementById("hamburgerBtn")) {
+    const btn = document.createElement("button");
+    btn.id = "hamburgerBtn";
+    btn.className = "hamburgerBtn";
+    btn.type = "button";
+    btn.onclick = openClinicMenu;
+    holder.appendChild(btn);
+  }
+}
+window.openThemeMenu = function() {
+  const modal = document.createElement("div");
+  modal.className = "luxuryModal";
+  modal.innerHTML = `
+    <div class="luxuryBox" style="max-width:520px;">
+      <h2>Choose Theme</h2>
+      <div class="themePalette">
+        <button style="background:#d4af37" onclick="setClinicTheme('gold')">Gold</button>
+        <button style="background:#ff4fa3" onclick="setClinicTheme('pink')">Pink</button>
+        <button style="background:#ef4444" onclick="setClinicTheme('red')">Red</button>
+        <button style="background:#3b82f6" onclick="setClinicTheme('blue')">Blue</button>
+        <button style="background:#06b6d4" onclick="setClinicTheme('cyan')">Cyan</button>
+        <button style="background:#8b5cf6" onclick="setClinicTheme('purple')">Purple</button>
+        <button style="background:#22c55e" onclick="setClinicTheme('green')">Green</button>
+        <button style="background:#f97316" onclick="setClinicTheme('orange')">Orange</button>
+      </div>
+      <button class="secondary" style="width:100%;margin-top:14px" onclick="this.closest('.luxuryModal').remove()">Close</button>
+    </div>`;
+  document.body.appendChild(modal);
+};
+window.openSimplePhotoViewer = function(patientId, index = 0) {
+  const p = patients.find(x => x.id === patientId);
+  if (!p) return;
+  const currentType = window.simplePhotoState?.[patientId]?.type || "clinical";
+  const cats = categorizedPhotos(p);
+  const list = currentType === "xray" ? cats.xrays : cats.clinical;
+  const fallback = currentType === "xray" ? cats.clinical : cats.xrays;
+  const photos = (list.length ? list : fallback).map(x => x.url);
+  if (!photos.length) return;
+  window.simplePhotoState = window.simplePhotoState || {};
+  window.simplePhotoState[patientId] = { type: currentType, photos, index };
+  document.getElementById("fullPhotoViewer")?.remove();
+  const viewer = document.createElement("div");
+  viewer.className = "fullPhotoViewer";
+  viewer.id = "fullPhotoViewer";
+  viewer.innerHTML = `
+    <div class="fullPhotoTop">
+      <span class="fullPhotoCounter">${index + 1} / ${photos.length}</span>
+      <button onclick="closeSimplePhotoViewer()">Ã</button>
+    </div>
+    <img src="${photos[index]}">
+    <div class="fullPhotoNav">
+      <button onclick="moveSimplePhoto('${patientId}', -1)">Previous</button>
+      <button onclick="moveSimplePhoto('${patientId}', 1)">Next</button>
+    </div>`;
+  document.body.appendChild(viewer);
+};
+window.moveSimplePhoto = function(patientId, step) {
+  const s = window.simplePhotoState?.[patientId];
+  if (!s || !s.photos?.length) return;
+  s.index = (s.index + step + s.photos.length) % s.photos.length;
+  openSimplePhotoViewer(patientId, s.index);
+};
+window.closeSimplePhotoViewer = function() { document.getElementById("fullPhotoViewer")?.remove(); };
+window.showBeforeAfter = function(id) {
+  const p = patients.find(x => x.id === id);
+  if (!p) return;
+  const photos = (p.photos || []).map(photoUrl).filter(Boolean);
+  if (photos.length < 2) return alert("Need at least 2 photos.");
+  const modal = document.createElement("div");
+  modal.className = "luxuryModal";
+  modal.innerHTML = `
+    <div class="luxuryBox" style="max-width:760px;">
+      <h2>Before / After</h2>
+      <div class="beforeAfterSwipe">
+        <span class="label before">Before</span>
+        <span class="label after">After</span>
+        <img src="${photos[0]}">
+        <div class="afterClip" id="afterClip"><img src="${photos[1]}"></div>
+        <input type="range" min="0" max="100" value="50" id="beforeAfterRange">
+      </div>
+      <button class="secondary" style="width:100%" onclick="this.closest('.luxuryModal').remove()">Close</button>
+    </div>`;
+  document.body.appendChild(modal);
+  const range = modal.querySelector("#beforeAfterRange");
+  const clip = modal.querySelector("#afterClip");
+  range.oninput = () => clip.style.clipPath = `inset(0 0 0 ${range.value}%)`;
+};
+try { applySavedTheme(); enhancePremiumHeader(); } catch(e) {}
+try { document.querySelectorAll('button').forEach(b => { if ((b.textContent || '').trim() === 'Settings') b.style.display = 'none'; }); } catch(e) {}
