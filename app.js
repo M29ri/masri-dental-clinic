@@ -156,7 +156,7 @@ window.openClinicMenu = function() {
   drawer.innerHTML = `
     <div class="drawerHead">
       <h2>Menu</h2>
-     <button class="drawerClose" onclick="closeClinicMenu()" aria-label="Close">X</button>
+      <button class="drawerClose" onclick="closeClinicMenu()" aria-label="Close">X</button>
     </div>
 
     <div class="drawerUser">
@@ -4169,7 +4169,7 @@ window.openSimplePhotoViewer = function(patientId, index = 0) {
   viewer.innerHTML = `
     <div class="fullPhotoTop">
       <span style="color:white;font-weight:1000">${index + 1} / ${photos.length}</span>
-      <button onclick="closeSimplePhotoViewer()">Ã</button>
+      <button onclick="closeSimplePhotoViewer()">ÃÂ</button>
     </div>
     <img src="${photos[index]}">
     <div class="fullPhotoNav">
@@ -5942,7 +5942,7 @@ window.openSimplePhotoViewer = function(patientId, index = 0) {
   viewer.innerHTML = `
     <div class="fullPhotoTop">
       <span class="fullPhotoCounter">${index + 1} / ${photos.length}</span>
-      <button onclick="closeSimplePhotoViewer()">Ã</button>
+      <button onclick="closeSimplePhotoViewer()">ÃÂ</button>
     </div>
     <img src="${photos[index]}">
     <div class="fullPhotoNav">
@@ -5988,59 +5988,75 @@ try { document.querySelectorAll('button').forEach(b => { if ((b.textContent || '
 
 
 
-
-
-/* MENU X REAL FIX - do not use icon button at all */
+/* REAL ACTUAL FIX - clean menu X and compact chart */
 (function(){
   const css = `
-    #sideDrawer .drawerHead{
-      display:flex!important;
-      align-items:center!important;
-      justify-content:space-between!important;
-      gap:14px!important;
-    }
-    #sideDrawer .menuClosePlain{
-      width:54px!important;
-      height:54px!important;
-      min-width:54px!important;
-      border:0!important;
-      border-radius:18px!important;
-      padding:0!important;
-      margin:0!important;
+    #sideDrawer .drawerCloseButtonClean{
+      width:52px!important;height:52px!important;min-width:52px!important;border-radius:18px!important;
+      border:0!important;padding:0!important;margin:0!important;
       background:linear-gradient(135deg,var(--theme1,#f5d76e),var(--theme2,#b8860b))!important;
-      color:#050505!important;
-      font-size:38px!important;
-      font-weight:1000!important;
-      line-height:1!important;
-      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif!important;
-      display:flex!important;
-      align-items:center!important;
-      justify-content:center!important;
+      color:#050505!important;font-size:36px!important;font-weight:1000!important;line-height:1!important;
+      display:grid!important;place-items:center!important;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif!important;
       box-shadow:0 14px 34px rgba(0,0,0,.35)!important;
-      text-indent:0!important;
-      overflow:hidden!important;
-      appearance:none!important;
-      -webkit-appearance:none!important;
     }
-    #sideDrawer .menuClosePlain *{
-      display:none!important;
+    #sideDrawer .drawerCloseButtonClean::before,#sideDrawer .drawerCloseButtonClean::after{display:none!important;content:""!important}
+
+    .toothChartClean{
+      width:100%!important;box-sizing:border-box!important;overflow:hidden!important;
+      padding:12px!important;border-radius:24px!important;
+      background:linear-gradient(145deg,#050914,#0b1220 60%,#030507)!important;
+      border:1px solid rgba(212,175,55,.20)!important;
+      display:grid!important;gap:12px!important;
     }
-    #sideDrawer .menuClosePlain::before,
-    #sideDrawer .menuClosePlain::after{
-      content:none!important;
-      display:none!important;
+    .cleanJaw{
+      width:100%!important;box-sizing:border-box!important;overflow:visible!important;
+      background:linear-gradient(180deg,rgba(15,23,42,.88),rgba(2,6,23,.80))!important;
+      border:1px solid rgba(148,163,184,.16)!important;border-radius:20px!important;
+      padding:12px 6px 10px!important;
+    }
+    .cleanJawTitle{
+      color:var(--accent,#d4af37)!important;text-align:center!important;font-size:12px!important;
+      font-weight:1000!important;letter-spacing:4px!important;margin-bottom:8px!important;
+    }
+    .cleanToothRow{
+      display:grid!important;grid-template-columns:repeat(16,1fr)!important;
+      gap:1px!important;justify-items:center!important;align-items:end!important;width:100%!important;
+    }
+    .cleanToothRow.lower{align-items:start!important;}
+    .toothChartClean .proTooth{
+      position:relative!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;
+      transform:none!important;display:grid!important;place-items:center!important;gap:2px!important;
+      width:100%!important;min-width:0!important;margin:0!important;padding:0!important;border:0!important;background:transparent!important;
+      overflow:visible!important;
+    }
+    .toothChartClean .proTooth:hover,.toothChartClean .proTooth:focus{
+      transform:scale(1.08)!important;filter:drop-shadow(0 0 10px var(--accent,#d4af37))!important;z-index:20!important;
+    }
+    .toothChartClean .toothArt,.toothChartClean .proTooth svg{display:block!important;overflow:visible!important;}
+    .toothChartClean .proTooth.molar .toothArt,.toothChartClean .proTooth.molar svg{width:22px!important;height:24px!important}
+    .toothChartClean .proTooth.premolar .toothArt,.toothChartClean .proTooth.premolar svg{width:20px!important;height:23px!important}
+    .toothChartClean .proTooth.canine .toothArt,.toothChartClean .proTooth.canine svg{width:14px!important;height:30px!important}
+    .toothChartClean .proTooth.incisor .toothArt,.toothChartClean .proTooth.incisor svg{width:12px!important;height:29px!important}
+    .toothChartClean .toothNo{
+      display:block!important;position:static!important;transform:none!important;
+      font-size:7px!important;font-weight:1000!important;line-height:1!important;color:#f8fafc!important;text-shadow:0 2px 4px #000!important;
+    }
+    .toothChartClean .toothSurfaceText{
+      position:absolute!important;top:-17px!important;right:-7px!important;
+      min-width:20px!important;height:20px!important;border-radius:50%!important;
+      display:grid!important;place-items:center!important;font-size:8px!important;font-weight:1000!important;
+      z-index:50!important;border:2px solid rgba(255,255,255,.92)!important;box-shadow:0 5px 12px rgba(0,0,0,.38)!important;
     }
   `;
-  document.getElementById("menuXRealFixStyle")?.remove();
-  const style = document.createElement("style");
-  style.id = "menuXRealFixStyle";
-  style.textContent = css;
-  document.head.appendChild(style);
+  document.getElementById("realActualFixStyle")?.remove();
+  const s=document.createElement("style");
+  s.id="realActualFixStyle";
+  s.textContent=css;
+  document.head.appendChild(s);
 })();
 
 window.openClinicMenu = function() {
   closeClinicMenu();
-
   const overlay = document.createElement("div");
   overlay.className = "drawerOverlay";
   overlay.id = "drawerOverlay";
@@ -6049,18 +6065,14 @@ window.openClinicMenu = function() {
   const drawer = document.createElement("aside");
   drawer.className = "sideDrawer";
   drawer.id = "sideDrawer";
-
-  const safeName = safeText(currentUser?.full_name || currentUser?.username || "Doctor");
-  const safeRole = safeText((currentUser?.role || "doctor").toUpperCase());
-
   drawer.innerHTML = `
     <div class="drawerHead">
       <h2>Menu</h2>
-      <button type="button" class="menuClosePlain" onclick="closeClinicMenu()" aria-label="Close">&times;</button>
+      <button class="drawerCloseButtonClean" onclick="closeClinicMenu()" aria-label="Close">ÃÂ</button>
     </div>
     <div class="drawerUser">
-      <div>${safeName}</div>
-      <small>${safeRole}</small>
+      <div>${safeText(currentUser?.full_name || currentUser?.username || "Doctor")}</div>
+      <small>${safeText((currentUser?.role || "doctor").toUpperCase())}</small>
     </div>
     <div class="drawerMenu">
       <button class="primaryItem" onclick="closeClinicMenu(); showPage('dashboard')">Dashboard</button>
@@ -6074,13 +6086,6 @@ window.openClinicMenu = function() {
       <button onclick="closeClinicMenu(); openThemeMenu()">Themes</button>
       <button class="dangerItem" onclick="logout()">Logout</button>
     </div>`;
-
   document.body.appendChild(overlay);
   document.body.appendChild(drawer);
-
-  const closeBtn = drawer.querySelector(".menuClosePlain");
-  if (closeBtn) {
-    closeBtn.textContent = "Ã";
-    closeBtn.innerHTML = "Ã";
-  }
 };
