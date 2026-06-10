@@ -62,40 +62,34 @@ async function login(username, password) {
 }
 
 async function registerDoctor() {
-  const full_name = await luxuryPrompt(
-    "Your full name",
-    "Doctor name"
-  );
+  const full_name = await luxuryPrompt("Your full name", "Doctor name");
   if (!full_name) return;
 
-  const username = await luxuryPrompt(
-    "Choose username",
-    "Any username you want"
-  );
+  const username = await luxuryPrompt("Choose username", "Any username you want");
   if (!username) return;
 
-  const password = await luxuryPrompt(
-    "Choose password",
-    "Password"
-  );
+  const password = await luxuryPrompt("Choose password", "Password");
   if (!password) return;
 
-  try {
-    const cleanUsername = username.trim();
+  const cleanUsername = username.trim();
 
+  try {
     const existing = await api(
       `clinic_users?select=id&username=eq.${encodeURIComponent(cleanUsername)}`
     );
 
     if (existing.length) {
-      return alert(
-        "This username already exists. Please login or choose another username."
-      );
+      return alert("This username already exists. Please login.");
     }
 
-    await api("clinic_users", {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/clinic_users`, {
       method: "POST",
-      headers: { Prefer: "return=minimal" },
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`,
+        "Content-Type": "application/json",
+        Prefer: "return=minimal"
+      },
       body: JSON.stringify({
         username: cleanUsername,
         password: password.trim(),
@@ -105,8 +99,11 @@ async function registerDoctor() {
       })
     });
 
-    alert("Account created successfully. Please login now.");
+    if (!res.ok) {
+      throw new Error(await res.text());
+    }
 
+    alert("Account created successfully. Please login now.");
   } catch (err) {
     alert("Account creation failed: " + err.message);
   }
@@ -2338,6 +2335,48 @@ window.backupData = function() {
 };
 
 window.restoreBackup = function() { const input = document.createElement("input"); input.type = "file"; input.accept = ".json,application/json"; input.onchange = async e => { const file = e.target.files[0]; if (!file) return; if (!confirm("Restore backup? This will upload patients from the backup file.")) return; try { const backup = JSON.parse(await file.text()); if (!backup.patients || !Array.isArray(backup.patients)) return alert("Invalid backup file."); for (const p of backup.patients) { const newPatient = { owner_id: currentUser.role === "admin" ? (p.owner_id || currentUser.id) : currentUser.id, case_id: p.case_id || makeId(), name: p.name || "", phone: p.phone || "", age: p.age || "", gender: p.gender || "", chief_complaint: p.chief_complaint || "", medical_alerts: p.medical_alerts || "", diagnosis: p.diagnosis || "", treatment_plan: p.treatment_plan || "", progress_notes: p.progress_notes || "", photos: p.photos || [] }; await api("patients", { method: "POST", body: JSON.stringify(newPatient) }); } alert("Backup restored successfully."); await loadPatients(); showPage("patients"); } catch (err) { alert("Restore failed: " + err.message); } }; input.click(); };
+window.changeMyPassword = async function() {
+  if (!currentUser || !currentUser.id) {
+    return alert("Please login first.");
+  }
+
+  const oldPassword = await luxuryPrompt("Current password", "Enter current password");
+  if (!oldPassword) return;
+
+  if (oldPassword.trim() !== currentUser.password) {
+    return alert("Current password is wrong.");
+  }
+
+  const newPassword = await luxuryPrompt("New password", "Enter new password");
+  if (!newPassword) return;
+
+  const confirmPassword = await luxuryPrompt("Confirm new password", "Re-enter new password");
+  if (!confirmPassword) return;
+
+  if (newPassword.trim() !== confirmPassword.trim()) {
+    return alert("Passwords do not match.");
+  }
+
+  if (newPassword.trim().length < 4) {
+    return alert("Password must be at least 4 characters.");
+  }
+
+  try {
+    await api(`clinic_users?id=eq.${currentUser.id}`, {
+      method: "PATCH",
+      body: JSON.stringify({
+        password: newPassword.trim()
+      })
+    });
+
+    currentUser.password = newPassword.trim();
+    saveUser(currentUser);
+
+    await luxuryConfirm("Password updated", "Your password was changed successfully.");
+  } catch (err) {
+    alert("Password update failed: " + err.message);
+  }
+};
 
 window.saveClinicBranding = async function() {
   try {
