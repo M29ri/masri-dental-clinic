@@ -1576,7 +1576,7 @@ window.showBeforeAfter = function(id) {
         <button class="btn-secondary" id="baPrevBefore">Prev Before</button>
         <button class="btn-secondary" id="baNextAfter">Next After</button>
         <button class="btn-primary" id="baAuto">Auto Play</button>
-        <button class="btn-secondary" onclick="this.closest('.luxury-modal').remove()">Close</button>
+        <button class="btn-secondary baCloseBtn" onclick="this.closest('.luxury-modal').remove()">Close</button>
       </div>
     </div>`;
   document.body.appendChild(modal);
@@ -1594,46 +1594,16 @@ window.showBeforeAfter = function(id) {
     img.style.filter = "blur(0)";
   }, 180);
 };
-  modal.querySelector("#baPrevBefore").onclick = () => {
-    beforeIdx = (beforeIdx - 1 + photos.length) % photos.length;
-    if (beforeIdx === afterIdx) beforeIdx = (beforeIdx - 1 + photos.length) % photos.length;
-   fadeSwap(modal.querySelector("#baClip img"), photos[beforeIdx]);
-  };
-  modal.querySelector("#baNextAfter").onclick = () => {
-    afterIdx = (afterIdx + 1) % photos.length;
-    if (afterIdx === beforeIdx) afterIdx = (afterIdx + 1) % photos.length;
-    fadeSwap(modal.querySelector(".before-after-wrap > img"), photos[afterIdx]);
-  };
- modal.querySelector("#baAuto").onclick = () => {
-  const beforeImg = modal.querySelector("#baClip img");
-  const afterImg = modal.querySelector(".before-after-wrap > img");
-
-  beforeImg.style.transition = "all .8s ease";
-  afterImg.style.transition = "all .8s ease";
-
-  let showAfter = false;
-
+  modal.querySelector("#baAuto").onclick = () => {
+  let v = 0;
+  const slider = modal.querySelector("#baSlider");
+  const clip = modal.querySelector("#baClip");
   const timer = setInterval(() => {
-    showAfter = !showAfter;
-
-    if (showAfter) {
-      beforeImg.style.opacity = "0";
-      beforeImg.style.filter = "blur(8px)";
-      afterImg.style.opacity = "1";
-      afterImg.style.filter = "blur(0px)";
-    } else {
-      beforeImg.style.opacity = "1";
-      beforeImg.style.filter = "blur(0px)";
-      afterImg.style.opacity = "0";
-      afterImg.style.filter = "blur(8px)";
-    }
-  }, 1600);
-
-  modal.querySelector(".luxury-box").onclick = (e) => {
-    e.stopPropagation();
-  };
-
-  modal.onclick = () => clearInterval(timer);
+    v += 2;
+    slider.value = v;
+    clip.style.width = v + "%";
+    if (v >= 100) clearInterval(timer);
+  }, 50);
 };
   
 };
