@@ -1595,11 +1595,34 @@ window.showBeforeAfter = function(id) {
     modal.querySelector(".before-after-wrap > img").src = photos[afterIdx];
   };
   modal.querySelector("#baAuto").onclick = () => {
-    let v = 0;
-    const slider = modal.querySelector("#baSlider");
-    const clip = modal.querySelector("#baClip");
-    const timer = setInterval(() => { v += 2; slider.value = v; clip.style.width = v + "%"; if (v >= 100) clearInterval(timer); }, 35);
-  };
+  const beforeImg = modal.querySelector("#baClip img");
+  const afterImg = modal.querySelector(".before-after-wrap > img");
+
+  let showingBefore = true;
+
+  beforeImg.style.opacity = "1";
+  afterImg.style.opacity = "0";
+
+  const timer = setInterval(() => {
+    beforeImg.style.transition = "opacity .8s ease, filter .8s ease";
+    afterImg.style.transition = "opacity .8s ease, filter .8s ease";
+
+    if (showingBefore) {
+      beforeImg.style.opacity = "0";
+      beforeImg.style.filter = "blur(8px)";
+      afterImg.style.opacity = "1";
+      afterImg.style.filter = "blur(0)";
+    } else {
+      beforeImg.style.opacity = "1";
+      beforeImg.style.filter = "blur(0)";
+      afterImg.style.opacity = "0";
+      afterImg.style.filter = "blur(8px)";
+    }
+
+    showingBefore = !showingBefore;
+  }, 1800);
+
+  modal.onclick = () => clearInterval(timer);
 };
 
 // --- QR Code ---
