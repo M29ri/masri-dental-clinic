@@ -483,11 +483,27 @@ textarea{
 }
 
 .headerRight{
-  display:flex !important;
-  align-items:center !important;
-  gap:10px !important;
+display:grid !important;
+grid-template-columns:auto auto !important;
+grid-template-rows:auto auto !important;
+gap:10px !important;
+align-items:start !important;
 }
 
+.headerRight .userCard,
+.headerRight .userBox{
+grid-row:1 / span 2 !important;
+}
+
+.refreshBtn{
+grid-column:2 !important;
+grid-row:2 !important;
+}
+
+.hamburgerBtn{
+grid-column:2 !important;
+grid-row:1 !important;
+}
 .headerRight .userCard,
 .headerRight .userBox{
   min-width:170px !important;
