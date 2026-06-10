@@ -6412,3 +6412,148 @@ window.openClinicMenu = function() {
     closeBtn.innerHTML = "Ã";
   }
 };
+
+
+
+/* REAL FINAL PATCH - drawer close + surfaces not clipped */
+(function realFinalPatch(){
+  const css = `
+    /* Drawer close button: force real X, remove all old encoded icon layers */
+    #sideDrawer .drawerHead .drawerClose,
+    .sideDrawer .drawerHead .drawerClose,
+    button.drawerClose{
+      width:52px!important;
+      height:52px!important;
+      min-width:52px!important;
+      max-width:52px!important;
+      border-radius:18px!important;
+      border:0!important;
+      padding:0!important;
+      margin:0!important;
+      background:linear-gradient(135deg,var(--theme1,#f5d76e),var(--theme2,#b8860b))!important;
+      color:#050505!important;
+      font-size:0!important;
+      line-height:1!important;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif!important;
+      display:grid!important;
+      place-items:center!important;
+      text-indent:-9999px!important;
+      overflow:hidden!important;
+      position:relative!important;
+      box-shadow:0 14px 34px rgba(0,0,0,.35)!important;
+    }
+    #sideDrawer .drawerHead .drawerClose::before,
+    .sideDrawer .drawerHead .drawerClose::before,
+    button.drawerClose::before{
+      content:"Ã"!important;
+      display:grid!important;
+      place-items:center!important;
+      position:absolute!important;
+      inset:0!important;
+      text-indent:0!important;
+      font-size:36px!important;
+      font-weight:1000!important;
+      color:#050505!important;
+      line-height:1!important;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif!important;
+      background:transparent!important;
+    }
+    #sideDrawer .drawerHead .drawerClose::after,
+    .sideDrawer .drawerHead .drawerClose::after,
+    button.drawerClose::after{
+      content:""!important;
+      display:none!important;
+    }
+
+    /* Tooth chart: never clip surface circles */
+    .compactOdontogram,
+    .proMouthChart,
+    .odontogramJaw,
+    .odontogramRow,
+    .proTooth,
+    .toothArt{
+      overflow:visible!important;
+    }
+    .compactOdontogram{
+      max-width:100%!important;
+      box-sizing:border-box!important;
+      padding:18px 14px 20px!important;
+    }
+    .odontogramJaw{
+      padding:26px 10px 16px!important;
+      box-sizing:border-box!important;
+    }
+    .odontogramRow{
+      grid-template-columns:repeat(16,minmax(0,1fr))!important;
+      gap:2px!important;
+      justify-items:center!important;
+      align-items:end!important;
+    }
+    .odontogramRow.lower{
+      align-items:start!important;
+    }
+    .proTooth{
+      overflow:visible!important;
+      isolation:isolate!important;
+      z-index:2!important;
+    }
+    .toothSurfaceText{
+      position:absolute!important;
+      top:-18px!important;
+      right:-10px!important;
+      min-width:22px!important;
+      height:22px!important;
+      border-radius:999px!important;
+      display:grid!important;
+      place-items:center!important;
+      font-size:9px!important;
+      font-weight:1000!important;
+      z-index:999!important;
+      overflow:visible!important;
+      border:2px solid rgba(255,255,255,.9)!important;
+      box-shadow:0 5px 12px rgba(0,0,0,.38)!important;
+    }
+    .proTooth.incisor .toothArt,.proTooth.incisor svg{width:14px!important;height:34px!important}
+    .proTooth.canine .toothArt,.proTooth.canine svg{width:17px!important;height:36px!important}
+    .proTooth.premolar .toothArt,.proTooth.premolar svg{width:23px!important;height:28px!important}
+    .proTooth.molar .toothArt,.proTooth.molar svg{width:26px!important;height:28px!important}
+    .toothNo{font-size:8px!important}
+
+    @media(min-width:700px){
+      .odontogramRow{gap:6px!important}
+      .proTooth.incisor .toothArt,.proTooth.incisor svg{width:18px!important;height:39px!important}
+      .proTooth.canine .toothArt,.proTooth.canine svg{width:21px!important;height:41px!important}
+      .proTooth.premolar .toothArt,.proTooth.premolar svg{width:29px!important;height:32px!important}
+      .proTooth.molar .toothArt,.proTooth.molar svg{width:34px!important;height:33px!important}
+      .toothNo{font-size:10px!important}
+    }
+  `;
+
+  const old = document.getElementById("realFinalPatchStyle");
+  if (old) old.remove();
+  const style = document.createElement("style");
+  style.id = "realFinalPatchStyle";
+  style.textContent = css;
+  document.head.appendChild(style);
+
+  function forceDrawerX(){
+    document.querySelectorAll(".drawerClose").forEach(btn => {
+      btn.textContent = "";
+      btn.innerHTML = "";
+      btn.setAttribute("aria-label", "Close");
+      btn.title = "Close";
+    });
+  }
+
+  const oldOpenClinicMenu = window.openClinicMenu;
+  window.openClinicMenu = function(){
+    if (typeof oldOpenClinicMenu === "function") oldOpenClinicMenu();
+    setTimeout(forceDrawerX, 0);
+    setTimeout(forceDrawerX, 50);
+  };
+
+  document.addEventListener("click", () => setTimeout(forceDrawerX, 0), true);
+  const mo = new MutationObserver(forceDrawerX);
+  mo.observe(document.body, { childList:true, subtree:true });
+  forceDrawerX();
+})();
