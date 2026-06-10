@@ -902,95 +902,6 @@ function injectExtraStyles() {
       .financeProGrid{grid-template-columns:1fr!important}
     }
 
-  
-    /* Phase 2 premium systems */
-    .reportCenterGrid{
-      display:grid!important;
-      grid-template-columns:repeat(2,minmax(0,1fr))!important;
-      gap:12px!important;
-      margin:14px 0!important;
-    }
-    .reportCenterGrid button{
-      min-height:58px!important;
-      border-radius:20px!important;
-      font-weight:1000!important;
-    }
-    .signaturePad{
-      background:#fff!important;
-      border:2px dashed #d4af37!important;
-      border-radius:18px!important;
-      width:100%!important;
-      height:180px!important;
-      touch-action:none!important;
-      margin:12px 0!important;
-    }
-    .docHistoryRow{
-      display:flex!important;
-      justify-content:space-between!important;
-      gap:10px!important;
-      align-items:center!important;
-      background:#0f1620!important;
-      border:1px solid #263241!important;
-      border-radius:18px!important;
-      padding:12px!important;
-      margin:10px 0!important;
-    }
-    .syncBanner{
-      position:fixed!important;
-      left:16px!important;
-      right:16px!important;
-      top:14px!important;
-      background:#111827!important;
-      color:#fff!important;
-      border:1px solid rgba(212,175,55,.35)!important;
-      border-radius:18px!important;
-      padding:12px 14px!important;
-      z-index:1000000!important;
-      font-weight:1000!important;
-      box-shadow:0 18px 45px rgba(0,0,0,.35)!important;
-    }
-    .smartSearchHint{
-      color:#94a3b8!important;
-      font-size:12px!important;
-      font-weight:800!important;
-      margin-top:6px!important;
-    }
-    .quadTabs{
-      display:grid!important;
-      grid-template-columns:repeat(4,1fr)!important;
-      gap:8px!important;
-      margin:12px 0!important;
-    }
-    .quadTabs button{
-      border:none!important;
-      border-radius:16px!important;
-      background:#1f2937!important;
-      color:white!important;
-      font-weight:1000!important;
-      min-height:44px!important;
-    }
-    .quadTabs button.active{
-      background:linear-gradient(135deg,#f5d76e,#b8860b)!important;
-      color:#050505!important;
-    }
-    .toothRootLine{
-      stroke:#7c3aed!important;
-      stroke-width:4!important;
-      stroke-linecap:round!important;
-      fill:none!important;
-      opacity:.75!important;
-    }
-    .implantPost{
-      stroke:#0f766e!important;
-      stroke-width:5!important;
-      stroke-linecap:round!important;
-      opacity:.9!important;
-    }
-    @media(max-width:460px){
-      .reportCenterGrid{grid-template-columns:1fr!important}
-      .signaturePad{height:150px!important}
-    }
-
   `;
   document.head.appendChild(style);
 }
@@ -1130,14 +1041,12 @@ async function loadPatients() {
     if (currentUser.role === "admin") patients = await api("patients?select=*&order=created_at.desc");
     else patients = await api(`patients?owner_id=eq.${currentUser.id}&select=*&order=created_at.desc`);
     renderPatients(); renderDashboard();
-    cachePatientsOffline();
     if ($("status")) $("status").textContent = "Cloud connected";
     const params = new URLSearchParams(location.search);
     const patientId = params.get("patient");
     if (patientId) openPatient(patientId);
   } catch (err) {
     console.error(err);
-    loadOfflinePatientsIfNeeded();
     if ($("status")) $("status").textContent = "Cloud error";
     if ($("list")) $("list").innerHTML = `<div class="card"><h3>Cloud error</h3><p>${safeText(err.message)}</p></div>`;
   }
@@ -1637,7 +1546,7 @@ function renderDashboard() {
       <button class="primary" onclick="fillForm();showPage('form')">+ New Patient</button>
       <button class="secondary" onclick="showPage('scan')">Scan QR</button>
       <button class="secondary" onclick="backupData()">Backup</button>
-      <button class="secondary" onclick="restoreBackup()">Restore</button><button class="secondary" onclick="openDoctorProfile()">Profile</button><button class="secondary" onclick="sendTomorrowReminders()">Reminders</button><button class="secondary" onclick="exportDailyBackup()">Daily Backup</button>${currentUser?.role === "admin" ? `<button class="secondary" onclick="manageUsers()">Users</button>` : ""}<button class="secondary" onclick="openThemePicker()">Theme</button>
+      <button class="secondary" onclick="restoreBackup()">Restore</button><button class="secondary" onclick="openDoctorProfile()">Profile</button><button class="secondary" onclick="sendTomorrowReminders()">Reminders</button>${currentUser?.role === "admin" ? `<button class="secondary" onclick="manageUsers()">Users</button>` : ""}<button class="secondary" onclick="openThemePicker()">Theme</button>
     </div>
 
     <div class="dashboardPanel">
@@ -1689,12 +1598,6 @@ function renderDashboard() {
     </div>
 
     
-    
-    <div class="dashboardPanel">
-      <h2>Smart Search Pro</h2>
-      <p class="smartSearchHint">${smartSearchInfo()}</p>
-    </div>
-
     ${dashboardPanel("Waiting List", patients.flatMap(p => {
       const data = parseClinicData(p.progress_notes);
       return (data.appointments || [])
@@ -1875,40 +1778,6 @@ function getToothType(n) {
   return "molar";
 }
 
-
-window.setQuadrantFilter = function(q) {
-  document.querySelectorAll(".proTooth").forEach(btn => {
-    const n = Number(btn.dataset.tooth || 0);
-    const show =
-      q === "all" ||
-      (q === "upperR" && n >= 11 && n <= 18) ||
-      (q === "upperL" && n >= 21 && n <= 28) ||
-      (q === "lowerL" && n >= 31 && n <= 38) ||
-      (q === "lowerR" && n >= 41 && n <= 48);
-    btn.style.display = show ? "" : "none";
-  });
-  document.querySelectorAll(".quadTabs button").forEach(b => b.classList.remove("active"));
-  document.querySelector(`[data-quad="${q}"]`)?.classList.add("active");
-};
-
-
-function toothExtraOverlay(status) {
-  if (status === "rct") {
-    return `<svg viewBox="-40 -50 80 100" style="position:absolute;inset:6px;width:40px;height:48px;pointer-events:none;">
-      <path class="toothRootLine" d="M-8,-8 C-8,12 -10,26 -15,42"/>
-      <path class="toothRootLine" d="M8,-8 C8,12 10,26 15,42"/>
-    </svg>`;
-  }
-  if (status === "implant") {
-    return `<svg viewBox="-40 -50 80 100" style="position:absolute;inset:6px;width:40px;height:48px;pointer-events:none;">
-      <path class="implantPost" d="M0,-2 L0,42"/>
-      <path class="implantPost" d="M-10,14 L10,14"/>
-      <path class="implantPost" d="M-8,26 L8,26"/>
-    </svg>`;
-  }
-  return "";
-}
-
 function renderToothChart(p) {
   const data = parseClinicData(p.progress_notes);
   const teeth = data.teeth || {};
@@ -1928,13 +1797,6 @@ function renderToothChart(p) {
 ];
 
   return `
-    <div class="quadTabs">
-      <button class="active" data-quad="all" onclick="setQuadrantFilter('all')">All</button>
-      <button data-quad="upperR" onclick="setQuadrantFilter('upperR')">UR</button>
-      <button data-quad="upperL" onclick="setQuadrantFilter('upperL')">UL</button>
-      <button data-quad="lowerL" onclick="setQuadrantFilter('lowerL')">LL</button>
-      <button data-quad="lowerR" onclick="setQuadrantFilter('lowerR')">LR</button>
-    </div>
     <div class="proMouthChart">
       <div class="proMouthLabel upper">UPPER</div>
       <div class="proMouthLabel lower">LOWER</div>
@@ -1954,7 +1816,7 @@ function renderToothChart(p) {
             onclick="window.openToothPopup('${p.id}', '${n}')"
           >
             <span class="toothArt" style="transform:rotate(${r}deg)">
-              ${toothSvg(type)}${surfaceOverlayHTML(toothInfo)}${toothExtraOverlay(status)}
+              ${toothSvg(type)}${surfaceOverlayHTML(toothInfo)}
             </span>
             <span class="toothNo">${n}</span>${surfaces.length ? `<span class="toothSurfaceText">${safeText(surfaces.join(""))}</span>` : ""}
           </button>
@@ -1999,7 +1861,7 @@ function patientDetailsHTML(p) {
         <button class="secondary" onclick="sendWhatsAppReminder('${p.id}')">WhatsApp Reminder</button>
         <button class="secondary" onclick="addTreatmentTemplate('${p.id}')">Treatment Template</button><button class="secondary" onclick="generateAITreatmentPlan('${p.id}')">AI Plan</button>
         <button class="secondary" onclick="showCaseSummary('${p.id}')">Case Summary</button>
-        <button class="secondary" onclick="addVoiceNote('${p.id}')">Voice Note</button><button class="secondary" onclick="generateSmartNote('${p.id}')">Smart Note</button><button class="secondary" onclick="generateSmartConsentPro('${p.id}')">Consent</button><button class="secondary" onclick="generatePrescriptionPro('${p.id}')">Prescription</button><button class="secondary" onclick="addLabWork('${p.id}')">Lab</button><button class="secondary" onclick="setCasePriority('${p.id}')">Priority</button><button class="secondary" onclick="addPatientTag('${p.id}')">Add Tag</button>
+        <button class="secondary" onclick="addVoiceNote('${p.id}')">Voice Note</button><button class="secondary" onclick="generateSmartNote('${p.id}')">Smart Note</button><button class="secondary" onclick="generateConsentForm('${p.id}')">Consent</button><button class="secondary" onclick="generatePrescription('${p.id}')">Prescription</button><button class="secondary" onclick="addLabWork('${p.id}')">Lab</button><button class="secondary" onclick="setCasePriority('${p.id}')">Priority</button><button class="secondary" onclick="addPatientTag('${p.id}')">Add Tag</button>
       </div>
 
       <h3 class="sectionTitle">Visits History</h3>
@@ -2148,7 +2010,6 @@ window.deletePatient = async function(id) {
   if (!(await luxuryConfirm("Delete this patient?", "You can undo for a short time."))) return;
 
   localStorage.setItem("lastDeletedPatient", JSON.stringify(p));
-  pushUndo({ type: "deletePatient", patient: p });
   await api(`patients?id=eq.${id}`, { method: "DELETE" });
   await loadPatients();
     startAutoRefresh();
@@ -2623,322 +2484,6 @@ window.backupData = function() {
 
 window.restoreBackup = function() { const input = document.createElement("input"); input.type = "file"; input.accept = ".json,application/json"; input.onchange = async e => { const file = e.target.files[0]; if (!file) return; if (!confirm("Restore backup? This will upload patients from the backup file.")) return; try { const backup = JSON.parse(await file.text()); if (!backup.patients || !Array.isArray(backup.patients)) return alert("Invalid backup file."); for (const p of backup.patients) { const newPatient = { owner_id: currentUser.role === "admin" ? (p.owner_id || currentUser.id) : currentUser.id, case_id: p.case_id || makeId(), name: p.name || "", phone: p.phone || "", age: p.age || "", gender: p.gender || "", chief_complaint: p.chief_complaint || "", medical_alerts: p.medical_alerts || "", diagnosis: p.diagnosis || "", treatment_plan: p.treatment_plan || "", progress_notes: p.progress_notes || "", photos: p.photos || [] }; await api("patients", { method: "POST", body: JSON.stringify(newPatient) }); } alert("Backup restored successfully."); await loadPatients(); showPage("patients"); } catch (err) { alert("Restore failed: " + err.message); } }; input.click(); };
 
-
-
-
-function clinicDocs(patient) {
-  const data = parseClinicData(patient.progress_notes);
-  data.docs = data.docs || [];
-  return data.docs;
-}
-
-async function saveClinicDoc(patientId, doc) {
-  const p = patients.find(x => x.id === patientId);
-  if (!p) return;
-  const data = parseClinicData(p.progress_notes);
-  data.docs = data.docs || [];
-  data.docs.unshift({
-    id: "DOC-" + Date.now(),
-    date: new Date().toLocaleString(),
-    ...doc
-  });
-
-  await api(`patients?id=eq.${patientId}`, {
-    method: "PATCH",
-    body: JSON.stringify({ progress_notes: saveClinicData(data) })
-  });
-
-  await refreshPatientKeepingScroll(patientId);
-}
-
-window.openSignaturePad = function(title = "Signature") {
-  return new Promise(resolve => {
-    const modal = document.createElement("div");
-    modal.className = "luxuryModal";
-    modal.innerHTML = `
-      <div class="luxuryBox">
-        <h2>${safeText(title)}</h2>
-        <canvas class="signaturePad" id="signatureCanvas"></canvas>
-        <div class="luxuryActions">
-          <button class="secondary" id="clearSig">Clear</button>
-          <button class="secondary" id="cancelSig">Cancel</button>
-          <button class="primary" id="saveSig">Save</button>
-        </div>
-      </div>
-    `;
-    document.body.appendChild(modal);
-
-    const canvas = modal.querySelector("#signatureCanvas");
-    const ctx = canvas.getContext("2d");
-    let drawing = false;
-
-    function resize() {
-      canvas.width = canvas.offsetWidth * 2;
-      canvas.height = canvas.offsetHeight * 2;
-      ctx.scale(2, 2);
-      ctx.lineWidth = 3;
-      ctx.lineCap = "round";
-      ctx.strokeStyle = "#111827";
-    }
-
-    setTimeout(resize, 30);
-
-    function pos(e) {
-      const rect = canvas.getBoundingClientRect();
-      const t = e.touches ? e.touches[0] : e;
-      return { x: t.clientX - rect.left, y: t.clientY - rect.top };
-    }
-
-    canvas.onmousedown = canvas.ontouchstart = e => {
-      drawing = true;
-      const p = pos(e);
-      ctx.beginPath();
-      ctx.moveTo(p.x, p.y);
-      e.preventDefault();
-    };
-
-    canvas.onmousemove = canvas.ontouchmove = e => {
-      if (!drawing) return;
-      const p = pos(e);
-      ctx.lineTo(p.x, p.y);
-      ctx.stroke();
-      e.preventDefault();
-    };
-
-    canvas.onmouseup = canvas.onmouseleave = canvas.ontouchend = () => drawing = false;
-
-    modal.querySelector("#clearSig").onclick = () => ctx.clearRect(0, 0, canvas.width, canvas.height);
-    modal.querySelector("#cancelSig").onclick = () => { modal.remove(); resolve(""); };
-    modal.querySelector("#saveSig").onclick = () => {
-      const img = canvas.toDataURL("image/png");
-      modal.remove();
-      resolve(img);
-    };
-  });
-};
-
-function premiumDocHTML(title, patient, body, signature = "") {
-  const clinicName = currentUser?.clinic_name || "Masri Dental Clinic";
-  const logo = currentUser?.clinic_logo || "";
-  return `
-    <h1>${logo ? `<img src="${logo}" style="width:74px;height:74px;object-fit:contain;vertical-align:middle;margin-right:12px;border-radius:16px;background:white;">` : ""}${safeText(clinicName)}</h1>
-    <p style="color:#b8860b;font-weight:900;margin-top:6px;">${safeText(title)}</p>
-    <div class="premiumDocBox">
-      <b>Patient:</b> ${safeText(patient.name || "-")}<br>
-      <b>ID:</b> ${safeText(patient.case_id || patient.id)}<br>
-      <b>Phone:</b> ${safeText(patient.phone || "-")}<br>
-      <b>Date:</b> ${new Date().toLocaleString()}
-    </div>
-    ${body}
-    ${signature ? `<div class="premiumDocBox"><b>Signature</b><br><img src="${signature}" style="max-width:260px;background:white;border:1px solid #ddd;border-radius:12px;"></div>` : ""}
-  `;
-}
-
-window.generateSmartConsentPro = async function(id) {
-  const p = patients.find(x => x.id === id);
-  if (!p) return;
-
-  const type = await luxuryPrompt("Consent type", "extraction / rct / implant / crown", "extraction");
-  if (!type) return;
-
-  const signature = await openSignaturePad("Patient signature");
-
-  const body = `
-    <h2>${safeText(type.toUpperCase())} Consent Form</h2>
-    <div class="premiumDocBox">
-      I acknowledge that the planned dental treatment, alternatives, benefits, risks,
-      limitations, and possible complications have been explained to me. I had the chance
-      to ask questions and agree to proceed.
-    </div>
-    <div class="premiumDocBox">
-      <b>Diagnosis:</b> ${safeText(p.diagnosis || "-")}<br>
-      <b>Treatment plan:</b> ${safeText(p.treatment_plan || "-")}<br>
-      <b>Medical alerts:</b> ${safeText(p.medical_alerts || "-")}
-    </div>
-    <p>Doctor signature: ________________________</p>
-  `;
-
-  const html = premiumDocHTML("Smart Consent PDF", p, body, signature);
-  openPremiumDocument("Consent", html);
-  await saveClinicDoc(id, { type: "Consent", title: `${type} consent`, html });
-};
-
-window.generatePrescriptionPro = async function(id) {
-  const p = patients.find(x => x.id === id);
-  if (!p) return;
-
-  const type = await luxuryPrompt("Prescription template", "pain / infection / extraction / implant", "pain");
-  if (!type) return;
-
-  let meds = "Analgesic as prescribed\nFollow doctor's instructions";
-  if (type.toLowerCase().includes("infection")) meds = "Antibiotic as prescribed\nAnalgesic as needed\nWarm saline rinse";
-  if (type.toLowerCase().includes("extraction")) meds = "Analgesic as prescribed\nPost-operative instructions\nAvoid smoking and vigorous rinsing for 24 hours";
-  if (type.toLowerCase().includes("implant")) meds = "Analgesic as prescribed\nAntibiotic as prescribed if indicated\nCold packs for the first day\nFollow-up appointment";
-
-  const custom = await luxuryPrompt("Extra instructions", "Optional", "");
-  if (custom) meds += "\n" + custom;
-
-  const body = `
-    <h2>Prescription</h2>
-    <div style="font-size:48px;font-weight:1000;color:#b8860b;margin:18px 0;">Rx</div>
-    <div class="premiumDocBox" style="white-space:pre-wrap;font-size:18px;">${safeText(meds)}</div>
-    <div class="premiumDocBox">
-      <b>Diagnosis:</b> ${safeText(p.diagnosis || "-")}<br>
-      <b>Notes:</b> ${safeText(type)}
-    </div>
-    <p>Doctor signature: ________________________</p>
-  `;
-
-  const html = premiumDocHTML("Prescription", p, body, "");
-  openPremiumDocument("Prescription", html);
-  await saveClinicDoc(id, { type: "Prescription", title: `${type} prescription`, html });
-};
-
-window.openReportsCenter = function(id) {
-  const p = patients.find(x => x.id === id);
-  if (!p) return;
-
-  const docs = clinicDocs(p);
-
-  const modal = document.createElement("div");
-  modal.className = "luxuryModal";
-  modal.innerHTML = `
-    <div class="luxuryBox" style="max-width:720px;">
-      <h2>Reports Center</h2>
-      <div class="reportCenterGrid">
-        <button class="primary" onclick="generateSmartConsentPro('${id}')">Smart Consent</button>
-        <button class="primary" onclick="generatePrescriptionPro('${id}')">Prescription Pro</button>
-        <button class="secondary" onclick="exportPDF('${id}')">Patient Report</button>
-        <button class="secondary" onclick="generateInvoicePro('${id}')">Invoice</button>
-      </div>
-      <h3 style="color:var(--gold);">Saved Documents</h3>
-      ${docs.length ? docs.map(d => `
-        <div class="docHistoryRow">
-          <div>
-            <b>${safeText(d.title || d.type)}</b><br>
-            <small>${safeText(d.date || "")}</small>
-          </div>
-          <button class="secondary" data-open-doc="${safeText(d.id)}">Open</button>
-        </div>
-      `).join("") : `<p style="color:var(--muted);font-weight:800">No saved documents yet</p>`}
-      <div class="luxuryActions">
-        <button class="secondary" onclick="this.closest('.luxuryModal').remove()">Close</button>
-      </div>
-    </div>
-  `;
-  document.body.appendChild(modal);
-
-  modal.querySelectorAll("[data-open-doc]").forEach(btn => {
-    btn.onclick = () => {
-      const doc = docs.find(d => d.id === btn.dataset.openDoc);
-      if (doc) openPremiumDocument(doc.title || doc.type || "Document", doc.html || "");
-    };
-  });
-};
-
-window.generateInvoicePro = async function(id) {
-  const p = patients.find(x => x.id === id);
-  if (!p) return;
-  const data = parseClinicData(p.progress_notes);
-  const money = paymentTotals(data);
-
-  const body = `
-    <h2>Invoice</h2>
-    <div class="premiumDocBox">
-      <b>Total:</b> ${money.total}<br>
-      <b>Paid:</b> ${money.paid}<br>
-      <b>Remaining:</b> ${money.remaining}
-    </div>
-    <div class="premiumDocBox">
-      ${data.payments.length ? data.payments.map(pay => `
-        <p><b>${safeText(pay.date || "")}</b> â Total: ${Number(pay.total || 0)} | Paid: ${Number(pay.paid || 0)}</p>
-      `).join("") : "No payments recorded."}
-    </div>
-  `;
-
-  const html = premiumDocHTML("Invoice", p, body, "");
-  openPremiumDocument("Invoice", html);
-  await saveClinicDoc(id, { type: "Invoice", title: "Financial invoice", html });
-};
-
-function cachePatientsOffline() {
-  try {
-    localStorage.setItem("clinicOfflinePatients-" + (currentUser?.id || "guest"), JSON.stringify(patients));
-    localStorage.setItem("clinicOfflineDate", new Date().toISOString());
-  } catch {}
-}
-
-function loadOfflinePatientsIfNeeded() {
-  try {
-    const raw = localStorage.getItem("clinicOfflinePatients-" + (currentUser?.id || "guest"));
-    if (raw && (!patients || !patients.length)) {
-      patients = JSON.parse(raw);
-      renderPatients();
-      renderDashboard();
-      if ($("status")) $("status").textContent = "Offline cache loaded";
-    }
-  } catch {}
-}
-
-window.exportDailyBackup = function() {
-  const backup = {
-    exported_at: new Date().toISOString(),
-    user: currentUser,
-    patients,
-    inventory: JSON.parse(localStorage.getItem("clinicInventory") || "[]"),
-    lab: JSON.parse(localStorage.getItem("clinicLab") || "[]")
-  };
-  const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `clinic-daily-backup-${new Date().toISOString().slice(0,10)}.json`;
-  a.click();
-  URL.revokeObjectURL(url);
-};
-
-function pushUndo(action) {
-  const stack = JSON.parse(localStorage.getItem("clinicUndoStack") || "[]");
-  stack.unshift({ time: new Date().toISOString(), ...action });
-  localStorage.setItem("clinicUndoStack", JSON.stringify(stack.slice(0, 20)));
-}
-
-window.openWhatsAppAutomation = async function(id) {
-  const p = patients.find(x => x.id === id);
-  if (!p) return;
-
-  const type = await luxuryPrompt(
-    "WhatsApp message",
-    "appointment / missed / postop / followup",
-    "appointment"
-  );
-
-  if (!type) return;
-
-  let message = `Hello ${p.name || ""}, this is ${currentUser?.clinic_name || "the clinic"}.`;
-  const lower = type.toLowerCase();
-
-  if (lower.includes("missed")) message += " We missed you at your appointment. Please contact us to reschedule.";
-  else if (lower.includes("post")) message += " Please follow the post-operative instructions. Contact us if you have severe pain, swelling, or bleeding.";
-  else if (lower.includes("follow")) message += " This is a follow-up reminder from the clinic.";
-  else {
-    const data = parseClinicData(p.progress_notes);
-    const next = nextAppointmentInfo(data);
-    message += next?.date ? ` Reminder for your appointment: ${next.date}.` : " This is an appointment reminder.";
-  }
-
-  const custom = await luxuryPrompt("Edit message", "Message", message);
-  if (!custom) return;
-
-  const phone = normalizePhoneForWhatsApp(p.phone || "");
-  if (!phone) return alert("No valid phone number.");
-  const url = `whatsapp://send?phone=${phone}&text=${encodeURIComponent(custom)}`;
-  window.location.href = url;
-};
-
-window.smartSearchInfo = function() {
-  return "Search examples: unpaid, vip, high risk, crown, implant, rct, extraction, phone, patient ID, appointment";
-};
 
 
 function appointmentStatusColor(status = "pending") {
