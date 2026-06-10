@@ -137,6 +137,94 @@ function showLoginScreen() {
   $("registerBtn").onclick = registerDoctor;
 }
 
+
+function clinicLogoMarkup() {
+  const logo = currentUser?.clinic_logo || "";
+  return `<div class="clinicLogoPremium">${logo ? `<img src="${logo}" alt="Clinic logo">` : "M"}</div>`;
+}
+
+window.openClinicMenu = function() {
+  document.getElementById("drawerOverlay")?.remove();
+  const overlay = document.createElement("div");
+  overlay.className = "drawerOverlay";
+  overlay.id = "drawerOverlay";
+  overlay.onclick = closeClinicMenu;
+
+  const drawer = document.createElement("aside");
+  drawer.className = "sideDrawer";
+  drawer.id = "sideDrawer";
+  drawer.innerHTML = `
+    <div class="drawerHead">
+      <h2>Menu</h2>
+      <button class="drawerClose" onclick="closeClinicMenu()">Ã</button>
+    </div>
+
+    <div class="drawerUser">
+      <div>${safeText(currentUser?.full_name || currentUser?.username || "Doctor")}</div>
+      <small>${safeText((currentUser?.role || "doctor").toUpperCase())}</small>
+    </div>
+
+    <div class="drawerMenu">
+      <button class="primaryItem" onclick="closeClinicMenu(); showPage('dashboard')">Dashboard</button>
+      <button onclick="closeClinicMenu(); showPage('patients')">Patients</button>
+      <button onclick="closeClinicMenu(); showPage('settings')">Profile / Branding</button>
+      <button onclick="closeClinicMenu(); backupData()">Backup</button>
+      <button onclick="closeClinicMenu(); restoreBackup()">Restore</button>
+      <button onclick="closeClinicMenu(); typeof showReminderCenter==='function' ? showReminderCenter() : alert('Reminders are available from patient WhatsApp tools')">Reminders</button>
+      <button onclick="closeClinicMenu(); typeof startDailyBackup==='function' ? startDailyBackup() : backupData()">Daily Backup</button>
+      <button onclick="closeClinicMenu(); typeof addUser==='function' ? addUser() : alert('Users can be managed from Supabase / admin setup')">Users</button>
+      <button onclick="closeClinicMenu(); openThemeMenu()">Themes</button>
+      <button class="dangerItem" onclick="logout()">Logout</button>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+  document.body.appendChild(drawer);
+};
+
+window.closeClinicMenu = function() {
+  document.getElementById("drawerOverlay")?.remove();
+  document.getElementById("sideDrawer")?.remove();
+};
+
+window.openThemeMenu = function() {
+  document.getElementById("drawerOverlay")?.remove();
+  document.getElementById("sideDrawer")?.remove();
+
+  const modal = document.createElement("div");
+  modal.className = "luxuryModal";
+  modal.innerHTML = `
+    <div class="luxuryBox" style="max-width:520px;">
+      <h2>Choose Theme</h2>
+      <div class="themePalette">
+        <button style="background:#d4af37" onclick="setClinicTheme('gold')">Gold</button>
+        <button style="background:#ff4fa3" onclick="setClinicTheme('pink')">Pink</button>
+        <button style="background:#ef4444" onclick="setClinicTheme('red')">Red</button>
+        <button style="background:#3b82f6" onclick="setClinicTheme('blue')">Blue</button>
+        <button style="background:#06b6d4" onclick="setClinicTheme('cyan')">Cyan</button>
+        <button style="background:#8b5cf6" onclick="setClinicTheme('purple')">Purple</button>
+        <button style="background:#22c55e" onclick="setClinicTheme('green')">Green</button>
+        <button style="background:#f97316" onclick="setClinicTheme('orange')">Orange</button>
+      </div>
+      <button class="secondary" style="width:100%;margin-top:14px" onclick="this.closest('.luxuryModal').remove()">Close</button>
+    </div>
+  `;
+  document.body.appendChild(modal);
+};
+
+window.setClinicTheme = function(theme) {
+  const themes = ["gold","pink","red","blue","cyan","purple","green","orange"];
+  themes.forEach(t => document.body.classList.remove(`theme-${t}`));
+  if (theme && theme !== "gold") document.body.classList.add(`theme-${theme}`);
+  localStorage.setItem("clinicTheme", theme || "gold");
+  document.querySelector(".luxuryModal")?.remove();
+};
+
+function applySavedTheme() {
+  const theme = localStorage.getItem("clinicTheme") || "gold";
+  setClinicTheme(theme);
+}
+
 function applyUserBar() {
   if (!currentUser) return;
   const doctorName = $("doctorName");
@@ -161,6 +249,32 @@ function applyUserBar() {
   }
 
   if ($("clinicName")) $("clinicName").value = currentUser.clinic_name || "";
+}
+
+
+function enhancePremiumHeader() {
+  const brand = document.querySelector(".brand");
+  if (!brand || brand.querySelector(".clinicLogoPremium")) return;
+
+  const h1 = brand.querySelector("h1");
+  if (!h1) return;
+
+  const oldText = h1.textContent;
+  const statusText = document.body.textContent.includes("Cloud connected") ? "Cloud connected" : "";
+  const logo = clinicLogoMarkup();
+
+  h1.insertAdjacentHTML("beforebegin", logo);
+  brand.classList.add("brandWrapPremium");
+
+  const rightArea = document.querySelector(".userBox")?.parentElement || brand.parentElement;
+  if (rightArea && !document.getElementById("hamburgerBtn")) {
+    const btn = document.createElement("button");
+    btn.id = "hamburgerBtn";
+    btn.className = "hamburgerBtn";
+    btn.innerHTML = "â°";
+    btn.onclick = openClinicMenu;
+    rightArea.appendChild(btn);
+  }
 }
 
 function canEdit() { return currentUser && ["admin", "doctor"].includes(currentUser.role); }
@@ -1563,6 +1677,307 @@ function injectExtraStyles() {
       .baMorphWrap{height:300px!important}
     }
 
+  
+    /* FINAL PREMIUM CLINIC UI REDESIGN */
+    :root{
+      --menu-bg:#0b1118;
+      --menu-card:#111a27;
+    }
+
+    .topHeaderPremium{
+      display:flex!important;
+      align-items:flex-start!important;
+      justify-content:space-between!important;
+      gap:14px!important;
+      margin:0 0 18px!important;
+    }
+
+    .brandWrapPremium{
+      display:flex!important;
+      align-items:center!important;
+      gap:12px!important;
+      min-width:0!important;
+    }
+
+    .clinicLogoPremium{
+      width:52px!important;
+      height:52px!important;
+      border-radius:16px!important;
+      background:linear-gradient(135deg,#f5d76e,#b8860b)!important;
+      display:grid!important;
+      place-items:center!important;
+      box-shadow:0 12px 28px rgba(212,175,55,.22)!important;
+      overflow:hidden!important;
+      flex:0 0 auto!important;
+      color:#050505!important;
+      font-weight:1000!important;
+      font-size:22px!important;
+    }
+
+    .clinicLogoPremium img{
+      width:100%!important;
+      height:100%!important;
+      object-fit:cover!important;
+    }
+
+    .brandWrapPremium h1,
+    .brand h1{
+      font-size:clamp(34px,8vw,56px)!important;
+      line-height:.92!important;
+      letter-spacing:-2px!important;
+      margin:0!important;
+      max-width:260px!important;
+    }
+
+    .clinicStatusPremium{
+      color:#9ca9b8!important;
+      font-weight:1000!important;
+      margin-top:6px!important;
+      font-size:15px!important;
+    }
+
+    #logoutBtn{
+      display:none!important;
+    }
+
+    .hamburgerBtn{
+      width:58px!important;
+      height:58px!important;
+      border-radius:20px!important;
+      border:1px solid rgba(148,163,184,.18)!important;
+      background:linear-gradient(145deg,#162233,#0d1522)!important;
+      color:#fff!important;
+      font-size:28px!important;
+      font-weight:1000!important;
+      display:grid!important;
+      place-items:center!important;
+      box-shadow:0 14px 34px rgba(0,0,0,.30)!important;
+      flex:0 0 auto!important;
+    }
+
+    .drawerOverlay{
+      position:fixed!important;
+      inset:0!important;
+      background:rgba(0,0,0,.55)!important;
+      z-index:999998!important;
+      backdrop-filter:blur(8px)!important;
+    }
+
+    .sideDrawer{
+      position:fixed!important;
+      top:0!important;
+      right:0!important;
+      width:min(86vw,360px)!important;
+      height:100vh!important;
+      background:linear-gradient(180deg,#0b1118,#0f1724)!important;
+      border-left:1px solid rgba(212,175,55,.22)!important;
+      z-index:999999!important;
+      padding:18px!important;
+      box-shadow:-30px 0 70px rgba(0,0,0,.55)!important;
+      overflow-y:auto!important;
+    }
+
+    .drawerHead{
+      display:flex!important;
+      align-items:center!important;
+      justify-content:space-between!important;
+      gap:10px!important;
+      margin-bottom:14px!important;
+    }
+
+    .drawerHead h2{
+      margin:0!important;
+      color:#f8fafc!important;
+      font-size:24px!important;
+      line-height:1!important;
+    }
+
+    .drawerClose{
+      width:42px!important;
+      height:42px!important;
+      border:none!important;
+      border-radius:14px!important;
+      background:#1f2937!important;
+      color:#fff!important;
+      font-weight:1000!important;
+      font-size:20px!important;
+    }
+
+    .drawerUser{
+      background:#111a27!important;
+      border:1px solid rgba(148,163,184,.18)!important;
+      border-radius:20px!important;
+      padding:14px!important;
+      color:#e5e7eb!important;
+      font-weight:900!important;
+      margin-bottom:12px!important;
+    }
+
+    .drawerMenu{
+      display:grid!important;
+      gap:8px!important;
+    }
+
+    .drawerMenu button{
+      min-height:52px!important;
+      border:none!important;
+      border-radius:16px!important;
+      background:#1f2937!important;
+      color:#e5e7eb!important;
+      font-weight:1000!important;
+      font-size:15px!important;
+      text-align:left!important;
+      padding:0 14px!important;
+    }
+
+    .drawerMenu button.primaryItem{
+      background:linear-gradient(135deg,#f5d76e,#b8860b)!important;
+      color:#050505!important;
+    }
+
+    .drawerMenu button.dangerItem{
+      background:linear-gradient(135deg,#ef4444,#991b1b)!important;
+      color:#fff!important;
+      margin-top:12px!important;
+    }
+
+    /* Remove patient photo from details */
+    .patientAvatar{
+      display:none!important;
+    }
+
+    .profileHero{
+      grid-template-columns:1fr!important;
+      padding:18px!important;
+      min-height:unset!important;
+    }
+
+    .profileHero h2{
+      font-size:28px!important;
+      color:#f8fafc!important;
+    }
+
+    .completionRing{
+      margin:12px auto 0!important;
+    }
+
+    /* Better natural tooth chart spacing */
+    .proMouthChart{
+      height:520px!important;
+      padding:0!important;
+      border-radius:30px!important;
+    }
+
+    .proMouthChart::before{
+      width:270px!important;
+      height:190px!important;
+    }
+
+    .proTooth{
+      width:28px!important;
+      height:42px!important;
+    }
+
+    .toothArt,
+    .proToothSvg,
+    .proTooth svg{
+      width:31px!important;
+      height:42px!important;
+    }
+
+    .proTooth.premolar .toothArt,
+    .proTooth.premolar .proToothSvg,
+    .proTooth.premolar svg{
+      width:34px!important;
+      height:39px!important;
+    }
+
+    .proTooth.molar .toothArt,
+    .proTooth.molar .proToothSvg,
+    .proTooth.molar svg{
+      width:39px!important;
+      height:40px!important;
+    }
+
+    .proTooth.incisor .toothArt,
+    .proTooth.incisor .proToothSvg,
+    .proTooth.incisor svg{
+      width:25px!important;
+      height:43px!important;
+    }
+
+    .proTooth.canine .toothArt,
+    .proTooth.canine .proToothSvg,
+    .proTooth.canine svg{
+      width:28px!important;
+      height:44px!important;
+    }
+
+    .quadTabs{
+      grid-template-columns:repeat(5,1fr)!important;
+      margin-bottom:14px!important;
+    }
+
+    .legendItem{
+      font-size:12px!important;
+      padding:7px 11px!important;
+    }
+
+    /* More theme colors */
+    body.theme-pink{--gold:#ff4fa3!important;--accent:#ff4fa3!important;--primary:#ff4fa3!important}
+    body.theme-red{--gold:#ef4444!important;--accent:#ef4444!important;--primary:#ef4444!important}
+    body.theme-blue{--gold:#3b82f6!important;--accent:#3b82f6!important;--primary:#3b82f6!important}
+    body.theme-cyan{--gold:#06b6d4!important;--accent:#06b6d4!important;--primary:#06b6d4!important}
+    body.theme-purple{--gold:#8b5cf6!important;--accent:#8b5cf6!important;--primary:#8b5cf6!important}
+    body.theme-green{--gold:#22c55e!important;--accent:#22c55e!important;--primary:#22c55e!important}
+    body.theme-orange{--gold:#f97316!important;--accent:#f97316!important;--primary:#f97316!important}
+
+    .themePalette{
+      display:grid!important;
+      grid-template-columns:repeat(4,1fr)!important;
+      gap:8px!important;
+      margin-top:12px!important;
+    }
+
+    .themePalette button{
+      min-height:44px!important;
+      border:none!important;
+      border-radius:14px!important;
+      color:#fff!important;
+      font-weight:1000!important;
+    }
+
+    @media(max-width:480px){
+      .brandWrapPremium h1,.brand h1{
+        max-width:210px!important;
+        font-size:38px!important;
+      }
+      .clinicLogoPremium{
+        width:46px!important;
+        height:46px!important;
+        border-radius:14px!important;
+      }
+      .hamburgerBtn{
+        width:52px!important;
+        height:52px!important;
+      }
+      .proMouthChart{
+        height:445px!important;
+      }
+      .proTooth{
+        width:24px!important;
+        height:38px!important;
+      }
+      .toothArt,.proToothSvg,.proTooth svg{
+        width:28px!important;
+        height:38px!important;
+      }
+      .proTooth.molar .toothArt,.proTooth.molar .proToothSvg,.proTooth.molar svg{
+        width:34px!important;
+        height:36px!important;
+      }
+    }
+
   `;
   document.head.appendChild(style);
 }
@@ -2553,15 +2968,17 @@ function toothExtraOverlay(status) {
 function renderToothChart(p) {
   const data = parseClinicData(p.progress_notes);
   const teeth = data.teeth || {};
+
   const toothData = [
-    [18,17,31,-34],[17,23,25,-28],[16,31,21,-20],[15,40,18,-12],
-    [14,49,16,-6],[13,58,15,-2],[12,66,15,0],[11,73,16,2],
-    [21,27,16,-2],[22,34,15,0],[23,42,15,2],[24,51,16,6],
-    [25,60,18,12],[26,69,21,20],[27,77,25,28],[28,83,31,34],
-    [48,17,69,34],[47,23,75,28],[46,31,79,20],[45,40,82,12],
-    [44,49,84,6],[43,58,85,2],[42,66,85,0],[41,73,84,-2],
-    [31,27,84,2],[32,34,85,0],[33,42,85,-2],[34,51,84,-6],
-    [35,60,82,-12],[36,69,79,-20],[37,77,75,-28],[38,83,69,-34]
+    [18,14,33,-34],[17,20,27,-27],[16,28,22,-19],[15,37,18,-12],
+    [14,47,16,-6],[13,56,15,-2],[12,64,14,0],[11,72,14,2],
+    [21,28,14,-2],[22,36,14,0],[23,44,15,2],[24,53,16,6],
+    [25,63,18,12],[26,72,22,19],[27,80,27,27],[28,86,33,34],
+
+    [48,14,67,34],[47,20,73,27],[46,28,78,19],[45,37,82,12],
+    [44,47,84,6],[43,56,85,2],[42,64,86,0],[41,72,86,-2],
+    [31,28,86,2],[32,36,86,0],[33,44,85,-2],[34,53,84,-6],
+    [35,63,82,-12],[36,72,78,-19],[37,80,73,-27],[38,86,67,-34]
   ];
 
   return `
@@ -4146,6 +4563,7 @@ window.openDoctorProfile = async function() {
     currentUser.username = cleanUsername;
     saveUser(currentUser);
     applyUserBar();
+  enhancePremiumHeader();
 
     await luxuryConfirm("Profile updated", "Your profile was updated successfully.");
     modal.remove();
@@ -4523,3 +4941,6 @@ window.addEventListener("load", async () => {
     document.body.innerHTML = "<pre style='padding:20px;color:red;white-space:pre-wrap'>" + safeText(err.message) + "</pre>";
   }
 });
+
+try { applySavedTheme(); } catch(e) {}
+try { enhancePremiumHeader(); } catch(e) {}
