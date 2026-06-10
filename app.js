@@ -1556,57 +1556,92 @@ window.showBeforeAfter = function(id) {
   if (!p) return;
   const photos = (p.photos || []).map(photoUrl).filter(Boolean);
   if (photos.length < 2) return alert("Need at least 2 photos for comparison.");
-  let beforeIdx = 0, afterIdx = 1;
+
+  let beforeIdx = 0;
+  let afterIdx = 1;
+  let showing = "before";
+  let autoTimer = null;
 
   const modal = document.createElement("div");
-  modal.className = "luxury-modal";
+  modal.className = "luxury-modal ba-modal";
   modal.innerHTML = `
-    <div class="luxury-box" style="max-width:720px;">
+    <div class="luxury-box ba-box">
+      <button type="button" class="ba-x" aria-label="Close">×</button>
       <h2>Before / After</h2>
-      <div class="before-after-wrap" style="height:400px;">
+
+      <div class="ba-fade-stage">
         <span class="ba-label before">Before</span>
         <span class="ba-label after">After</span>
-        <img src="${photos[afterIdx]}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;">
-        <div id="baClip" style="position:absolute;inset:0;width:50%;overflow:hidden;">
-          <img src="${photos[beforeIdx]}" style="width:100%;height:100%;object-fit:contain;">
-        </div>
-        <input type="range" min="0" max="100" value="50" id="baSlider" style="position:absolute;left:14px;right:14px;bottom:16px;width:calc(100% - 28px);z-index:5;accent-color:#d4af37;">
+        <img id="baFadeImg" src="${photos[beforeIdx]}" alt="Before / After comparison">
       </div>
-      <div class="actions-bar" style="margin-top:14px;">
+
+      <div class="ba-controls">
         <button class="btn-secondary" id="baPrevBefore">Prev Before</button>
         <button class="btn-secondary" id="baNextAfter">Next After</button>
         <button class="btn-primary" id="baAuto">Auto Play</button>
-        <button class="btn-secondary baCloseBtn" onclick="this.closest('.luxury-modal').remove()">Close</button>
+        <button class="btn-secondary" id="baClose">Close</button>
       </div>
     </div>`;
   document.body.appendChild(modal);
 
-  modal.querySelector("#baSlider").oninput = (e) => {
-    modal.querySelector("#baClip").style.width = e.target.value + "%";
+  const img = modal.querySelector("#baFadeImg");
+  const beforeLabel = modal.querySelector(".ba-label.before");
+  const afterLabel = modal.querySelector(".ba-label.after");
+
+  const showPhoto = (src, mode) => {
+    showing = mode;
+    img.classList.add("is-changing");
+    setTimeout(() => {
+      img.src = src;
+      beforeLabel.classList.toggle("active", mode === "before");
+      afterLabel.classList.toggle("active", mode === "after");
+      img.classList.remove("is-changing");
+    }, 180);
   };
-  const fadeSwap = (img, src) => {
-  img.style.transition = "opacity .35s ease, filter .35s ease";
-  img.style.opacity = "0";
-  img.style.filter = "blur(6px)";
-  setTimeout(() => {
-    img.src = src;
-    img.style.opacity = "1";
-    img.style.filter = "blur(0)";
-  }, 180);
+
+  showPhoto(photos[beforeIdx], "before");
+
+  const stopAuto = () => {
+    if (autoTimer) clearInterval(autoTimer);
+    autoTimer = null;
+  };
+
+  modal.querySelector("#baPrevBefore").onclick = (e) => {
+    e.stopPropagation();
+    stopAuto();
+    beforeIdx = (beforeIdx - 1 + photos.length) % photos.length;
+    if (beforeIdx === afterIdx) beforeIdx = (beforeIdx - 1 + photos.length) % photos.length;
+    showPhoto(photos[beforeIdx], "before");
+  };
+
+  modal.querySelector("#baNextAfter").onclick = (e) => {
+    e.stopPropagation();
+    stopAuto();
+    afterIdx = (afterIdx + 1) % photos.length;
+    if (afterIdx === beforeIdx) afterIdx = (afterIdx + 1) % photos.length;
+    showPhoto(photos[afterIdx], "after");
+  };
+
+  modal.querySelector("#baAuto").onclick = (e) => {
+    e.stopPropagation();
+    stopAuto();
+    autoTimer = setInterval(() => {
+      if (showing === "before") showPhoto(photos[afterIdx], "after");
+      else showPhoto(photos[beforeIdx], "before");
+    }, 1700);
+  };
+
+  const close = () => {
+    stopAuto();
+    modal.remove();
+  };
+
+  modal.querySelector("#baClose").onclick = (e) => { e.stopPropagation(); close(); };
+  modal.querySelector(".ba-x").onclick = (e) => { e.stopPropagation(); close(); };
+  modal.querySelector(".ba-box").onclick = (e) => e.stopPropagation();
+  modal.onclick = close;
 };
-  modal.querySelector("#baAuto").onclick = () => {
-  let v = 0;
-  const slider = modal.querySelector("#baSlider");
-  const clip = modal.querySelector("#baClip");
-  const timer = setInterval(() => {
-    v += 2;
-    slider.value = v;
-    clip.style.width = v + "%";
-    if (v >= 100) clearInterval(timer);
-  }, 50);
-};
-  
-};
+
 // --- QR Code ---
 window.showQR = function(id) {
   const p = patients.find(x => x.id === id);

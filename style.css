@@ -2278,3 +2278,126 @@ button[onclick*="showLab"]{
   left: auto !important;
   transform: none !important;
 }
+
+/* === FINAL SAFE FIXES: photo viewer close + before/after fade === */
+#fullPhotoViewer .viewer-nav:first-child{
+  position:fixed !important;
+  top:20px !important;
+  left:20px !important;
+  right:20px !important;
+  bottom:auto !important;
+  transform:none !important;
+  justify-content:space-between !important;
+  width:auto !important;
+}
+
+#fullPhotoViewer .viewer-close,
+.photo-viewer .viewer-close,
+.modal-close{
+  position:fixed !important;
+  top:20px !important;
+  right:20px !important;
+  left:auto !important;
+  transform:none !important;
+  z-index:3000 !important;
+}
+
+.ba-modal{
+  align-items:center !important;
+  justify-content:center !important;
+  padding:18px !important;
+}
+
+.ba-box{
+  position:relative !important;
+  width:min(92vw,720px) !important;
+  max-width:720px !important;
+  padding:28px !important;
+}
+
+.ba-x{
+  position:absolute !important;
+  top:18px !important;
+  right:18px !important;
+  left:auto !important;
+  transform:none !important;
+  width:48px !important;
+  height:48px !important;
+  border:0 !important;
+  border-radius:16px !important;
+  background:linear-gradient(135deg,var(--accent-light),var(--accent-dark)) !important;
+  color:#0a0a0a !important;
+  font-size:28px !important;
+  font-weight:900 !important;
+  z-index:50 !important;
+  display:grid !important;
+  place-items:center !important;
+}
+
+.ba-fade-stage{
+  position:relative !important;
+  height:400px !important;
+  border-radius:22px !important;
+  overflow:hidden !important;
+  background:#030712 !important;
+  border:1px solid var(--border) !important;
+}
+
+.ba-fade-stage img{
+  width:100% !important;
+  height:100% !important;
+  object-fit:contain !important;
+  border-radius:0 !important;
+  transition:opacity .35s ease, filter .35s ease, transform .35s ease !important;
+}
+
+.ba-fade-stage img.is-changing{
+  opacity:0 !important;
+  filter:blur(8px) !important;
+  transform:scale(.985) !important;
+}
+
+.ba-label{
+  position:absolute !important;
+  top:18px !important;
+  z-index:5 !important;
+  background:rgba(0,0,0,.72) !important;
+  color:white !important;
+  padding:9px 16px !important;
+  border-radius:999px !important;
+  font-size:14px !important;
+  font-weight:800 !important;
+}
+
+.ba-label.before{left:18px !important;}
+.ba-label.after{right:18px !important;}
+.ba-label.active{background:linear-gradient(135deg,var(--accent-light),var(--accent-dark)) !important;color:#0a0a0a !important;}
+
+.ba-controls{
+  display:grid !important;
+  grid-template-columns:1fr 1fr !important;
+  gap:12px !important;
+  margin-top:16px !important;
+}
+
+.ba-controls button{
+  width:100% !important;
+  min-height:54px !important;
+}
+
+.ba-controls #baAuto,
+.ba-controls #baClose{
+  grid-column:auto !important;
+}
+
+.baCloseBtn{
+  position:static !important;
+  width:100% !important;
+  transform:none !important;
+}
+
+@media (max-width:768px){
+  .ba-fade-stage{height:360px !important;}
+  .ba-box{padding:22px !important;}
+  .ba-x{top:14px !important;right:14px !important;width:44px !important;height:44px !important;}
+}
