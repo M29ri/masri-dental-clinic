@@ -2527,7 +2527,9 @@ window.setQuadrantFilter = function(q) {
     const n = Number(btn.getAttribute("data-tooth") || btn.dataset.tooth || 0);
     btn.classList.toggle("hiddenByQuad", !fn(n));
   });
-  document.querySelectorAll(".quadTabs button").forEach(b => b.classList.toggle("active", b.getAttribute("data-quad") === q));
+  document.querySelectorAll(".quadTabs button").forEach(b => {
+    b.classList.toggle("active", b.getAttribute("data-quad") === q);
+  });
 };
 
 
@@ -2561,6 +2563,7 @@ function renderToothChart(p) {
     [31,27,84,2],[32,34,85,0],[33,42,85,-2],[34,51,84,-6],
     [35,60,82,-12],[36,69,79,-20],[37,77,75,-28],[38,83,69,-34]
   ];
+
   return `
     <div class="quadTabs">
       <button class="active" data-quad="all" onclick="setQuadrantFilter('all')">All</button>
@@ -2575,13 +2578,16 @@ function renderToothChart(p) {
         const status = typeof toothInfo === "string" ? toothInfo : (toothInfo.status || "healthy");
         const surfaces = typeof toothInfo === "string" ? [] : (toothInfo.surfaces || []);
         const type = getToothType(n);
+
         return `
           <button type="button" class="proTooth ${safeText(status)} ${type}" data-tooth="${n}" style="left:${x}%;top:${y}%;--rot:${r}deg" onclick="window.openToothPopup('${p.id}', '${n}')">
             <span class="toothArt">${toothSvg(type)}${surfaceOverlayHTML(toothInfo)}${toothExtraOverlay(status)}</span>
             <span class="toothNo">${n}</span>${surfaces.length ? `<span class="toothSurfaceText">${safeText(surfaces.join(""))}</span>` : ""}
-          </button>`;
+          </button>
+        `;
       }).join("")}
-    </div>`;
+    </div>
+  `;
 }
 
 function treatmentProgressItems(patient) {
@@ -2669,6 +2675,7 @@ window.changePatientProfilePhoto = async function(patientId) {
   if (!p) return;
   const photos = (p.photos || []).map(photoUrl).filter(Boolean);
   if (!photos.length) return alert("Add patient photos first, then choose one as profile photo.");
+
   const modal = document.createElement("div");
   modal.className = "luxuryModal";
   modal.innerHTML = `
@@ -2678,16 +2685,23 @@ window.changePatientProfilePhoto = async function(patientId) {
         ${photos.map(u => `<img src="${u}" style="width:100%!important;height:120px!important;object-fit:cover!important;border-radius:14px!important;" onclick="savePatientProfilePhoto('${patientId}', '${encodeURIComponent(u)}')">`).join("")}
       </div>
       <button class="secondary" style="width:100%;margin-top:12px;" onclick="this.closest('.luxuryModal').remove()">Cancel</button>
-    </div>`;
+    </div>
+  `;
   document.body.appendChild(modal);
 };
 
 window.savePatientProfilePhoto = async function(patientId, encodedUrl) {
   const p = patients.find(x => x.id === patientId);
   if (!p) return;
+
   const data = parseClinicData(p.progress_notes);
   data.profile_photo = decodeURIComponent(encodedUrl);
-  await api(`patients?id=eq.${patientId}`, { method: "PATCH", body: JSON.stringify({ progress_notes: saveClinicData(data) }) });
+
+  await api(`patients?id=eq.${patientId}`, {
+    method: "PATCH",
+    body: JSON.stringify({ progress_notes: saveClinicData(data) })
+  });
+
   document.querySelector(".luxuryModal")?.remove();
   await refreshPatientKeepingScroll(patientId);
 };
@@ -2699,7 +2713,14 @@ function categorizedPhotos(patient) {
     name: String(x?.name || x?.filename || "").toLowerCase(),
     index: i
   })).filter(x => x.url);
-  const xrays = photos.filter(x => x.category.includes("x") || x.name.includes("xray") || x.name.includes("x-ray") || x.name.includes("radiograph"));
+
+  const xrays = photos.filter(x =>
+    x.category.includes("x") ||
+    x.name.includes("xray") ||
+    x.name.includes("x-ray") ||
+    x.name.includes("radiograph")
+  );
+
   const clinical = photos.filter(x => !xrays.includes(x));
   return { clinical, xrays };
 }
@@ -2711,15 +2732,19 @@ function renderPhotoGalleryPro(patient, type = "clinical") {
   const list = type === "xray" ? cats.xrays : cats.clinical;
   const fallback = type === "xray" ? cats.clinical : cats.xrays;
   const photos = list.length ? list : fallback;
+
   if (!photos.length) return `<p style="color:var(--muted);font-weight:800">No photos yet</p>`;
+
   const key = `${patient.id}-${type}`;
   const current = Math.min(window.photoGalleryState[key] || 0, photos.length - 1);
   const img = photos[current];
+
   return `
     <div class="photoSectionTabs">
       <button class="${type === "clinical" ? "active" : ""}" onclick="switchPhotoType('${patient.id}','clinical')">Clinical</button>
       <button class="${type === "xray" ? "active" : ""}" onclick="switchPhotoType('${patient.id}','xray')">X-ray</button>
     </div>
+
     <div class="photoGalleryHeader">
       <h3>${type === "xray" ? "X-ray Gallery" : "Clinical Gallery"}</h3>
       <div class="galleryControls">
@@ -2727,18 +2752,22 @@ function renderPhotoGalleryPro(patient, type = "clinical") {
         <button onclick="movePhotoGallery('${patient.id}','${type}',1)">Next</button>
       </div>
     </div>
+
     <div class="premiumPhotoViewer">
       <img src="${img.url}" onclick="openPhotoZoom('${img.url}')">
       <span class="photoTag">${current + 1} / ${photos.length}</span>
     </div>
+
     <div class="photoThumbs">
       ${photos.map((p, i) => `<img class="${i === current ? "active" : ""}" src="${p.url}" onclick="setPhotoGalleryIndex('${patient.id}','${type}',${i})">`).join("")}
-    </div>`;
+    </div>
+  `;
 }
 
 window.switchPhotoType = function(patientId, type) {
   const p = patients.find(x => x.id === patientId);
   if (!p) return;
+
   const target = document.getElementById("photoGalleryProBox");
   if (target) target.innerHTML = renderPhotoGalleryPro(p, type);
 };
@@ -2751,11 +2780,14 @@ window.setPhotoGalleryIndex = function(patientId, type, index) {
 window.movePhotoGallery = function(patientId, type, step) {
   const p = patients.find(x => x.id === patientId);
   if (!p) return;
+
   const cats = categorizedPhotos(p);
   const list = type === "xray" ? cats.xrays : cats.clinical;
   const fallback = type === "xray" ? cats.clinical : cats.xrays;
   const photos = list.length ? list : fallback;
+
   if (!photos.length) return;
+
   const key = `${patientId}-${type}`;
   const current = window.photoGalleryState[key] || 0;
   window.photoGalleryState[key] = (current + step + photos.length) % photos.length;
@@ -2764,6 +2796,7 @@ window.movePhotoGallery = function(patientId, type, step) {
 
 window.openPhotoZoom = function(url) {
   document.getElementById("photoZoomOverlay")?.remove();
+
   const overlay = document.createElement("div");
   overlay.className = "zoomOverlay";
   overlay.id = "photoZoomOverlay";
@@ -2776,13 +2809,16 @@ window.openPhotoZoom = function(url) {
       <button onclick="resetPhotoZoom()">Reset</button>
       <button onclick="closePhotoZoom()">Close</button>
     </div>
-    <img src="${url}">`;
+    <img src="${url}">
+  `;
+
   document.body.appendChild(overlay);
 };
 
 window.zoomPhoto = function(step) {
   const overlay = document.getElementById("photoZoomOverlay");
   if (!overlay) return;
+
   const current = Number(overlay.dataset.scale || "1");
   const next = Math.max(1, Math.min(4, current + step));
   overlay.dataset.scale = String(next);
@@ -2792,6 +2828,7 @@ window.zoomPhoto = function(step) {
 window.resetPhotoZoom = function() {
   const overlay = document.getElementById("photoZoomOverlay");
   if (!overlay) return;
+
   overlay.dataset.scale = "1";
   overlay.style.setProperty("--zoomScale", "1");
 };
@@ -2860,10 +2897,12 @@ function patientDetailsHTML(p) {
       ${data.payments.length ? data.payments.map((pay, i) => `<div class="appointment"><b>${safeText(pay.date || "")}</b><p>Total: ${Number(pay.total || 0)} | Paid: ${Number(pay.paid || 0)} | Remaining: ${Number(pay.total || 0) - Number(pay.paid || 0)}</p><button class="danger" onclick="deletePayment('${p.id}', ${i})">Delete</button></div>`).join("") : `<div class="kv"><span>No payments yet</span></div>`}
 
       <h3 class="sectionTitle">Photos / X-rays</h3>
+
       <div class="actions" style="margin:10px 0;">
         <button class="secondary" onclick="showBeforeAfter('${p.id}')">Before / After</button>
         <button class="secondary" onclick="openPhotoComparePro('${p.id}')">Before/After Pro</button>
       </div>
+
       <div id="photoGalleryProBox">${renderPhotoGalleryPro(p, "clinical")}</div>
 
       <h3 class="sectionTitle">Patient Timeline</h3>
@@ -3679,7 +3718,7 @@ window.generateInvoicePro = async function(id) {
     </div>
     <div class="premiumDocBox">
       ${data.payments.length ? data.payments.map(pay => `
-        <p><b>${safeText(pay.date || "")}</b> Ã¢ÂÂ Total: ${Number(pay.total || 0)} | Paid: ${Number(pay.paid || 0)}</p>
+        <p><b>${safeText(pay.date || "")}</b>  Total: ${Number(pay.total || 0)} | Paid: ${Number(pay.paid || 0)}</p>
       `).join("") : "No payments recorded."}
     </div>
   `;
@@ -3909,23 +3948,31 @@ window.changeAppointmentStatus = async function(id, index) {
 window.openPhotoComparePro = function(id) {
   const p = patients.find(x => x.id === id);
   if (!p) return;
-  const cats = typeof categorizedPhotos === "function" ? categorizedPhotos(p) : { clinical: (p.photos || []).map(x => ({url: photoUrl(x)})), xrays: [] };
+
+  const cats = typeof categorizedPhotos === "function"
+    ? categorizedPhotos(p)
+    : { clinical: (p.photos || []).map(x => ({ url: photoUrl(x) })), xrays: [] };
+
   const photos = [...cats.clinical, ...cats.xrays].map(x => x.url).filter(Boolean);
   if (photos.length < 2) return alert("Need at least 2 photos.");
+
   let beforeIndex = 0;
   let afterIndex = 1;
+
   const modal = document.createElement("div");
   modal.className = "luxuryModal";
   modal.innerHTML = `
     <div class="luxuryBox" style="max-width:780px;">
       <h2>Before / After Pro</h2>
       <p style="color:var(--muted);font-weight:800;margin-bottom:14px;">Clean comparison with preserved brightness.</p>
+
       <div class="baMorphWrap">
         <span class="baGhostLabel before">Before</span>
         <span class="baGhostLabel after">After</span>
         <img src="${photos[beforeIndex]}" id="baBeforeImg" class="baMorphBefore">
         <img src="${photos[afterIndex]}" id="baAfterImg" class="baMorphAfter">
       </div>
+
       <div class="baControlPanel">
         <input type="range" min="0" max="100" value="0" id="baMorphSlider">
         <button class="secondary" id="baPrevBefore">Prev Before</button>
@@ -3933,11 +3980,15 @@ window.openPhotoComparePro = function(id) {
         <button class="primary" id="baAutoPlay">Auto</button>
         <button class="secondary" onclick="this.closest('.luxuryModal').remove()">Close</button>
       </div>
-    </div>`;
+    </div>
+  `;
+
   document.body.appendChild(modal);
+
   const slider = modal.querySelector("#baMorphSlider");
   const before = modal.querySelector("#baBeforeImg");
   const after = modal.querySelector("#baAfterImg");
+
   function updateMorph() {
     const v = Number(slider.value) / 100;
     before.style.opacity = String(1 - v);
@@ -3947,27 +3998,36 @@ window.openPhotoComparePro = function(id) {
     before.style.transform = "none";
     after.style.transform = "none";
   }
+
   function updateImages() {
     before.src = photos[beforeIndex];
     after.src = photos[afterIndex];
     updateMorph();
   }
+
   slider.oninput = updateMorph;
   updateMorph();
+
   modal.querySelector("#baPrevBefore").onclick = () => {
     beforeIndex = (beforeIndex - 1 + photos.length) % photos.length;
     if (beforeIndex === afterIndex) beforeIndex = (beforeIndex - 1 + photos.length) % photos.length;
-    slider.value = 0; updateImages();
+    slider.value = 0;
+    updateImages();
   };
+
   modal.querySelector("#baNextAfter").onclick = () => {
     afterIndex = (afterIndex + 1) % photos.length;
     if (afterIndex === beforeIndex) afterIndex = (afterIndex + 1) % photos.length;
-    slider.value = 0; updateImages();
+    slider.value = 0;
+    updateImages();
   };
+
   modal.querySelector("#baAutoPlay").onclick = () => {
     let v = 0;
     const timer = setInterval(() => {
-      v += 2; slider.value = v; updateMorph();
+      v += 2;
+      slider.value = v;
+      updateMorph();
       if (v >= 100) clearInterval(timer);
     }, 35);
   };
@@ -3975,6 +4035,7 @@ window.openPhotoComparePro = function(id) {
 
 window.openPhotoZoom = function(url) {
   document.getElementById("photoZoomOverlay")?.remove();
+
   const overlay = document.createElement("div");
   overlay.className = "zoomOverlay";
   overlay.id = "photoZoomOverlay";
@@ -3987,7 +4048,9 @@ window.openPhotoZoom = function(url) {
       <button onclick="resetPhotoZoom()">Reset</button>
       <button onclick="closePhotoZoom()">Close</button>
     </div>
-    <img src="${url}">`;
+    <img src="${url}">
+  `;
+
   document.body.appendChild(overlay);
 };
 
@@ -4200,7 +4263,7 @@ function renderPatientTags(patient) {
     <div class="tagWrap">
       ${tags.length ? tags.map(t => `
         <span class="patientTag" onclick="removePatientTag('${patient.id}', '${String(t).replace(/'/g, "\\'")}')">
-          ${safeText(t)} ÃÂ
+          ${safeText(t)} 
         </span>
       `).join("") : `<span class="pill">No tags</span>`}
       <button class="secondary" onclick="addPatientTag('${patient.id}')">+ Tag</button>
@@ -4378,6 +4441,24 @@ window.exportPDF = async function(id) {
   win.document.close();
 };
 
+
+
+
+window.launchHealthCheck = function() {
+  const checks = {
+    userLoaded: !!currentUser,
+    patientsArray: Array.isArray(patients),
+    canOpenPatient: typeof window.openPatient === "function",
+    canEditPatient: typeof window.editPatient === "function",
+    toothChart: typeof renderToothChart === "function",
+    photoGallery: typeof renderPhotoGalleryPro === "function",
+    zoom: typeof window.openPhotoZoom === "function",
+    beforeAfter: typeof window.openPhotoComparePro === "function",
+    reports: typeof window.exportPDF === "function"
+  };
+  console.table(checks);
+  return checks;
+};
 
 document.addEventListener("click", function(e) {
   const openBtn = e.target.closest("[data-open-patient]");
