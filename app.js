@@ -251,30 +251,59 @@ function applyUserBar() {
   if ($("clinicName")) $("clinicName").value = currentUser.clinic_name || "";
 }
 
-
 function enhancePremiumHeader() {
-  const brand = document.querySelector(".brand");
-  if (!brand || brand.querySelector(".clinicLogoPremium")) return;
+const brand = document.querySelector(".brand");
+if (!brand) return;
 
-  const h1 = brand.querySelector("h1");
-  if (!h1) return;
+const h1 = brand.querySelector("h1");
+if (!h1) return;
 
-  const oldText = h1.textContent;
-  const statusText = document.body.textContent.includes("Cloud connected") ? "Cloud connected" : "";
-  const logo = clinicLogoMarkup();
+const logo = clinicLogoMarkup();
 
+// منع التكرار
+if (!brand.querySelector(".clinicLogoPremium")) {
   h1.insertAdjacentHTML("beforebegin", logo);
-  brand.classList.add("brandWrapPremium");
+}
 
-  const rightArea = document.querySelector(".userBox")?.parentElement || brand.parentElement;
-  if (rightArea && !document.getElementById("hamburgerBtn")) {
-    const btn = document.createElement("button");
-    btn.id = "hamburgerBtn";
-    btn.className = "hamburgerBtn";
-    btn.textContent = "";
-    btn.onclick = openClinicMenu;
-    rightArea.appendChild(btn);
-  }
+// ترتيب الهيدر
+brand.classList.add("brandWrapPremium");
+
+const container = brand.parentElement;
+if (!container) return;
+
+// إنشاء right side مرتب
+let rightArea = container.querySelector(".headerRight");
+
+if (!rightArea) {
+  rightArea = document.createElement("div");
+  rightArea.className = "headerRight";
+  container.appendChild(rightArea);
+}
+
+// user box
+const userBox =
+  document.querySelector(".userBox")?.parentElement ||
+  document.querySelector(".userCard");
+
+if (userBox && !rightArea.contains(userBox)) {
+  rightArea.appendChild(userBox);
+}
+
+// refresh button
+const refreshBtn = document.querySelector(".refreshBtn");
+if (refreshBtn && !rightArea.contains(refreshBtn)) {
+  rightArea.appendChild(refreshBtn);
+}
+
+// menu button
+if (!document.getElementById("hamburgerBtn")) {
+  const btn = document.createElement("button");
+  btn.id = "hamburgerBtn";
+  btn.className = "hamburgerBtn";
+  btn.innerHTML = "Menu";
+  btn.onclick = openClinicMenu;
+  rightArea.appendChild(btn);
+}
 }
 
 function canEdit() { return currentUser && ["admin", "doctor"].includes(currentUser.role); }
@@ -3743,8 +3772,8 @@ async function compressImage(file, isXray = false) {
       const ctx = canvas.getContext("2d");
 
       // X-ray جودة أعلى
-      const MAX_WIDTH = isXray ? 1800 : 1200;
-      const QUALITY = isXray ? 0.82 : 0.68;
+      const MAX_WIDTH = isXray ? 1600 : 900;
+      const QUALITY = isXray ? 0.78 : 0.55;
 
       let width = img.width;
       let height = img.height;
