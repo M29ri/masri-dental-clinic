@@ -1594,33 +1594,34 @@ window.showBeforeAfter = function(id) {
     if (afterIdx === beforeIdx) afterIdx = (afterIdx + 1) % photos.length;
     modal.querySelector(".before-after-wrap > img").src = photos[afterIdx];
   };
-  modal.querySelector("#baAuto").onclick = () => {
+ modal.querySelector("#baAuto").onclick = () => {
   const beforeImg = modal.querySelector("#baClip img");
   const afterImg = modal.querySelector(".before-after-wrap > img");
 
-  let showingBefore = true;
+  beforeImg.style.transition = "all .8s ease";
+  afterImg.style.transition = "all .8s ease";
 
-  beforeImg.style.opacity = "1";
-  afterImg.style.opacity = "0";
+  let showAfter = false;
 
   const timer = setInterval(() => {
-    beforeImg.style.transition = "opacity .8s ease, filter .8s ease";
-    afterImg.style.transition = "opacity .8s ease, filter .8s ease";
+    showAfter = !showAfter;
 
-    if (showingBefore) {
+    if (showAfter) {
       beforeImg.style.opacity = "0";
       beforeImg.style.filter = "blur(8px)";
       afterImg.style.opacity = "1";
-      afterImg.style.filter = "blur(0)";
+      afterImg.style.filter = "blur(0px)";
     } else {
       beforeImg.style.opacity = "1";
-      beforeImg.style.filter = "blur(0)";
+      beforeImg.style.filter = "blur(0px)";
       afterImg.style.opacity = "0";
       afterImg.style.filter = "blur(8px)";
     }
+  }, 1600);
 
-    showingBefore = !showingBefore;
-  }, 1800);
+  modal.querySelector(".luxury-box").onclick = (e) => {
+    e.stopPropagation();
+  };
 
   modal.onclick = () => clearInterval(timer);
 };
