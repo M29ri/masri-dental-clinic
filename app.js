@@ -298,25 +298,24 @@ if (!buttonStack) {
 }
 
 // refresh button
-const refreshBtn =
-document.querySelector(".refreshBtn") ||
-document.querySelector("button[onclick*='refresh']") ||
-document.querySelector(".refresh");
-
-if (refreshBtn && !buttonStack.contains(refreshBtn)) {
+const refreshBtn = document.querySelector(".refreshBtn");
+if (refreshBtn) {
   buttonStack.appendChild(refreshBtn);
 }
 
-if (!document.getElementById("hamburgerBtn")) {
-  const btn = document.createElement("button");
+// menu button
+let btn = document.getElementById("hamburgerBtn");
+
+if (!btn) {
+  btn = document.createElement("button");
   btn.id = "hamburgerBtn";
   btn.className = "hamburgerBtn";
   btn.innerHTML = "Menu";
   btn.onclick = openClinicMenu;
-  buttonStack.appendChild(btn);
-}
 }
 
+buttonStack.appendChild(btn);
+  
 function canEdit() { return currentUser && ["admin", "doctor"].includes(currentUser.role); }
 function canDelete() { return currentUser && ["admin", "doctor"].includes(currentUser.role); }
 function makeId() { return "P-" + Date.now(); }
