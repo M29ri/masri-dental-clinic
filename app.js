@@ -3729,24 +3729,76 @@ function fillForm(p = null) {
   $("rowId").value = p?.id || ""; $("caseId").value = p?.case_id || ""; $("name").value = p?.name || ""; $("phone").value = p?.phone || ""; $("age").value = p?.age || ""; $("gender").value = p?.gender || ""; $("chiefComplaint").value = p?.chief_complaint || ""; $("medicalAlerts").value = p?.medical_alerts || ""; $("diagnosis").value = p?.diagnosis || ""; $("treatmentPlan").value = p?.treatment_plan || ""; $("progressNotes").value = ""; $("progressNotes").placeholder = p ? "Write a new visit note..." : "Write first visit note..."; $("formTitle").textContent = p ? "Edit Patient" : "Add Patient"; if ($("preview")) $("preview").innerHTML = ""; pendingFiles = [];
 }
 
-async function compressImage(file) {
-  const img = await new Promise(resolve => { const i = new Image(); i.onload = () => resolve(i); i.src = URL.createObjectURL(file); });
-  const canvas = document.createElement("canvas"); const max = 1400; let w = img.width, h = img.height;
-  if (Math.max(w, h) > max) { const scale = max / Math.max(w, h); w = Math.round(w * scale); h = Math.round(h * scale); }
-  canvas.width = w; canvas.height = h; canvas.getContext("2d").drawImage(img, 0, 0, w, h);
-  return new Promise(resolve => canvas.toBlob(resolve, "image/jpeg", 0.75));
+async function compressImage(file, isXray = false) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+      img.src = e.target.result;
+    };
+
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+
+      // X-ray جودة أعلى
+      const MAX_WIDTH = isXray ? 1800 : 1200;
+      const QUALITY = isXray ? 0.82 : 0.68;
+
+      let width = img.width;
+      let height = img.height;
+
+      if (width > MAX_WIDTH) {
+        height *= MAX_WIDTH / width;
+        width = MAX_WIDTH;
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+
+      ctx.drawImage(img, 0, 0, width, height);
+
+      canvas.toBlob(
+        (blob) => resolve(blob),
+        "image/jpeg",
+        QUALITY
+      );
+    };
+
+    reader.readAsDataURL(file);
+  });
 }
 async function uploadToBucket(bucket, path, blob, type) {
   const res = await fetch(`${SUPABASE_URL}/storage/v1/object/${bucket}/${path}`, { method: "POST", headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, "Content-Type": type || "application/octet-stream" }, body: blob });
   if (!res.ok) throw new Error(await res.text());
   return `${SUPABASE_URL}/storage/v1/object/public/${bucket}/${path}`;
 }
-async function uploadPhotos(patientId) {
+
+  async function uploadPhotos(patientId) {
   const uploaded = [];
   for (const file of pendingFiles) {
-    const blob = await compressImage(file); const cleanName = file.name.replace(/[^a-zA-Z0-9.]/g, "-"); const path = `${patientId}/${Date.now()}-${cleanName}.jpg`;
-    uploaded.push({ path, url: await uploadToBucket(PHOTO_BUCKET, path, blob, "image/jpeg"), name: file.name, date: new Date().toLocaleString() });
-  }
+  const cleanName = file.name.replace(/[^a-zA-Z0-9.]/g, "_");
+  const path = `${patientId}/${Date.now()}-${cleanName}`;
+
+  const isXray =
+    file.category === "xray" ||
+    file.name.toLowerCase().includes("xray");
+
+  const compressedBlob = await compressImage(file, isXray);
+
+  uploaded.push({
+    path,
+    url: await uploadToBucket(
+      PHOTO_BUCKET,
+      path,
+      compressedBlob,
+      "image/jpeg"
+    ),
+    name: file.name,
+    date: new Date().toLocaleString()
+  });
+}
   return uploaded;
 }
 
