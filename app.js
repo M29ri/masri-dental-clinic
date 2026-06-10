@@ -2290,11 +2290,7 @@ nav button[onclick*="settings"],.tabs button[onclick*="settings"],.tabBar button
 .drawerClose{
   font-size:0!important;
 }
-.drawerClose::before{
-  content:"Ã"!important;
-  font-size:26px!important;
-  color:#fff!important;
-}
+
 
 .fullPhotoTop button{
   min-width:92px!important;
@@ -2427,16 +2423,7 @@ nav button[onclick*="settings"],.tabs button[onclick*="settings"],.tabBar button
   place-items:center!important;
   padding:0!important;
 }
-.drawerClose::before,
-.sideDrawer .drawerClose::before,
-#sideDrawer .drawerClose::before{
-  content:"Ã"!important;
-  font-size:32px!important;
-  line-height:1!important;
-  font-weight:1000!important;
-  color:#050505!important;
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif!important;
-}
+
 
 /* Make chart clinical/simple instead of fake 3D */
 .proMouthChart{
@@ -2595,12 +2582,7 @@ nav button[onclick*="settings"],.tabs button[onclick*="settings"],.tabBar button
   padding:0!important;
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif!important;
 }
-.drawerClose::before,
-.sideDrawer .drawerClose::before,
-#sideDrawer .drawerClose::before{
-  content:""!important;
-  display:none!important;
-}
+
 
 /* kill old fake mouth/absolute chart */
 .proMouthChart{
@@ -2742,15 +2724,7 @@ nav button[onclick*="settings"],.tabs button[onclick*="settings"],.tabBar button
   text-indent:0!important;
   overflow:hidden!important;
 }
-.drawerClose::before,
-.drawerClose::after,
-.sideDrawer .drawerClose::before,
-.sideDrawer .drawerClose::after,
-#sideDrawer .drawerClose::before,
-#sideDrawer .drawerClose::after{
-  content:""!important;
-  display:none!important;
-}
+
 
 /* tooth chart: clear two clinical rows, less crowding, centered */
 .proMouthChart{
@@ -3879,14 +3853,14 @@ function renderToothChart(p) {
       <button data-quad="lowerL" onclick="setQuadrantFilter('lowerL')">LL</button>
       <button data-quad="lowerR" onclick="setQuadrantFilter('lowerR')">LR</button>
     </div>
-    <div class="proMouthChart compactOdontogram">
-      <div class="odontogramJaw upper">
-        <div class="odontogramTitle">UPPER</div>
-        <div class="odontogramRow">${upper.map(toothButton).join("")}</div>
+    <div class="toothChartClean">
+      <div class="cleanJaw">
+        <div class="cleanJawTitle">UPPER</div>
+        <div class="cleanToothRow">${upper.map(toothButton).join("")}</div>
       </div>
-      <div class="odontogramJaw lower">
-        <div class="odontogramTitle">LOWER</div>
-        <div class="odontogramRow">${lower.map(toothButton).join("")}</div>
+      <div class="cleanJaw">
+        <div class="cleanJawTitle">LOWER</div>
+        <div class="cleanToothRow lower">${lower.map(toothButton).join("")}</div>
       </div>
     </div>`;
 }
@@ -6012,548 +5986,106 @@ try { applySavedTheme(); enhancePremiumHeader(); } catch(e) {}
 try { document.querySelectorAll('button').forEach(b => { if ((b.textContent || '').trim() === 'Settings') b.style.display = 'none'; }); } catch(e) {}
 
 
-/* FINAL CLEAN OVERRIDES */
-function enhancePremiumHeader() {
-  const brand = document.querySelector(".brand");
-  if (brand) {
-    const h1 = brand.querySelector("h1");
-    if (h1 && !brand.querySelector(".clinicLogoPremium")) h1.insertAdjacentHTML("beforebegin", clinicLogoMarkup());
-    brand.classList.add("brandWrapPremium");
-  }
-  const holder = brand?.parentElement || document.body;
-  if (!document.getElementById("hamburgerBtn")) {
-    const btn = document.createElement("button");
-    btn.id = "hamburgerBtn";
-    btn.className = "hamburgerBtn";
-    btn.type = "button";
-    btn.textContent = "";
-    btn.onclick = openClinicMenu;
-    holder.appendChild(btn);
-  } else {
-    document.getElementById("hamburgerBtn").textContent = "Menu";
-  }
-}
-
-window.openSimplePhotoViewer = function(patientId, index = 0) {
-  const p = patients.find(x => x.id === patientId);
-  if (!p) return;
-  const currentType = window.simplePhotoState?.[patientId]?.type || "clinical";
-  const cats = categorizedPhotos(p);
-  const list = currentType === "xray" ? cats.xrays : cats.clinical;
-  const fallback = currentType === "xray" ? cats.clinical : cats.xrays;
-  const photos = (list.length ? list : fallback).map(x => x.url);
-  if (!photos.length) return;
-  window.simplePhotoState = window.simplePhotoState || {};
-  window.simplePhotoState[patientId] = { type: currentType, photos, index };
-
-  document.getElementById("fullPhotoViewer")?.remove();
-  const viewer = document.createElement("div");
-  viewer.className = "fullPhotoViewer";
-  viewer.id = "fullPhotoViewer";
-  viewer.innerHTML = `
-    <div class="fullPhotoTop">
-      <span class="fullPhotoCounter">${index + 1} / ${photos.length}</span>
-      <button onclick="closeSimplePhotoViewer()" aria-label="Close"></button>
-    </div>
-    <img src="${photos[index]}">
-    <div class="fullPhotoNav">
-      <button onclick="moveSimplePhoto('${patientId}', -1)">Previous</button>
-      <button onclick="moveSimplePhoto('${patientId}', 1)">Next</button>
-    </div>`;
-  document.body.appendChild(viewer);
-};
-
-try { enhancePremiumHeader(); } catch(e) {}
 
 
-/* HOTFIX FUNCTION OVERRIDES */
-function enhancePremiumHeader() {
-  const brand = document.querySelector(".brand");
-  if (brand) {
-    const h1 = brand.querySelector("h1");
-    if (h1 && !brand.querySelector(".clinicLogoPremium")) h1.insertAdjacentHTML("beforebegin", clinicLogoMarkup());
-    brand.classList.add("brandWrapPremium");
-  }
-
-  const holder = brand?.parentElement || document.body;
-  let btn = document.getElementById("hamburgerBtn");
-  if (!btn) {
-    btn = document.createElement("button");
-    btn.id = "hamburgerBtn";
-    btn.className = "hamburgerBtn";
-    btn.type = "button";
-    btn.onclick = openClinicMenu;
-    holder.appendChild(btn);
-  }
-  btn.textContent = "";
-  btn.setAttribute("aria-label", "Menu");
-}
-
-window.openSimplePhotoViewer = function(patientId, index = 0) {
-  const p = patients.find(x => x.id === patientId);
-  if (!p) return;
-
-  const currentType = window.simplePhotoState?.[patientId]?.type || "clinical";
-  const cats = categorizedPhotos(p);
-  const list = currentType === "xray" ? cats.xrays : cats.clinical;
-  const fallback = currentType === "xray" ? cats.clinical : cats.xrays;
-  const photos = (list.length ? list : fallback).map(x => x.url);
-  if (!photos.length) return;
-
-  window.simplePhotoState = window.simplePhotoState || {};
-  window.simplePhotoState[patientId] = { type: currentType, photos, index };
-
-  document.getElementById("fullPhotoViewer")?.remove();
-  const viewer = document.createElement("div");
-  viewer.className = "fullPhotoViewer";
-  viewer.id = "fullPhotoViewer";
-  viewer.innerHTML = `
-    <div class="fullPhotoTop">
-      <span class="fullPhotoCounter">${index + 1} / ${photos.length}</span>
-      <button onclick="closeSimplePhotoViewer()" aria-label="Close"></button>
-    </div>
-    <img src="${photos[index]}">
-    <div class="fullPhotoNav">
-      <button onclick="moveSimplePhoto('${patientId}', -1)">Previous</button>
-      <button onclick="moveSimplePhoto('${patientId}', 1)">Next</button>
-    </div>`;
-  document.body.appendChild(viewer);
-};
-
-try { enhancePremiumHeader(); } catch(e) {}
-
-
-/* FINAL DRAWER AND BEFORE/AFTER OVERRIDES */
-window.openClinicMenu = function() {
-  closeClinicMenu();
-  const overlay = document.createElement("div");
-  overlay.className = "drawerOverlay";
-  overlay.id = "drawerOverlay";
-  overlay.onclick = closeClinicMenu;
-
-  const drawer = document.createElement("aside");
-  drawer.className = "sideDrawer";
-  drawer.id = "sideDrawer";
-  drawer.innerHTML = `
-    <div class="drawerHead">
-      <h2>Menu</h2>
-      <button class="drawerClose" onclick="closeClinicMenu()" aria-label="Close">Ã</button>
-    </div>
-    <div class="drawerUser">
-      <div>${safeText(currentUser?.full_name || currentUser?.username || "Doctor")}</div>
-      <small>${safeText((currentUser?.role || "doctor").toUpperCase())}</small>
-    </div>
-    <div class="drawerMenu">
-      <button class="primaryItem" onclick="closeClinicMenu(); showPage('dashboard')">Dashboard</button>
-      <button onclick="closeClinicMenu(); showPage('patients')">Patients</button>
-      <button onclick="closeClinicMenu(); showPage('settings')">Profile / Branding</button>
-      <button onclick="closeClinicMenu(); backupData()">Backup</button>
-      <button onclick="closeClinicMenu(); restoreBackup()">Restore</button>
-      <button onclick="closeClinicMenu(); alert('Open a patient file and use WhatsApp Reminder from patient tools.')">Reminders</button>
-      <button onclick="closeClinicMenu(); backupData()">Daily Backup</button>
-      <button onclick="closeClinicMenu(); typeof addUser==='function' ? addUser() : alert('Users are managed by admin setup.')">Users</button>
-      <button onclick="closeClinicMenu(); openThemeMenu()">Themes</button>
-      <button class="dangerItem" onclick="logout()">Logout</button>
-    </div>`;
-  document.body.appendChild(overlay);
-  document.body.appendChild(drawer);
-};
-
-window.showBeforeAfter = function(id) {
-  const p = patients.find(x => x.id === id);
-  if (!p) return;
-  const photos = (p.photos || []).map(photoUrl).filter(Boolean);
-  if (photos.length < 2) return alert("Need at least 2 photos.");
-
-  let before = 0;
-  let after = 1;
-
-  const modal = document.createElement("div");
-  modal.className = "luxuryModal";
-  modal.innerHTML = `
-    <div class="luxuryBox" style="max-width:760px;">
-      <h2>Choose Before / After</h2>
-      <p style="color:var(--muted);font-weight:900;margin:6px 0 10px">Select one before image and one after image.</p>
-      <div class="baPickerGrid" id="baPickerGrid"></div>
-      <button class="primary" style="width:100%;margin-top:8px" id="baShowBtn">Show Swipe</button>
-      <button class="secondary" style="width:100%;margin-top:8px" onclick="this.closest('.luxuryModal').remove()">Close</button>
-    </div>`;
-  document.body.appendChild(modal);
-
-  const grid = modal.querySelector("#baPickerGrid");
-  const renderPicker = () => {
-    grid.innerHTML = photos.map((url, i) => `
-      <div class="baPickCard ${i === before ? "selectedBefore" : ""} ${i === after ? "selectedAfter" : ""}">
-        <img src="${url}">
-        <div class="baPickActions">
-          <button class="${i === before ? "active" : ""}" data-i="${i}" data-kind="before">Before</button>
-          <button class="${i === after ? "active" : ""}" data-i="${i}" data-kind="after">After</button>
-        </div>
-      </div>`).join("");
-    grid.querySelectorAll("button").forEach(btn => {
-      btn.onclick = () => {
-        const i = Number(btn.dataset.i);
-        if (btn.dataset.kind === "before") before = i;
-        if (btn.dataset.kind === "after") after = i;
-        if (before === after) after = (before + 1) % photos.length;
-        renderPicker();
-      };
-    });
-  };
-  renderPicker();
-
-  modal.querySelector("#baShowBtn").onclick = () => {
-    modal.querySelector(".luxuryBox").innerHTML = `
-      <h2>Before / After</h2>
-      <div class="beforeAfterSwipe">
-        <span class="label before">Before</span>
-        <span class="label after">After</span>
-        <img src="${photos[before]}">
-        <div class="afterClip" id="afterClip"><img src="${photos[after]}"></div>
-        <input type="range" min="0" max="100" value="50" id="beforeAfterRange">
-      </div>
-      <button class="secondary" style="width:100%" onclick="this.closest('.luxuryModal').remove()">Close</button>`;
-    const range = modal.querySelector("#beforeAfterRange");
-    const clip = modal.querySelector("#afterClip");
-    range.oninput = () => clip.style.clipPath = `inset(0 0 0 ${range.value}%)`;
-  };
-};
-
-
-/* ABSOLUTE FINAL DRAWER OVERRIDE */
-window.openClinicMenu = function() {
-  closeClinicMenu();
-  const overlay = document.createElement("div");
-  overlay.className = "drawerOverlay";
-  overlay.id = "drawerOverlay";
-  overlay.onclick = closeClinicMenu;
-
-  const drawer = document.createElement("aside");
-  drawer.className = "sideDrawer";
-  drawer.id = "sideDrawer";
-  drawer.innerHTML = `
-    <div class="drawerHead">
-      <h2>Menu</h2>
-      <button class="drawerClose" onclick="closeClinicMenu()" aria-label="Close">Ã</button>
-    </div>
-    <div class="drawerUser">
-      <div>${safeText(currentUser?.full_name || currentUser?.username || "Doctor")}</div>
-      <small>${safeText((currentUser?.role || "doctor").toUpperCase())}</small>
-    </div>
-    <div class="drawerMenu">
-      <button class="primaryItem" onclick="closeClinicMenu(); showPage('dashboard')">Dashboard</button>
-      <button onclick="closeClinicMenu(); showPage('patients')">Patients</button>
-      <button onclick="closeClinicMenu(); showPage('settings')">Profile / Branding</button>
-      <button onclick="closeClinicMenu(); backupData()">Backup</button>
-      <button onclick="closeClinicMenu(); restoreBackup()">Restore</button>
-      <button onclick="closeClinicMenu(); alert('Open a patient file and use WhatsApp Reminder from patient tools.')">Reminders</button>
-      <button onclick="closeClinicMenu(); backupData()">Daily Backup</button>
-      <button onclick="closeClinicMenu(); typeof addUser==='function' ? addUser() : alert('Users are managed by admin setup.')">Users</button>
-      <button onclick="closeClinicMenu(); openThemeMenu()">Themes</button>
-      <button class="dangerItem" onclick="logout()">Logout</button>
-    </div>`;
-  document.body.appendChild(overlay);
-  document.body.appendChild(drawer);
-};
-
-
-/* FINAL TIDY DRAWER OVERRIDE */
-window.openClinicMenu = function() {
-  closeClinicMenu();
-  const overlay = document.createElement("div");
-  overlay.className = "drawerOverlay";
-  overlay.id = "drawerOverlay";
-  overlay.onclick = closeClinicMenu;
-
-  const drawer = document.createElement("aside");
-  drawer.className = "sideDrawer";
-  drawer.id = "sideDrawer";
-  drawer.innerHTML = `
-    <div class="drawerHead">
-      <h2>Menu</h2>
-      <button class="drawerClose" onclick="closeClinicMenu()" aria-label="Close">Ã</button>
-    </div>
-    <div class="drawerUser">
-      <div>${safeText(currentUser?.full_name || currentUser?.username || "Doctor")}</div>
-      <small>${safeText((currentUser?.role || "doctor").toUpperCase())}</small>
-    </div>
-    <div class="drawerMenu">
-      <button class="primaryItem" onclick="closeClinicMenu(); showPage('dashboard')">Dashboard</button>
-      <button onclick="closeClinicMenu(); showPage('patients')">Patients</button>
-      <button onclick="closeClinicMenu(); showPage('settings')">Profile / Branding</button>
-      <button onclick="closeClinicMenu(); backupData()">Backup</button>
-      <button onclick="closeClinicMenu(); restoreBackup()">Restore</button>
-      <button onclick="closeClinicMenu(); alert('Open a patient file and use WhatsApp Reminder from patient tools.')">Reminders</button>
-      <button onclick="closeClinicMenu(); backupData()">Daily Backup</button>
-      <button onclick="closeClinicMenu(); typeof addUser==='function' ? addUser() : alert('Users are managed by admin setup.')">Users</button>
-      <button onclick="closeClinicMenu(); openThemeMenu()">Themes</button>
-      <button class="dangerItem" onclick="logout()">Logout</button>
-    </div>`;
-  document.body.appendChild(overlay);
-  document.body.appendChild(drawer);
-};
-
-
-/* ABSOLUTE LAST FIXES: drawer close and compact chart */
+/* REAL ACTUAL FIX - clean menu X and compact chart */
 (function(){
-  const finalCss = `
-    #sideDrawer .drawerClose,
-    .sideDrawer .drawerClose,
-    .drawerClose{
-      width:48px!important;height:48px!important;min-width:48px!important;
-      border-radius:16px!important;border:0!important;padding:0!important;
-      background:linear-gradient(135deg,var(--theme1,#f5d76e),var(--theme2,#b8860b))!important;
-      color:#050505!important;font-size:32px!important;font-weight:1000!important;
-      line-height:1!important;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif!important;
-      display:grid!important;place-items:center!important;text-indent:0!important;overflow:hidden!important;
-    }
-    #sideDrawer .drawerClose::before,#sideDrawer .drawerClose::after,
-    .sideDrawer .drawerClose::before,.sideDrawer .drawerClose::after,
-    .drawerClose::before,.drawerClose::after{content:""!important;display:none!important;}
-
-    .compactOdontogram{
-      width:100%!important;box-sizing:border-box!important;overflow:hidden!important;
-      padding:14px 10px 16px!important;border-radius:26px!important;
-      background:linear-gradient(145deg,#050914,#0b1220 60%,#030507)!important;
-      display:grid!important;gap:14px!important;
-    }
-    .compactOdontogram::before,.compactOdontogram::after{display:none!important;content:""!important}
-    .compactOdontogram .odontogramJaw{
-      width:100%!important;box-sizing:border-box!important;overflow:hidden!important;
-      margin:0!important;padding:12px 6px 10px!important;border-radius:20px!important;
-      background:linear-gradient(180deg,rgba(15,23,42,.86),rgba(2,6,23,.76))!important;
-      border:1px solid rgba(148,163,184,.14)!important;
-    }
-    .compactOdontogram .odontogramTitle{
-      text-align:center!important;margin:0 0 10px!important;font-size:12px!important;
-      letter-spacing:3px!important;font-weight:1000!important;color:var(--accent,#d4af37)!important;
-    }
-    .compactOdontogram .odontogramRow{
-      width:100%!important;box-sizing:border-box!important;display:grid!important;
-      grid-template-columns:repeat(16,minmax(0,1fr))!important;
-      gap:1px!important;align-items:end!important;justify-items:center!important;overflow:hidden!important;
-    }
-    .compactOdontogram .lower .odontogramRow{align-items:start!important;}
-    .compactOdontogram .proTooth{
-      position:relative!important;left:auto!important;top:auto!important;right:auto!important;bottom:auto!important;
-      transform:none!important;border:0!important;background:transparent!important;padding:0!important;margin:0!important;
-      display:grid!important;place-items:center!important;gap:2px!important;min-width:0!important;width:100%!important;
-      overflow:visible!important;
-    }
-    .compactOdontogram .proTooth:hover,.compactOdontogram .proTooth:focus{
-      transform:scale(1.08)!important;filter:drop-shadow(0 0 10px var(--accent,#d4af37))!important;z-index:10!important;
-    }
-    .compactOdontogram .toothArt,.compactOdontogram .proTooth svg{
-      display:block!important;overflow:visible!important;filter:drop-shadow(0 4px 5px rgba(0,0,0,.34))!important;
-    }
-    .compactOdontogram .proTooth.molar .toothArt,.compactOdontogram .proTooth.molar svg{width:22px!important;height:24px!important;}
-    .compactOdontogram .proTooth.premolar .toothArt,.compactOdontogram .proTooth.premolar svg{width:20px!important;height:23px!important;}
-    .compactOdontogram .proTooth.canine .toothArt,.compactOdontogram .proTooth.canine svg{width:14px!important;height:28px!important;}
-    .compactOdontogram .proTooth.incisor .toothArt,.compactOdontogram .proTooth.incisor svg{width:12px!important;height:27px!important;}
-    .compactOdontogram .toothNo{
-      display:block!important;position:static!important;transform:none!important;font-size:7px!important;
-      line-height:1!important;font-weight:1000!important;color:#f8fafc!important;text-shadow:0 2px 4px #000!important;
-    }
-    .compactOdontogram .toothSurfaceText{font-size:6px!important;min-width:14px!important;height:14px!important;top:-8px!important;right:-4px!important;}
-    @media(min-width:700px){
-      .compactOdontogram .odontogramRow{gap:4px!important;}
-      .compactOdontogram .proTooth.molar .toothArt,.compactOdontogram .proTooth.molar svg{width:34px!important;height:34px!important;}
-      .compactOdontogram .proTooth.premolar .toothArt,.compactOdontogram .proTooth.premolar svg{width:29px!important;height:32px!important;}
-      .compactOdontogram .proTooth.canine .toothArt,.compactOdontogram .proTooth.canine svg{width:22px!important;height:42px!important;}
-      .compactOdontogram .proTooth.incisor .toothArt,.compactOdontogram .proTooth.incisor svg{width:19px!important;height:40px!important;}
-      .compactOdontogram .toothNo{font-size:10px!important;}
-    }
-  `;
-  const old = document.getElementById("absoluteFinalFixStyle");
-  if (old) old.remove();
-  const style = document.createElement("style");
-  style.id = "absoluteFinalFixStyle";
-  style.textContent = finalCss;
-  document.head.appendChild(style);
-})();
-
-window.openClinicMenu = function() {
-  closeClinicMenu();
-  const overlay = document.createElement("div");
-  overlay.className = "drawerOverlay";
-  overlay.id = "drawerOverlay";
-  overlay.onclick = closeClinicMenu;
-
-  const drawer = document.createElement("aside");
-  drawer.className = "sideDrawer";
-  drawer.id = "sideDrawer";
-  drawer.innerHTML = `
-    <div class="drawerHead">
-      <h2>Menu</h2>
-      <button class="drawerClose" onclick="closeClinicMenu()" aria-label="Close">Ã</button>
-    </div>
-    <div class="drawerUser">
-      <div>${safeText(currentUser?.full_name || currentUser?.username || "Doctor")}</div>
-      <small>${safeText((currentUser?.role || "doctor").toUpperCase())}</small>
-    </div>
-    <div class="drawerMenu">
-      <button class="primaryItem" onclick="closeClinicMenu(); showPage('dashboard')">Dashboard</button>
-      <button onclick="closeClinicMenu(); showPage('patients')">Patients</button>
-      <button onclick="closeClinicMenu(); showPage('settings')">Profile / Branding</button>
-      <button onclick="closeClinicMenu(); backupData()">Backup</button>
-      <button onclick="closeClinicMenu(); restoreBackup()">Restore</button>
-      <button onclick="closeClinicMenu(); alert('Open a patient file and use WhatsApp Reminder from patient tools.')">Reminders</button>
-      <button onclick="closeClinicMenu(); backupData()">Daily Backup</button>
-      <button onclick="closeClinicMenu(); typeof addUser==='function' ? addUser() : alert('Users are managed by admin setup.')">Users</button>
-      <button onclick="closeClinicMenu(); openThemeMenu()">Themes</button>
-      <button class="dangerItem" onclick="logout()">Logout</button>
-    </div>`;
-  document.body.appendChild(overlay);
-  document.body.appendChild(drawer);
-
-  const closeBtn = drawer.querySelector(".drawerClose");
-  if (closeBtn) {
-    closeBtn.textContent = "Ã";
-    closeBtn.innerHTML = "Ã";
-  }
-};
-
-
-
-/* REAL FINAL PATCH - drawer close + surfaces not clipped */
-(function realFinalPatch(){
   const css = `
-    /* Drawer close button: force real X, remove all old encoded icon layers */
-    #sideDrawer .drawerHead .drawerClose,
-    .sideDrawer .drawerHead .drawerClose,
-    button.drawerClose{
-      width:52px!important;
-      height:52px!important;
-      min-width:52px!important;
-      max-width:52px!important;
-      border-radius:18px!important;
-      border:0!important;
-      padding:0!important;
-      margin:0!important;
+    #sideDrawer .drawerCloseButtonClean{
+      width:52px!important;height:52px!important;min-width:52px!important;border-radius:18px!important;
+      border:0!important;padding:0!important;margin:0!important;
       background:linear-gradient(135deg,var(--theme1,#f5d76e),var(--theme2,#b8860b))!important;
-      color:#050505!important;
-      font-size:0!important;
-      line-height:1!important;
-      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif!important;
-      display:grid!important;
-      place-items:center!important;
-      text-indent:-9999px!important;
-      overflow:hidden!important;
-      position:relative!important;
+      color:#050505!important;font-size:36px!important;font-weight:1000!important;line-height:1!important;
+      display:grid!important;place-items:center!important;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif!important;
       box-shadow:0 14px 34px rgba(0,0,0,.35)!important;
     }
-    #sideDrawer .drawerHead .drawerClose::before,
-    .sideDrawer .drawerHead .drawerClose::before,
-    button.drawerClose::before{
-      content:"Ã"!important;
-      display:grid!important;
-      place-items:center!important;
-      position:absolute!important;
-      inset:0!important;
-      text-indent:0!important;
-      font-size:36px!important;
-      font-weight:1000!important;
-      color:#050505!important;
-      line-height:1!important;
-      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif!important;
-      background:transparent!important;
-    }
-    #sideDrawer .drawerHead .drawerClose::after,
-    .sideDrawer .drawerHead .drawerClose::after,
-    button.drawerClose::after{
-      content:""!important;
-      display:none!important;
-    }
+    #sideDrawer .drawerCloseButtonClean::before,#sideDrawer .drawerCloseButtonClean::after{display:none!important;content:""!important}
 
-    /* Tooth chart: never clip surface circles */
-    .compactOdontogram,
-    .proMouthChart,
-    .odontogramJaw,
-    .odontogramRow,
-    .proTooth,
-    .toothArt{
+    .toothChartClean{
+      width:100%!important;box-sizing:border-box!important;overflow:hidden!important;
+      padding:12px!important;border-radius:24px!important;
+      background:linear-gradient(145deg,#050914,#0b1220 60%,#030507)!important;
+      border:1px solid rgba(212,175,55,.20)!important;
+      display:grid!important;gap:12px!important;
+    }
+    .cleanJaw{
+      width:100%!important;box-sizing:border-box!important;overflow:visible!important;
+      background:linear-gradient(180deg,rgba(15,23,42,.88),rgba(2,6,23,.80))!important;
+      border:1px solid rgba(148,163,184,.16)!important;border-radius:20px!important;
+      padding:12px 6px 10px!important;
+    }
+    .cleanJawTitle{
+      color:var(--accent,#d4af37)!important;text-align:center!important;font-size:12px!important;
+      font-weight:1000!important;letter-spacing:4px!important;margin-bottom:8px!important;
+    }
+    .cleanToothRow{
+      display:grid!important;grid-template-columns:repeat(16,1fr)!important;
+      gap:1px!important;justify-items:center!important;align-items:end!important;width:100%!important;
+    }
+    .cleanToothRow.lower{align-items:start!important;}
+    .toothChartClean .proTooth{
+      position:relative!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;
+      transform:none!important;display:grid!important;place-items:center!important;gap:2px!important;
+      width:100%!important;min-width:0!important;margin:0!important;padding:0!important;border:0!important;background:transparent!important;
       overflow:visible!important;
     }
-    .compactOdontogram{
-      max-width:100%!important;
-      box-sizing:border-box!important;
-      padding:18px 14px 20px!important;
+    .toothChartClean .proTooth:hover,.toothChartClean .proTooth:focus{
+      transform:scale(1.08)!important;filter:drop-shadow(0 0 10px var(--accent,#d4af37))!important;z-index:20!important;
     }
-    .odontogramJaw{
-      padding:26px 10px 16px!important;
-      box-sizing:border-box!important;
+    .toothChartClean .toothArt,.toothChartClean .proTooth svg{display:block!important;overflow:visible!important;}
+    .toothChartClean .proTooth.molar .toothArt,.toothChartClean .proTooth.molar svg{width:22px!important;height:24px!important}
+    .toothChartClean .proTooth.premolar .toothArt,.toothChartClean .proTooth.premolar svg{width:20px!important;height:23px!important}
+    .toothChartClean .proTooth.canine .toothArt,.toothChartClean .proTooth.canine svg{width:14px!important;height:30px!important}
+    .toothChartClean .proTooth.incisor .toothArt,.toothChartClean .proTooth.incisor svg{width:12px!important;height:29px!important}
+    .toothChartClean .toothNo{
+      display:block!important;position:static!important;transform:none!important;
+      font-size:7px!important;font-weight:1000!important;line-height:1!important;color:#f8fafc!important;text-shadow:0 2px 4px #000!important;
     }
-    .odontogramRow{
-      grid-template-columns:repeat(16,minmax(0,1fr))!important;
-      gap:2px!important;
-      justify-items:center!important;
-      align-items:end!important;
-    }
-    .odontogramRow.lower{
-      align-items:start!important;
-    }
-    .proTooth{
-      overflow:visible!important;
-      isolation:isolate!important;
-      z-index:2!important;
-    }
-    .toothSurfaceText{
-      position:absolute!important;
-      top:-18px!important;
-      right:-10px!important;
-      min-width:22px!important;
-      height:22px!important;
-      border-radius:999px!important;
-      display:grid!important;
-      place-items:center!important;
-      font-size:9px!important;
-      font-weight:1000!important;
-      z-index:999!important;
-      overflow:visible!important;
-      border:2px solid rgba(255,255,255,.9)!important;
-      box-shadow:0 5px 12px rgba(0,0,0,.38)!important;
-    }
-    .proTooth.incisor .toothArt,.proTooth.incisor svg{width:14px!important;height:34px!important}
-    .proTooth.canine .toothArt,.proTooth.canine svg{width:17px!important;height:36px!important}
-    .proTooth.premolar .toothArt,.proTooth.premolar svg{width:23px!important;height:28px!important}
-    .proTooth.molar .toothArt,.proTooth.molar svg{width:26px!important;height:28px!important}
-    .toothNo{font-size:8px!important}
-
-    @media(min-width:700px){
-      .odontogramRow{gap:6px!important}
-      .proTooth.incisor .toothArt,.proTooth.incisor svg{width:18px!important;height:39px!important}
-      .proTooth.canine .toothArt,.proTooth.canine svg{width:21px!important;height:41px!important}
-      .proTooth.premolar .toothArt,.proTooth.premolar svg{width:29px!important;height:32px!important}
-      .proTooth.molar .toothArt,.proTooth.molar svg{width:34px!important;height:33px!important}
-      .toothNo{font-size:10px!important}
+    .toothChartClean .toothSurfaceText{
+      position:absolute!important;top:-17px!important;right:-7px!important;
+      min-width:20px!important;height:20px!important;border-radius:50%!important;
+      display:grid!important;place-items:center!important;font-size:8px!important;font-weight:1000!important;
+      z-index:50!important;border:2px solid rgba(255,255,255,.92)!important;box-shadow:0 5px 12px rgba(0,0,0,.38)!important;
     }
   `;
-
-  const old = document.getElementById("realFinalPatchStyle");
-  if (old) old.remove();
-  const style = document.createElement("style");
-  style.id = "realFinalPatchStyle";
-  style.textContent = css;
-  document.head.appendChild(style);
-
-  function forceDrawerX(){
-    document.querySelectorAll(".drawerClose").forEach(btn => {
-      btn.textContent = "";
-      btn.innerHTML = "";
-      btn.setAttribute("aria-label", "Close");
-      btn.title = "Close";
-    });
-  }
-
-  const oldOpenClinicMenu = window.openClinicMenu;
-  window.openClinicMenu = function(){
-    if (typeof oldOpenClinicMenu === "function") oldOpenClinicMenu();
-    setTimeout(forceDrawerX, 0);
-    setTimeout(forceDrawerX, 50);
-  };
-
-  document.addEventListener("click", () => setTimeout(forceDrawerX, 0), true);
-  const mo = new MutationObserver(forceDrawerX);
-  mo.observe(document.body, { childList:true, subtree:true });
-  forceDrawerX();
+  document.getElementById("realActualFixStyle")?.remove();
+  const s=document.createElement("style");
+  s.id="realActualFixStyle";
+  s.textContent=css;
+  document.head.appendChild(s);
 })();
+
+window.openClinicMenu = function() {
+  closeClinicMenu();
+  const overlay = document.createElement("div");
+  overlay.className = "drawerOverlay";
+  overlay.id = "drawerOverlay";
+  overlay.onclick = closeClinicMenu;
+
+  const drawer = document.createElement("aside");
+  drawer.className = "sideDrawer";
+  drawer.id = "sideDrawer";
+  drawer.innerHTML = `
+    <div class="drawerHead">
+      <h2>Menu</h2>
+      <button class="drawerCloseButtonClean" onclick="closeClinicMenu()" aria-label="Close">Ã</button>
+    </div>
+    <div class="drawerUser">
+      <div>${safeText(currentUser?.full_name || currentUser?.username || "Doctor")}</div>
+      <small>${safeText((currentUser?.role || "doctor").toUpperCase())}</small>
+    </div>
+    <div class="drawerMenu">
+      <button class="primaryItem" onclick="closeClinicMenu(); showPage('dashboard')">Dashboard</button>
+      <button onclick="closeClinicMenu(); showPage('patients')">Patients</button>
+      <button onclick="closeClinicMenu(); showPage('settings')">Profile / Branding</button>
+      <button onclick="closeClinicMenu(); backupData()">Backup</button>
+      <button onclick="closeClinicMenu(); restoreBackup()">Restore</button>
+      <button onclick="closeClinicMenu(); alert('Open a patient file and use WhatsApp Reminder from patient tools.')">Reminders</button>
+      <button onclick="closeClinicMenu(); backupData()">Daily Backup</button>
+      <button onclick="closeClinicMenu(); typeof addUser==='function' ? addUser() : alert('Users are managed by admin setup.')">Users</button>
+      <button onclick="closeClinicMenu(); openThemeMenu()">Themes</button>
+      <button class="dangerItem" onclick="logout()">Logout</button>
+    </div>`;
+  document.body.appendChild(overlay);
+  document.body.appendChild(drawer);
+};
