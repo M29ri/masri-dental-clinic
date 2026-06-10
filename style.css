@@ -2223,3 +2223,22 @@ padding-top:12px !important;
 .action-grid .btn-primary{
   grid-column:1 / -1 !important;
 }
+.actions-bar{
+  display:grid !important;
+  grid-template-columns:1fr 1fr !important;
+  gap:12px !important;
+}
+
+.actions-bar button:first-child{
+  grid-column:1 / -1 !important;
+}
+button[onclick*="showWhatsApp"],
+button[onclick*="showTemplate"],
+button[onclick*="generateAIPlan"],
+button[onclick*="showSummary"],
+button[onclick*="showSmartNote"],
+button[onclick*="showConsent"],
+button[onclick*="showPrescription"],
+button[onclick*="showLab"]{
+  width:100%;
+}
