@@ -95,19 +95,19 @@ async function registerDoctor() {
         password: password.trim(),
         full_name: full_name.trim(),
         role: "doctor",
-        clinic_name: `${full_name.trim()}'s Clinic`
+        clinic_name: `${full_name.trim()}'s Clinic`,
+        clinic_logo: ""
       })
     });
 
-    if (!res.ok) {
-      throw new Error(await res.text());
-    }
+    if (!res.ok) throw new Error(await res.text());
 
     alert("Account created successfully. Please login now.");
   } catch (err) {
     alert("Account creation failed: " + err.message);
   }
 }
+
 async function addUser() {
   if (!currentUser || currentUser.role !== "admin") return alert("Only admin can add users");
   const username = await luxuryPrompt("New username", "Username");
@@ -723,6 +723,20 @@ function injectExtraStyles() {
       .premiumDocBackdrop{position:static!important;background:white!important;padding:0!important}
       .premiumDoc{box-shadow:none!important;border-radius:0!important;max-width:none!important}
     }
+
+  
+    /* Big professional upgrades */
+    .profileGrid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important;margin-top:12px!important}
+    .profileGrid button{min-height:54px!important;border-radius:20px!important}
+    .tagWrap{display:flex!important;flex-wrap:wrap!important;gap:8px!important;margin:12px 0!important}
+    .patientTag{display:inline-flex!important;align-items:center!important;gap:8px!important;padding:8px 12px!important;border-radius:999px!important;background:rgba(212,175,55,.13)!important;border:1px solid rgba(212,175,55,.28)!important;color:#d4af37!important;font-weight:1000!important;font-size:12px!important}
+    .analyticsGrid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important;margin-top:12px!important}
+    .analyticsBox{background:#0f1620!important;border:1px solid #263241!important;border-radius:18px!important;padding:14px!important}
+    .analyticsBox small{display:block!important;color:#94a3b8!important;font-weight:900!important;margin-bottom:6px!important}
+    .analyticsBox b{color:#fff!important;font-size:20px!important}
+    .manageRow{display:flex!important;justify-content:space-between!important;align-items:center!important;gap:10px!important;background:#0f1620!important;border:1px solid #263241!important;border-radius:18px!important;padding:12px!important;margin:10px 0!important}
+    .manageRow b{color:#fff!important}.manageRow small{color:#94a3b8!important;font-weight:800!important}
+    .toastUndo{position:fixed!important;left:16px!important;right:16px!important;bottom:18px!important;z-index:1000000!important;background:#111827!important;border:1px solid rgba(212,175,55,.35)!important;border-radius:22px!important;padding:14px!important;display:flex!important;justify-content:space-between!important;align-items:center!important;color:white!important;box-shadow:0 18px 50px rgba(0,0,0,.45)!important}
 
   `;
   document.head.appendChild(style);
@@ -1429,7 +1443,7 @@ function renderDashboard() {
       <button class="primary" onclick="fillForm();showPage('form')">+ New Patient</button>
       <button class="secondary" onclick="showPage('scan')">Scan QR</button>
       <button class="secondary" onclick="backupData()">Backup</button>
-      <button class="secondary" onclick="restoreBackup()">Restore</button><button class="secondary" onclick="toggleClinicTheme()">Theme</button>
+      <button class="secondary" onclick="restoreBackup()">Restore</button><button class="secondary" onclick="openDoctorProfile()">Profile</button><button class="secondary" onclick="sendTomorrowReminders()">Reminders</button>${currentUser?.role === "admin" ? `<button class="secondary" onclick="manageUsers()">Users</button>` : ""}<button class="secondary" onclick="toggleClinicTheme()">Theme</button>
     </div>
 
     <div class="dashboardPanel">
@@ -1453,14 +1467,24 @@ function renderDashboard() {
       `).join("")}</div>` : `<p style="color:var(--muted);font-weight:800">No missed follow-ups</p>`}
     </div>
 
-   
+    <div class="dashboardPanel">
+      <h2>This Month Calendar</h2>
+      <div class="calendarMini">${monthAppointments()}</div>
+    </div>
+
     <div class="dashboardPanel">
       <h2>Treatment Stats</h2>
       ${Object.keys(treatmentStats()).length ? Object.entries(treatmentStats()).map(([k,v]) => `<span class="premiumChip">${safeText(k.toUpperCase())}: ${v}</span>`).join(" ") : `<p style="color:var(--muted);font-weight:800">No treatment stats yet</p>`}
     </div>
 
     
+    
     <div class="dashboardPanel">
+      <h2>Clinic Analytics</h2>
+      ${clinicAnalyticsHTML()}
+    </div>
+
+<div class="dashboardPanel">
       <h2>Finance Pro</h2>
       ${renderMonthlyFinanceBars()}
     </div>
@@ -1707,6 +1731,7 @@ function patientDetailsHTML(p) {
       <span class="pill">${safeText(p.phone || "No phone")}</span>
       <span class="pill">${safeText(p.age || "-")} yrs</span>
       <span class="pill">${safeText(p.gender || "-")}</span>
+      ${renderPatientTags(p)}
 
       <div class="kv cleanField"><b>Chief complaint</b><span>${safeText(p.chief_complaint || "-")}</span></div>
       <div class="kv cleanField"><b>Medical alerts</b><span>${safeText(p.medical_alerts || "-")}</span></div>
@@ -1720,7 +1745,7 @@ function patientDetailsHTML(p) {
         <button class="secondary" onclick="sendWhatsAppReminder('${p.id}')">WhatsApp Reminder</button>
         <button class="secondary" onclick="addTreatmentTemplate('${p.id}')">Treatment Template</button><button class="secondary" onclick="generateAITreatmentPlan('${p.id}')">AI Plan</button>
         <button class="secondary" onclick="showCaseSummary('${p.id}')">Case Summary</button>
-        <button class="secondary" onclick="addVoiceNote('${p.id}')">Voice Note</button><button class="secondary" onclick="generateSmartNote('${p.id}')">Smart Note</button><button class="secondary" onclick="generateConsentForm('${p.id}')">Consent</button><button class="secondary" onclick="generatePrescription('${p.id}')">Prescription</button><button class="secondary" onclick="addLabWork('${p.id}')">Lab</button><button class="secondary" onclick="setCasePriority('${p.id}')">Priority</button>
+        <button class="secondary" onclick="addVoiceNote('${p.id}')">Voice Note</button><button class="secondary" onclick="generateSmartNote('${p.id}')">Smart Note</button><button class="secondary" onclick="generateConsentForm('${p.id}')">Consent</button><button class="secondary" onclick="generatePrescription('${p.id}')">Prescription</button><button class="secondary" onclick="addLabWork('${p.id}')">Lab</button><button class="secondary" onclick="setCasePriority('${p.id}')">Priority</button><button class="secondary" onclick="addPatientTag('${p.id}')">Add Tag</button>
       </div>
 
       <h3 class="sectionTitle">Visits History</h3>
@@ -1862,7 +1887,19 @@ window.showQR = function(id) {
   }
 };
 window.editPatient = function(id) { const p = patients.find(x => x.id === id); if (!p) return alert("Patient not found or you do not have access."); fillForm(p); showPage("form"); };
-window.deletePatient = async function(id) { if (!canDelete()) return alert("Only admin can delete patients"); if (!confirm("Delete this patient?")) return; await api(`patients?id=eq.${id}`, { method: "DELETE" }); await loadPatients(); showPage("patients"); };
+window.deletePatient = async function(id) {
+  if (!canDelete()) return alert("Only admin can delete patients");
+  const p = patients.find(x => x.id === id);
+  if (!p) return alert("Patient not found.");
+  if (!(await luxuryConfirm("Delete this patient?", "You can undo for a short time."))) return;
+
+  localStorage.setItem("lastDeletedPatient", JSON.stringify(p));
+  await api(`patients?id=eq.${id}`, { method: "DELETE" });
+  await loadPatients();
+    startAutoRefresh();
+  showPage("patients");
+  showUndoToast(p.name);
+};
 let selectedToothPatientId = null;
 let selectedToothNumber = null;
 
@@ -2335,10 +2372,10 @@ window.backupData = function() {
 };
 
 window.restoreBackup = function() { const input = document.createElement("input"); input.type = "file"; input.accept = ".json,application/json"; input.onchange = async e => { const file = e.target.files[0]; if (!file) return; if (!confirm("Restore backup? This will upload patients from the backup file.")) return; try { const backup = JSON.parse(await file.text()); if (!backup.patients || !Array.isArray(backup.patients)) return alert("Invalid backup file."); for (const p of backup.patients) { const newPatient = { owner_id: currentUser.role === "admin" ? (p.owner_id || currentUser.id) : currentUser.id, case_id: p.case_id || makeId(), name: p.name || "", phone: p.phone || "", age: p.age || "", gender: p.gender || "", chief_complaint: p.chief_complaint || "", medical_alerts: p.medical_alerts || "", diagnosis: p.diagnosis || "", treatment_plan: p.treatment_plan || "", progress_notes: p.progress_notes || "", photos: p.photos || [] }; await api("patients", { method: "POST", body: JSON.stringify(newPatient) }); } alert("Backup restored successfully."); await loadPatients(); showPage("patients"); } catch (err) { alert("Restore failed: " + err.message); } }; input.click(); };
+
+
 window.changeMyPassword = async function() {
-  if (!currentUser || !currentUser.id) {
-    return alert("Please login first.");
-  }
+  if (!currentUser || !currentUser.id) return alert("Please login first.");
 
   const oldPassword = await luxuryPrompt("Current password", "Enter current password");
   if (!oldPassword) return;
@@ -2364,9 +2401,7 @@ window.changeMyPassword = async function() {
   try {
     await api(`clinic_users?id=eq.${currentUser.id}`, {
       method: "PATCH",
-      body: JSON.stringify({
-        password: newPassword.trim()
-      })
+      body: JSON.stringify({ password: newPassword.trim() })
     });
 
     currentUser.password = newPassword.trim();
@@ -2377,6 +2412,273 @@ window.changeMyPassword = async function() {
     alert("Password update failed: " + err.message);
   }
 };
+
+window.openDoctorProfile = async function() {
+  if (!currentUser) return alert("Please login first.");
+
+  const modal = document.createElement("div");
+  modal.className = "luxuryModal";
+  modal.id = "doctorProfileModal";
+  modal.innerHTML = `
+    <div class="luxuryBox">
+      <h2>Doctor Profile</h2>
+      <div class="kv"><b>Name</b><span>${safeText(currentUser.full_name || currentUser.username || "-")}</span></div>
+      <div class="kv"><b>Username</b><span>${safeText(currentUser.username || "-")}</span></div>
+      <div class="kv"><b>Role</b><span>${safeText((currentUser.role || "doctor").toUpperCase())}</span></div>
+      <div class="profileGrid">
+        <button class="primary" id="editProfileBtn">Edit Profile</button>
+        <button class="secondary" id="profilePasswordBtn">Change Password</button>
+        <button class="secondary" id="setPinBtn">Set Local PIN</button>
+        <button class="secondary" id="closeProfileBtn">Close</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+
+  modal.querySelector("#closeProfileBtn").onclick = () => modal.remove();
+  modal.querySelector("#profilePasswordBtn").onclick = () => window.changeMyPassword();
+  modal.querySelector("#setPinBtn").onclick = () => window.setLocalPIN();
+
+  modal.querySelector("#editProfileBtn").onclick = async () => {
+    const full_name = await luxuryPrompt("Doctor name", "Full name", currentUser.full_name || "");
+    if (!full_name) return;
+
+    const username = await luxuryPrompt("Username", "Any username", currentUser.username || "");
+    if (!username) return;
+
+    const cleanUsername = username.trim();
+
+    const existing = await api(`clinic_users?select=id&username=eq.${encodeURIComponent(cleanUsername)}`);
+    if (existing.some(u => u.id !== currentUser.id)) {
+      return alert("This username already exists.");
+    }
+
+    await api(`clinic_users?id=eq.${currentUser.id}`, {
+      method: "PATCH",
+      body: JSON.stringify({
+        full_name: full_name.trim(),
+        username: cleanUsername
+      })
+    });
+
+    currentUser.full_name = full_name.trim();
+    currentUser.username = cleanUsername;
+    saveUser(currentUser);
+    applyUserBar();
+
+    await luxuryConfirm("Profile updated", "Your profile was updated successfully.");
+    modal.remove();
+  };
+};
+
+window.setLocalPIN = async function() {
+  const pin = await luxuryPrompt("Set local PIN", "4 digits");
+  if (!pin) return;
+  if (!/^[0-9]{4,6}$/.test(pin.trim())) return alert("PIN must be 4-6 numbers.");
+  localStorage.setItem("clinicLocalPIN-" + currentUser.id, pin.trim());
+  await luxuryConfirm("PIN saved", "Local PIN saved on this device.");
+};
+
+window.manageUsers = async function() {
+  if (!currentUser || currentUser.role !== "admin") {
+    return alert("Only admin can manage users.");
+  }
+
+  const users = await api("clinic_users?select=*&order=created_at.desc");
+
+  const modal = document.createElement("div");
+  modal.className = "luxuryModal";
+  modal.id = "usersModal";
+  modal.innerHTML = `
+    <div class="luxuryBox">
+      <h2>Manage Users</h2>
+      ${users.map(u => `
+        <div class="manageRow">
+          <div>
+            <b>${safeText(u.full_name || u.username)}</b><br>
+            <small>${safeText(u.username)} - ${safeText((u.role || "doctor").toUpperCase())}</small>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="secondary" data-edit-user="${u.id}">Role</button>
+            ${u.id !== currentUser.id ? `<button class="danger" data-delete-user="${u.id}">Delete</button>` : ""}
+          </div>
+        </div>
+      `).join("")}
+      <div class="luxuryActions">
+        <button class="secondary" id="closeUsersModal">Close</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+  modal.querySelector("#closeUsersModal").onclick = () => modal.remove();
+
+  modal.querySelectorAll("[data-edit-user]").forEach(btn => {
+    btn.onclick = async () => {
+      const id = btn.dataset.editUser;
+      const role = await luxuryPrompt("User role", "admin / doctor / assistant", "doctor");
+      if (!["admin", "doctor", "assistant"].includes(role)) return alert("Invalid role");
+      await api(`clinic_users?id=eq.${id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ role })
+      });
+      modal.remove();
+      await window.manageUsers();
+    };
+  });
+
+  modal.querySelectorAll("[data-delete-user]").forEach(btn => {
+    btn.onclick = async () => {
+      const id = btn.dataset.deleteUser;
+      if (!(await luxuryConfirm("Delete user?", "This removes this login account."))) return;
+      await api(`clinic_users?id=eq.${id}`, { method: "DELETE" });
+      modal.remove();
+      await window.manageUsers();
+    };
+  });
+};
+
+function patientTags(patient) {
+  const data = parseClinicData(patient.progress_notes);
+  return data.tags || [];
+}
+
+window.addPatientTag = async function(id) {
+  const p = patients.find(x => x.id === id);
+  if (!p) return alert("Patient not found.");
+
+  const tag = await luxuryPrompt("Patient tag", "VIP / High risk / Needs follow-up / Unpaid");
+  if (!tag) return;
+
+  const data = parseClinicData(p.progress_notes);
+  data.tags = data.tags || [];
+  if (!data.tags.includes(tag.trim())) data.tags.push(tag.trim());
+
+  await api(`patients?id=eq.${id}`, {
+    method: "PATCH",
+    body: JSON.stringify({ progress_notes: saveClinicData(data) })
+  });
+
+  await refreshPatientKeepingScroll(id);
+};
+
+window.removePatientTag = async function(id, tag) {
+  const p = patients.find(x => x.id === id);
+  if (!p) return alert("Patient not found.");
+  const data = parseClinicData(p.progress_notes);
+  data.tags = (data.tags || []).filter(t => t !== tag);
+
+  await api(`patients?id=eq.${id}`, {
+    method: "PATCH",
+    body: JSON.stringify({ progress_notes: saveClinicData(data) })
+  });
+
+  await refreshPatientKeepingScroll(id);
+};
+
+function renderPatientTags(patient) {
+  const tags = patientTags(patient);
+  return `
+    <div class="tagWrap">
+      ${tags.length ? tags.map(t => `
+        <span class="patientTag" onclick="removePatientTag('${patient.id}', '${String(t).replace(/'/g, "\\'")}')">
+          ${safeText(t)} Ã
+        </span>
+      `).join("") : `<span class="pill">No tags</span>`}
+      <button class="secondary" onclick="addPatientTag('${patient.id}')">+ Tag</button>
+    </div>
+  `;
+}
+
+function clinicAnalyticsHTML() {
+  const treatment = treatmentStats();
+  let busiest = {};
+  patients.forEach(p => {
+    const data = parseClinicData(p.progress_notes);
+    (data.appointments || []).forEach(a => {
+      const d = new Date(a.date);
+      if (!isNaN(d)) {
+        const day = d.toLocaleString("en", { weekday: "short" });
+        busiest[day] = (busiest[day] || 0) + 1;
+      }
+    });
+  });
+
+  const topTreatment = Object.entries(treatment).sort((a,b) => b[1]-a[1])[0];
+  const busiestDay = Object.entries(busiest).sort((a,b) => b[1]-a[1])[0];
+  const tagged = patients.reduce((n,p) => n + patientTags(p).length, 0);
+
+  return `
+    <div class="analyticsGrid">
+      <div class="analyticsBox"><small>Top treatment</small><b>${safeText(topTreatment ? topTreatment[0].toUpperCase() : "-")}</b></div>
+      <div class="analyticsBox"><small>Busiest day</small><b>${safeText(busiestDay ? busiestDay[0] : "-")}</b></div>
+      <div class="analyticsBox"><small>Patient tags</small><b>${tagged}</b></div>
+      <div class="analyticsBox"><small>Doctors/users</small><b>${currentUser?.role === "admin" ? "Admin" : "Active"}</b></div>
+    </div>
+  `;
+}
+
+window.sendTomorrowReminders = async function() {
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const items = [];
+
+  patients.forEach(p => {
+    const data = parseClinicData(p.progress_notes);
+    (data.appointments || []).forEach(a => {
+      const d = new Date(a.date);
+      if (!isNaN(d) && d.toDateString() === tomorrow.toDateString()) {
+        items.push({ patient: p, appointment: a });
+      }
+    });
+  });
+
+  if (!items.length) return alert("No appointments tomorrow.");
+
+  const first = items[0];
+  await luxuryConfirm("Tomorrow reminders", `${items.length} appointment(s) tomorrow. Opening first patient reminder.`);
+  window.sendWhatsAppReminder(first.patient.id);
+};
+
+window.undoLastDelete = async function() {
+  const raw = localStorage.getItem("lastDeletedPatient");
+  if (!raw) return alert("No deleted patient to restore.");
+
+  const p = JSON.parse(raw);
+  if (!(await luxuryConfirm("Restore patient?", `Restore ${p.name || "patient"}?`))) return;
+
+  await api("patients", {
+    method: "POST",
+    body: JSON.stringify(p)
+  });
+
+  localStorage.removeItem("lastDeletedPatient");
+  await loadPatients();
+  showPage("patients");
+};
+
+function showUndoToast(patientName) {
+  document.getElementById("undoToast")?.remove();
+  const toast = document.createElement("div");
+  toast.id = "undoToast";
+  toast.className = "toastUndo";
+  toast.innerHTML = `
+    <span>Deleted ${safeText(patientName || "patient")}</span>
+    <button class="secondary" onclick="undoLastDelete();document.getElementById('undoToast')?.remove();">Undo</button>
+  `;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 9000);
+}
+
+function startAutoRefresh() {
+  if (window.__clinicAutoRefresh) return;
+  window.__clinicAutoRefresh = setInterval(() => {
+    if (currentUser && document.visibilityState === "visible") {
+      loadPatients();
+    }
+  }, 60000);
+}
+
 
 window.saveClinicBranding = async function() {
   try {
