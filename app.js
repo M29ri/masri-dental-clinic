@@ -315,6 +315,7 @@ if (!btn) {
 }
 
 buttonStack.appendChild(btn);
+}
   
 function canEdit() { return currentUser && ["admin", "doctor"].includes(currentUser.role); }
 function canDelete() { return currentUser && ["admin", "doctor"].includes(currentUser.role); }
