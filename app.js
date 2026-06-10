@@ -1978,6 +1978,113 @@ function injectExtraStyles() {
       }
     }
 
+  
+    /* FINAL REQUEST FIX: dashboard clean, drawer menu, simple photos, cleaner arch */
+    #logoutBtn{display:none!important}
+    #hamburgerBtn,.hamburgerBtn{
+      width:54px!important;height:54px!important;border-radius:18px!important;
+      border:1px solid rgba(148,163,184,.22)!important;
+      background:linear-gradient(145deg,#172235,#0d1624)!important;
+      color:#fff!important;font-size:0!important;position:relative!important;
+      display:grid!important;place-items:center!important;
+      box-shadow:0 12px 30px rgba(0,0,0,.32)!important;
+    }
+    #hamburgerBtn::before,.hamburgerBtn::before{
+      content:"â°";font-size:28px!important;line-height:1!important;font-weight:1000!important;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif!important;
+    }
+
+    .drawerOverlay{position:fixed!important;inset:0!important;background:rgba(0,0,0,.55)!important;z-index:999998!important;backdrop-filter:blur(8px)!important}
+    .sideDrawer{position:fixed!important;top:0!important;right:0!important;width:min(86vw,360px)!important;height:100vh!important;background:linear-gradient(180deg,#0b1118,#0f1724)!important;border-left:1px solid rgba(212,175,55,.22)!important;z-index:999999!important;padding:18px!important;box-shadow:-30px 0 70px rgba(0,0,0,.55)!important;overflow-y:auto!important}
+    .drawerHead{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:10px!important;margin-bottom:14px!important}
+    .drawerHead h2{margin:0!important;color:#f8fafc!important;font-size:26px!important}
+    .drawerClose{width:42px!important;height:42px!important;border:none!important;border-radius:14px!important;background:#1f2937!important;color:#fff!important;font-weight:1000!important;font-size:22px!important}
+    .drawerUser{background:#111a27!important;border:1px solid rgba(148,163,184,.18)!important;border-radius:20px!important;padding:14px!important;color:#e5e7eb!important;font-weight:900!important;margin-bottom:12px!important}
+    .drawerMenu{display:grid!important;gap:8px!important}
+    .drawerMenu button{min-height:52px!important;border:none!important;border-radius:16px!important;background:#1f2937!important;color:#e5e7eb!important;font-weight:1000!important;font-size:15px!important;text-align:left!important;padding:0 14px!important}
+    .drawerMenu button.primaryItem{background:linear-gradient(135deg,#f5d76e,#b8860b)!important;color:#050505!important}
+    .drawerMenu button.dangerItem{background:linear-gradient(135deg,#ef4444,#991b1b)!important;color:#fff!important;margin-top:12px!important}
+
+    /* Hide dashboard shortcut buttons that moved to drawer */
+    .quickActions button[onclick*="backupData"],
+    .quickActions button[onclick*="restoreBackup"],
+    .quickActions button[onclick*="openThemeMenu"],
+    .quickActions button[onclick*="showPage('settings')"],
+    .quickActions button[onclick*="showPage(&quot;settings&quot;)"],
+    .quickActions button[onclick*="addUser"],
+    .quickActions button[onclick*="Daily"],
+    .quickActions button[onclick*="Reminder"],
+    .quickActions button:nth-child(n+5){
+      display:none!important;
+    }
+
+    .brandWrapPremium,.brand{
+      display:flex!important;align-items:center!important;gap:12px!important;min-width:0!important;
+    }
+    .clinicLogoPremium{
+      width:50px!important;height:50px!important;border-radius:16px!important;
+      background:linear-gradient(135deg,#f5d76e,#b8860b)!important;
+      display:grid!important;place-items:center!important;color:#050505!important;
+      font-weight:1000!important;font-size:22px!important;overflow:hidden!important;flex:0 0 auto!important;
+      box-shadow:0 12px 28px rgba(212,175,55,.24)!important;
+    }
+    .clinicLogoPremium img{width:100%!important;height:100%!important;object-fit:cover!important}
+    .brand h1,.brandWrapPremium h1{
+      font-size:clamp(34px,8vw,54px)!important;line-height:.92!important;letter-spacing:-2px!important;
+      margin:0!important;max-width:250px!important;
+    }
+
+    /* keep settings tab hidden because settings in drawer */
+    nav button[onclick*="settings"], .tabs button[onclick*="settings"], .tabBar button[onclick*="settings"]{display:none!important}
+
+    /* Tooth chart cleaner, less overlap */
+    .proMouthChart{
+      height:540px!important;border-radius:30px!important;
+      background:radial-gradient(ellipse at 50% 50%,rgba(143,36,52,.18),transparent 38%),linear-gradient(145deg,#050914,#0b1220 55%,#030507)!important;
+      border:1px solid rgba(212,175,55,.16)!important;position:relative!important;overflow:hidden!important;
+    }
+    .proMouthChart::before{
+      content:"";position:absolute;left:50%;top:50%;width:260px;height:175px;transform:translate(-50%,-50%);
+      border-radius:50%;background:radial-gradient(ellipse at center,rgba(0,0,0,.52),rgba(0,0,0,.08) 62%,transparent 72%);z-index:1;pointer-events:none;
+    }
+    .proMouthLabel,.proMidLine,.proHorizontalLine,.toothNo{display:none!important}
+    .proTooth{position:absolute!important;border:none!important;background:transparent!important;padding:0!important;transform:translate(-50%,-50%) rotate(var(--rot,0deg))!important;z-index:5!important;transition:.15s!important;overflow:visible!important}
+    .proTooth:hover,.proTooth:focus{transform:translate(-50%,-50%) rotate(var(--rot,0deg)) scale(1.16)!important;filter:drop-shadow(0 0 13px rgba(212,175,55,.85))!important;z-index:20!important}
+    .proTooth.hiddenByQuad{opacity:.13!important;pointer-events:none!important;filter:grayscale(1)!important}
+    .toothArt,.proToothSvg,.proTooth svg{display:block!important;overflow:visible!important;filter:drop-shadow(0 7px 8px rgba(0,0,0,.35))!important}
+    .proTooth.incisor .toothArt,.proTooth.incisor svg{width:25px!important;height:44px!important}
+    .proTooth.canine .toothArt,.proTooth.canine svg{width:29px!important;height:45px!important}
+    .proTooth.premolar .toothArt,.proTooth.premolar svg{width:35px!important;height:39px!important}
+    .proTooth.molar .toothArt,.proTooth.molar svg{width:42px!important;height:40px!important}
+    .proToothSvg path:first-child,.proTooth svg path:first-child{fill:#fff7e6!important;stroke:rgba(255,255,255,.95)!important;stroke-width:1.8!important}
+    .proTooth.caries path:first-child{fill:#ef4444!important}.proTooth.filling path:first-child{fill:#60a5fa!important}.proTooth.rct path:first-child{fill:#8b5cf6!important}.proTooth.crown path:first-child{fill:#d4af37!important}.proTooth.implant path:first-child{fill:#2dd4bf!important}.proTooth.missing path:first-child{fill:#475569!important;opacity:.45!important}.proTooth.extraction path:first-child{fill:#fb7185!important}
+    .quadTabs{display:grid!important;grid-template-columns:repeat(5,1fr)!important;gap:8px!important;margin:10px 0 14px!important}
+    .quadTabs button{min-height:42px!important;border:none!important;border-radius:15px!important;background:#1f2937!important;color:#e5e7eb!important;font-weight:1000!important}
+    .quadTabs button.active{background:linear-gradient(135deg,#f5d76e,#b8860b)!important;color:#050505!important}
+
+    /* Simple photo grid + fullscreen viewer */
+    .photoSectionTabs{display:grid!important;grid-template-columns:repeat(2,1fr)!important;gap:8px!important;margin:10px 0!important}
+    .photoSectionTabs button{min-height:44px!important;border:none!important;border-radius:14px!important;background:#1f2937!important;color:#e5e7eb!important;font-weight:1000!important}
+    .photoSectionTabs button.active{background:linear-gradient(135deg,#f5d76e,#b8860b)!important;color:#050505!important}
+    .simplePhotoGrid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important;margin:12px 0!important}
+    .simplePhotoGrid img{width:100%!important;height:180px!important;object-fit:cover!important;border-radius:16px!important;background:#020617!important;border:1px solid #263241!important}
+    .photoGalleryHeader,.premiumPhotoViewer,.photoThumbs{display:none!important}
+    .baMorphWrap,.baControlPanel,.baGhostLabel{display:none!important}
+
+    .fullPhotoViewer{position:fixed!important;inset:0!important;background:rgba(0,0,0,.94)!important;z-index:999999!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:16px!important}
+    .fullPhotoViewer img{max-width:100%!important;max-height:86vh!important;object-fit:contain!important;border-radius:14px!important}
+    .fullPhotoTop{position:absolute!important;top:calc(12px + env(safe-area-inset-top))!important;left:12px!important;right:12px!important;display:flex!important;justify-content:space-between!important;align-items:center!important;z-index:2!important}
+    .fullPhotoTop button,.fullPhotoNav button{border:none!important;border-radius:14px!important;background:#1f2937!important;color:white!important;font-weight:1000!important;min-height:44px!important;padding:0 14px!important}
+    .fullPhotoNav{position:absolute!important;left:12px!important;right:12px!important;bottom:calc(16px + env(safe-area-inset-bottom))!important;display:flex!important;justify-content:space-between!important;z-index:2!important}
+
+    @media(max-width:480px){
+      .brand h1,.brandWrapPremium h1{font-size:38px!important;max-width:210px!important}
+      .clinicLogoPremium{width:46px!important;height:46px!important}
+      #hamburgerBtn,.hamburgerBtn{width:50px!important;height:50px!important}
+      .proMouthChart{height:455px!important}
+      .simplePhotoGrid img{height:155px!important}
+    }
+
   `;
   document.head.appendChild(style);
 }
@@ -2942,9 +3049,7 @@ window.setQuadrantFilter = function(q) {
     const n = Number(btn.getAttribute("data-tooth") || btn.dataset.tooth || 0);
     btn.classList.toggle("hiddenByQuad", !fn(n));
   });
-  document.querySelectorAll(".quadTabs button").forEach(b => {
-    b.classList.toggle("active", b.getAttribute("data-quad") === q);
-  });
+  document.querySelectorAll(".quadTabs button").forEach(b => b.classList.toggle("active", b.getAttribute("data-quad") === q));
 };
 
 
@@ -2968,17 +3073,16 @@ function toothExtraOverlay(status) {
 function renderToothChart(p) {
   const data = parseClinicData(p.progress_notes);
   const teeth = data.teeth || {};
-
   const toothData = [
-    [18,14,33,-34],[17,20,27,-27],[16,28,22,-19],[15,37,18,-12],
-    [14,47,16,-6],[13,56,15,-2],[12,64,14,0],[11,72,14,2],
-    [21,28,14,-2],[22,36,14,0],[23,44,15,2],[24,53,16,6],
-    [25,63,18,12],[26,72,22,19],[27,80,27,27],[28,86,33,34],
+    [18,16,31,-32],[17,22,25,-27],[16,30,21,-20],[15,39,18,-13],
+    [14,48,16,-7],[13,57,15,-3],[12,65,14,0],[11,73,14,2],
+    [21,27,14,-2],[22,35,14,0],[23,43,15,3],[24,52,16,7],
+    [25,61,18,13],[26,70,21,20],[27,78,25,27],[28,84,31,32],
 
-    [48,14,67,34],[47,20,73,27],[46,28,78,19],[45,37,82,12],
-    [44,47,84,6],[43,56,85,2],[42,64,86,0],[41,72,86,-2],
-    [31,28,86,2],[32,36,86,0],[33,44,85,-2],[34,53,84,-6],
-    [35,63,82,-12],[36,72,78,-19],[37,80,73,-27],[38,86,67,-34]
+    [48,16,69,32],[47,22,75,27],[46,30,79,20],[45,39,82,13],
+    [44,48,84,7],[43,57,85,3],[42,65,86,0],[41,73,86,-2],
+    [31,27,86,2],[32,35,86,0],[33,43,85,-3],[34,52,84,-7],
+    [35,61,82,-13],[36,70,79,-20],[37,78,75,-27],[38,84,69,-32]
   ];
 
   return `
@@ -2995,16 +3099,13 @@ function renderToothChart(p) {
         const status = typeof toothInfo === "string" ? toothInfo : (toothInfo.status || "healthy");
         const surfaces = typeof toothInfo === "string" ? [] : (toothInfo.surfaces || []);
         const type = getToothType(n);
-
         return `
           <button type="button" class="proTooth ${safeText(status)} ${type}" data-tooth="${n}" style="left:${x}%;top:${y}%;--rot:${r}deg" onclick="window.openToothPopup('${p.id}', '${n}')">
             <span class="toothArt">${toothSvg(type)}${surfaceOverlayHTML(toothInfo)}${toothExtraOverlay(status)}</span>
             <span class="toothNo">${n}</span>${surfaces.length ? `<span class="toothSurfaceText">${safeText(surfaces.join(""))}</span>` : ""}
-          </button>
-        `;
+          </button>`;
       }).join("")}
-    </div>
-  `;
+    </div>`;
 }
 
 function treatmentProgressItems(patient) {
@@ -3255,6 +3356,84 @@ window.closePhotoZoom = function() {
 };
 
 
+
+function categorizedPhotos(patient) {
+  const photos = (patient.photos || []).map((x, i) => ({
+    url: photoUrl(x),
+    category: String(x?.category || "").toLowerCase(),
+    name: String(x?.name || x?.filename || "").toLowerCase(),
+    index: i
+  })).filter(x => x.url);
+  const xrays = photos.filter(x => x.category.includes("x") || x.name.includes("xray") || x.name.includes("x-ray") || x.name.includes("radiograph"));
+  const clinical = photos.filter(x => !xrays.includes(x));
+  return { clinical, xrays };
+}
+
+window.simplePhotoState = window.simplePhotoState || {};
+
+function renderSimplePhotos(patient, type = "clinical") {
+  const cats = categorizedPhotos(patient);
+  const list = type === "xray" ? cats.xrays : cats.clinical;
+  const fallback = type === "xray" ? cats.clinical : cats.xrays;
+  const photos = list.length ? list : fallback;
+  if (!photos.length) return `<p style="color:var(--muted);font-weight:800">No photos yet</p>`;
+  window.simplePhotoState[patient.id] = { type, photos };
+  return `
+    <div class="photoSectionTabs">
+      <button class="${type === "clinical" ? "active" : ""}" onclick="switchSimplePhotoType('${patient.id}','clinical')">Clinical</button>
+      <button class="${type === "xray" ? "active" : ""}" onclick="switchSimplePhotoType('${patient.id}','xray')">X-ray</button>
+    </div>
+    <div class="simplePhotoGrid">
+      ${photos.map((p, i) => `<img src="${p.url}" onclick="openSimplePhotoViewer('${patient.id}', ${i})">`).join("")}
+    </div>`;
+}
+
+window.switchSimplePhotoType = function(patientId, type) {
+  const p = patients.find(x => x.id === patientId);
+  if (!p) return;
+  const target = document.getElementById("simplePhotosBox");
+  if (target) target.innerHTML = renderSimplePhotos(p, type);
+};
+
+window.openSimplePhotoViewer = function(patientId, index = 0) {
+  const p = patients.find(x => x.id === patientId);
+  if (!p) return;
+  const currentType = window.simplePhotoState[patientId]?.type || "clinical";
+  const cats = categorizedPhotos(p);
+  const list = currentType === "xray" ? cats.xrays : cats.clinical;
+  const fallback = currentType === "xray" ? cats.clinical : cats.xrays;
+  const photos = (list.length ? list : fallback).map(x => x.url);
+  if (!photos.length) return;
+  window.simplePhotoState[patientId] = { type: currentType, photos, index };
+
+  document.getElementById("fullPhotoViewer")?.remove();
+  const viewer = document.createElement("div");
+  viewer.className = "fullPhotoViewer";
+  viewer.id = "fullPhotoViewer";
+  viewer.innerHTML = `
+    <div class="fullPhotoTop">
+      <span style="color:white;font-weight:1000">${index + 1} / ${photos.length}</span>
+      <button onclick="closeSimplePhotoViewer()">Ã</button>
+    </div>
+    <img src="${photos[index]}">
+    <div class="fullPhotoNav">
+      <button onclick="moveSimplePhoto('${patientId}', -1)">Previous</button>
+      <button onclick="moveSimplePhoto('${patientId}', 1)">Next</button>
+    </div>`;
+  document.body.appendChild(viewer);
+};
+
+window.moveSimplePhoto = function(patientId, step) {
+  const s = window.simplePhotoState[patientId];
+  if (!s || !s.photos?.length) return;
+  s.index = (s.index + step + s.photos.length) % s.photos.length;
+  openSimplePhotoViewer(patientId, s.index);
+};
+
+window.closeSimplePhotoViewer = function() {
+  document.getElementById("fullPhotoViewer")?.remove();
+};
+
 function patientDetailsHTML(p) {
   const data = parseClinicData(p.progress_notes);
   const money = paymentTotals(data);
@@ -3314,13 +3493,7 @@ function patientDetailsHTML(p) {
       ${data.payments.length ? data.payments.map((pay, i) => `<div class="appointment"><b>${safeText(pay.date || "")}</b><p>Total: ${Number(pay.total || 0)} | Paid: ${Number(pay.paid || 0)} | Remaining: ${Number(pay.total || 0) - Number(pay.paid || 0)}</p><button class="danger" onclick="deletePayment('${p.id}', ${i})">Delete</button></div>`).join("") : `<div class="kv"><span>No payments yet</span></div>`}
 
       <h3 class="sectionTitle">Photos / X-rays</h3>
-
-      <div class="actions" style="margin:10px 0;">
-        <button class="secondary" onclick="showBeforeAfter('${p.id}')">Before / After</button>
-        <button class="secondary" onclick="openPhotoComparePro('${p.id}')">Before/After Pro</button>
-      </div>
-
-      <div id="photoGalleryProBox">${renderPhotoGalleryPro(p, "clinical")}</div>
+      <div id="simplePhotosBox">${renderSimplePhotos(p, "clinical")}</div>
 
       <h3 class="sectionTitle">Patient Timeline</h3>
       <div class="patientCard">${renderTimeline(p)}</div>
@@ -4943,4 +5116,6 @@ window.addEventListener("load", async () => {
 });
 
 try { applySavedTheme(); } catch(e) {}
+try { enhancePremiumHeader(); } catch(e) {}
+
 try { enhancePremiumHeader(); } catch(e) {}
