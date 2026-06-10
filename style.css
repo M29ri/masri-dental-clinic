@@ -435,3 +435,28 @@ textarea{
   font-size:12px;
   color:var(--muted);
 }
+.brandWrapPremium{
+  display:flex;
+  align-items:center;
+  gap:18px;
+  width:100%;
+}
+
+.headerRight{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  margin-left:auto;
+  flex-wrap:nowrap;
+}
+
+.hamburgerBtn{
+  min-width:130px;
+  height:72px;
+  border:0;
+  border-radius:28px;
+  background:linear-gradient(135deg,var(--theme1),var(--theme2));
+  color:#000;
+  font-size:22px;
+  font-weight:900;
+}
