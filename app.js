@@ -1624,7 +1624,8 @@ window.showBeforeAfter = function(id) {
 
   modal.onclick = () => clearInterval(timer);
 };
-
+  
+};
 // --- QR Code ---
 window.showQR = function(id) {
   const p = patients.find(x => x.id === id);
