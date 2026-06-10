@@ -289,20 +289,27 @@ if (userBox && !rightArea.contains(userBox)) {
   rightArea.appendChild(userBox);
 }
 
-// refresh button
-const refreshBtn = document.querySelector(".refreshBtn");
-if (refreshBtn && !rightArea.contains(refreshBtn)) {
-  rightArea.appendChild(refreshBtn);
+let buttonStack = rightArea.querySelector(".buttonStack");
+
+if (!buttonStack) {
+  buttonStack = document.createElement("div");
+  buttonStack.className = "buttonStack";
+  rightArea.appendChild(buttonStack);
 }
 
-// menu button
+const refreshBtn = document.querySelector(".refreshBtn");
+
+if (refreshBtn && !buttonStack.contains(refreshBtn)) {
+  buttonStack.appendChild(refreshBtn);
+}
+
 if (!document.getElementById("hamburgerBtn")) {
   const btn = document.createElement("button");
   btn.id = "hamburgerBtn";
   btn.className = "hamburgerBtn";
   btn.innerHTML = "Menu";
   btn.onclick = openClinicMenu;
-  rightArea.appendChild(btn);
+  buttonStack.appendChild(btn);
 }
 }
 
