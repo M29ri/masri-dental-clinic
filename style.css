@@ -539,3 +539,8 @@ grid-row:1 !important;
   grid-column:2 !important;
   grid-row:1 !important;
 }
+.buttonStack{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
