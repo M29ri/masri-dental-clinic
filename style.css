@@ -1559,6 +1559,7 @@ width: 100%;
 }
 
 .luxury-box {
+  position: relative;
   width: 100%;
   max-width: 440px;
   background: linear-gradient(145deg, #111827, #1a2332);
@@ -2241,4 +2242,25 @@ button[onclick*="showConsent"],
 button[onclick*="showPrescription"],
 button[onclick*="showLab"]{
   width:100%;
+}
+/* BEFORE AFTER CLOSE BUTTON */
+.before-after-wrap {
+  position: relative;
+}
+
+.before-after-wrap + .actions-bar {
+  position: relative;
+}
+
+.luxury-modal .close-btn,
+.luxury-modal button[onclick*="remove"] {
+  position: absolute !important;
+  top: 18px !important;
+  right: 18px !important;
+  width: 56px !important;
+  height: 56px !important;
+  z-index: 9999 !important;
+  border-radius: 18px !important;
+  left: auto !important;
+  transform: none !important;
 }
