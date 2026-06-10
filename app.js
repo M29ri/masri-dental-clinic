@@ -298,20 +298,6 @@ if (!buttonStack) {
   rightArea.appendChild(buttonStack);
 }
 
-// real refresh button
-const refreshBtn =
-  document.querySelector(".refreshBtn") ||
-  [...document.querySelectorAll("button")].find(b =>
-    b.textContent.trim() === "↻" ||
-    b.textContent.trim() === "⟳" ||
-    b.getAttribute("onclick")?.includes("loadPatients") ||
-    b.getAttribute("onclick")?.includes("location.reload")
-  );
-
-if (refreshBtn) {
-  refreshBtn.classList.add("refreshBtn");
-  buttonStack.appendChild(refreshBtn);
-}
 // menu button
 let btn = document.getElementById("hamburgerBtn");
 
