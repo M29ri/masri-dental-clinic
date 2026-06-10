@@ -240,9 +240,6 @@ body {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 10px;
-  position: sticky;
-  top: 76px;
-  z-index: 90;
   background: rgba(7, 11, 16, 0.82);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
@@ -252,12 +249,12 @@ body {
 
 .tab {
   border: none;
-  border-radius: var(--radius-md);
-  padding: 14px 10px;
+  border-radius: 16px;
+  padding: 12px 8px;
   background: var(--bg-elevated);
   color: var(--text-secondary);
   font-family: inherit;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   transition: var(--transition);
@@ -567,9 +564,9 @@ select {
 }
 
 #search {
-  font-size: 17px;
-  border-radius: var(--radius-xl);
-  padding: 18px 22px;
+  font-size: 16px;
+  border-radius: 22px;
+  padding: 16px 18px;
   width: 100%;
 }
 
@@ -677,8 +674,8 @@ select {
 .patient-card {
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
-  padding: 22px;
+  border-radius: 28px;
+  padding: 18px;
   margin-bottom: 14px;
   box-shadow: var(--shadow-card);
   transition: var(--transition);
@@ -1121,7 +1118,7 @@ select {
 .modal img {
   max-width: 100%;
   max-height: 85vh;
-  border-radius: var(--radius-lg);
+ border-radius: 22px;
   box-shadow: 0 20px 60px rgba(0,0,0,0.5);
 }
 
@@ -2203,3 +2200,9 @@ body.theme-cyan { --accent: #06b6d4; --accent-light: #22d3ee; --accent-dark: #0e
 body.theme-purple { --accent: #8b5cf6; --accent-light: #a78bfa; --accent-dark: #6d28d9; }
 body.theme-green { --accent: #22c55e; --accent-light: #4ade80; --accent-dark: #15803d; }
 body.theme-orange { --accent: #f97316; --accent-light: #fb923c; --accent-dark: #c2410c; }
+.page,
+.patient-page,
+.patient-details,
+.page-content{
+padding-top:12px !important;
+}
