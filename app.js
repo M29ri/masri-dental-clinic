@@ -991,6 +991,228 @@ function injectExtraStyles() {
       .signaturePad{height:150px!important}
     }
 
+  
+    /* Teeth chart v4 + Before/After Morph */
+    .quadTabs{
+      display:grid!important;
+      grid-template-columns:repeat(5,minmax(0,1fr))!important;
+      gap:8px!important;
+      margin:12px 0 18px!important;
+      position:relative!important;
+      z-index:10!important;
+    }
+    .quadTabs button{
+      min-height:48px!important;
+      border:none!important;
+      border-radius:16px!important;
+      background:linear-gradient(145deg,#1f2937,#111827)!important;
+      color:#e5e7eb!important;
+      font-weight:1000!important;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 10px 20px rgba(0,0,0,.18)!important;
+    }
+    .quadTabs button.active{
+      background:linear-gradient(135deg,#f5d76e,#b8860b)!important;
+      color:#050505!important;
+      box-shadow:0 0 26px rgba(212,175,55,.35)!important;
+    }
+    .proMouthChart{
+      position:relative!important;
+      height:720px!important;
+      max-width:860px!important;
+      margin:18px auto!important;
+      border-radius:46px!important;
+      overflow:hidden!important;
+      background:
+        radial-gradient(ellipse at 50% 35%,rgba(212,175,55,.16),transparent 30%),
+        radial-gradient(ellipse at 50% 68%,rgba(59,130,246,.10),transparent 34%),
+        linear-gradient(145deg,#05070a,#111827 52%,#05070a)!important;
+      border:1px solid rgba(212,175,55,.18)!important;
+      box-shadow:inset 0 0 110px rgba(212,175,55,.06),0 30px 90px rgba(0,0,0,.55)!important;
+    }
+    .proMouthChart::before{
+      content:"";
+      position:absolute;
+      left:12%;
+      right:12%;
+      top:10%;
+      bottom:10%;
+      border:1px solid rgba(212,175,55,.13);
+      border-radius:50%;
+      pointer-events:none;
+      box-shadow:inset 0 0 70px rgba(212,175,55,.03);
+    }
+    .proMouthLabel{
+      position:absolute!important;
+      left:50%!important;
+      transform:translateX(-50%)!important;
+      color:rgba(212,175,55,.62)!important;
+      letter-spacing:12px!important;
+      font-size:18px!important;
+      font-weight:1000!important;
+      pointer-events:none!important;
+      z-index:2!important;
+    }
+    .proMouthLabel.upper{top:38%!important}
+    .proMouthLabel.lower{top:59%!important}
+    .proMidLine{
+      position:absolute!important;
+      top:16%!important;
+      bottom:16%!important;
+      left:50%!important;
+      border-left:1px dashed rgba(212,175,55,.28)!important;
+      z-index:1!important;
+    }
+    .proHorizontalLine{
+      position:absolute!important;
+      left:16%!important;
+      right:16%!important;
+      top:50%!important;
+      border-top:1px dashed rgba(212,175,55,.28)!important;
+      z-index:1!important;
+    }
+    .proTooth{
+      position:absolute!important;
+      transform:translate(-50%,-50%)!important;
+      width:54px!important;
+      height:62px!important;
+      border:none!important;
+      background:transparent!important;
+      padding:0!important;
+      transition:opacity .2s ease,transform .2s ease,filter .2s ease!important;
+      z-index:6!important;
+      overflow:visible!important;
+    }
+    .proTooth.hiddenByQuad{
+      opacity:.08!important;
+      filter:grayscale(1)!important;
+      pointer-events:none!important;
+    }
+    .proTooth:hover,.proTooth:focus{
+      transform:translate(-50%,-50%) scale(1.14)!important;
+      filter:brightness(1.12)!important;
+      z-index:20!important;
+    }
+    .toothArt{
+      position:relative!important;
+      display:block!important;
+      width:56px!important;
+      height:56px!important;
+      filter:drop-shadow(0 14px 14px rgba(0,0,0,.52))!important;
+    }
+    .proToothSvg{width:56px!important;height:56px!important;overflow:visible!important}
+    .proToothSvg path:first-child{
+      fill:#fff2d7!important;
+      stroke:rgba(255,255,255,.85)!important;
+      stroke-width:2.2!important;
+    }
+    .proToothSvg .surfaceMark{stroke:rgba(0,0,0,.36)!important;stroke-width:3!important;fill:none!important}
+    .proToothSvg .shine{stroke:rgba(255,255,255,.75)!important;stroke-width:2!important;fill:none!important}
+    .proTooth.caries .proToothSvg path:first-child{fill:#ef4444!important}
+    .proTooth.filling .proToothSvg path:first-child{fill:#60a5fa!important}
+    .proTooth.rct .proToothSvg path:first-child{fill:#8b5cf6!important}
+    .proTooth.crown .proToothSvg path:first-child{fill:#d4af37!important}
+    .proTooth.missing .proToothSvg path:first-child{fill:#4b5563!important}
+    .proTooth.extraction .proToothSvg path:first-child{fill:#fb7185!important}
+    .proTooth.implant .proToothSvg path:first-child{fill:#2dd4bf!important}
+    .toothNo{
+      position:absolute!important;
+      left:50%!important;
+      top:54px!important;
+      transform:translateX(-50%)!important;
+      color:#e5e7eb!important;
+      text-shadow:0 2px 6px #000!important;
+      font-size:12px!important;
+      font-weight:1000!important;
+    }
+    .toothSurfaceText{
+      position:absolute!important;
+      right:-8px!important;
+      top:-8px!important;
+      min-width:24px!important;
+      height:24px!important;
+      border-radius:999px!important;
+      display:flex!important;
+      align-items:center!important;
+      justify-content:center!important;
+      font-size:8px!important;
+      font-weight:1000!important;
+      background:rgba(212,175,55,.96)!important;
+      color:#050505!important;
+      border:2px solid rgba(255,255,255,.75)!important;
+      z-index:30!important;
+    }
+    .surfaceOverlay{
+      position:absolute!important;
+      left:50%!important;
+      top:50%!important;
+      transform:translate(-50%,-50%) rotate(45deg)!important;
+      width:38px!important;
+      height:38px!important;
+      border-radius:50%!important;
+      pointer-events:none!important;
+      display:grid!important;
+      grid-template-columns:1fr 1fr!important;
+      grid-template-rows:1fr 1fr!important;
+      overflow:hidden!important;
+      opacity:.75!important;
+      mix-blend-mode:multiply!important;
+    }
+    .surfaceOverlay span{border:1px solid rgba(0,0,0,.12)!important}
+    .surfaceCaries{background:#ef4444!important}.surfaceFilling{background:#60a5fa!important}.surfaceRCT{background:#8b5cf6!important}.surfaceCrown{background:#d4af37!important}
+    .toothRootLine{stroke:#4c1d95!important;stroke-width:4!important;stroke-linecap:round!important;fill:none!important}
+    .implantPost{stroke:#0f766e!important;stroke-width:5!important;stroke-linecap:round!important;fill:none!important}
+
+    .baMorphWrap{
+      position:relative!important;
+      height:460px!important;
+      border-radius:28px!important;
+      overflow:hidden!important;
+      background:#020617!important;
+      border:1px solid #263241!important;
+      box-shadow:0 24px 65px rgba(0,0,0,.50)!important;
+      display:grid!important;
+      place-items:center!important;
+    }
+    .baMorphWrap img{
+      position:absolute!important;
+      inset:0!important;
+      width:100%!important;
+      height:100%!important;
+      object-fit:contain!important;
+      background:#020617!important;
+      transition:opacity .25s ease,filter .25s ease,transform .25s ease!important;
+    }
+    .baMorphAfter{opacity:.5!important}
+    .baGhostLabel{
+      position:absolute!important;
+      top:14px!important;
+      padding:8px 12px!important;
+      border-radius:999px!important;
+      background:rgba(0,0,0,.58)!important;
+      color:#fff!important;
+      font-weight:1000!important;
+      z-index:6!important;
+    }
+    .baGhostLabel.before{left:14px!important}
+    .baGhostLabel.after{right:14px!important}
+    .baControlPanel{
+      display:grid!important;
+      grid-template-columns:1fr 1fr!important;
+      gap:10px!important;
+      margin-top:14px!important;
+    }
+    .baControlPanel input[type=range]{
+      grid-column:1/-1!important;
+      width:100%!important;
+    }
+    @media(max-width:460px){
+      .proMouthChart{height:650px!important}
+      .proTooth{width:43px!important;height:52px!important}
+      .toothArt,.proToothSvg{width:46px!important;height:46px!important}
+      .toothNo{top:45px!important;font-size:11px!important}
+      .baMorphWrap{height:380px!important}
+    }
+
   `;
   document.head.appendChild(style);
 }
@@ -1943,18 +2165,24 @@ function getToothType(n) {
 
 
 window.setQuadrantFilter = function(q) {
+  const map = {
+    all: n => true,
+    upperR: n => n >= 11 && n <= 18,
+    upperL: n => n >= 21 && n <= 28,
+    lowerL: n => n >= 31 && n <= 38,
+    lowerR: n => n >= 41 && n <= 48
+  };
+
+  const fn = map[q] || map.all;
+
   document.querySelectorAll(".proTooth").forEach(btn => {
-    const n = Number(btn.dataset.tooth || 0);
-    const show =
-      q === "all" ||
-      (q === "upperR" && n >= 11 && n <= 18) ||
-      (q === "upperL" && n >= 21 && n <= 28) ||
-      (q === "lowerL" && n >= 31 && n <= 38) ||
-      (q === "lowerR" && n >= 41 && n <= 48);
-    btn.style.display = show ? "" : "none";
+    const n = Number(btn.getAttribute("data-tooth") || btn.dataset.tooth || 0);
+    btn.classList.toggle("hiddenByQuad", !fn(n));
   });
-  document.querySelectorAll(".quadTabs button").forEach(b => b.classList.remove("active"));
-  document.querySelector(`[data-quad="${q}"]`)?.classList.add("active");
+
+  document.querySelectorAll(".quadTabs button").forEach(b => {
+    b.classList.toggle("active", b.getAttribute("data-quad") === q);
+  });
 };
 
 
@@ -2017,6 +2245,7 @@ function renderToothChart(p) {
           <button
             type="button"
             class="proTooth ${safeText(status)} ${type}"
+            data-tooth="${n}"
             style="left:${x}%;top:${y}%"
             onclick="window.openToothPopup('${p.id}', '${n}')"
           >
@@ -3241,32 +3470,80 @@ window.openPhotoComparePro = function(id) {
   const photos = (p.photos || []).map(photoUrl).filter(Boolean);
   if (photos.length < 2) return alert("Need at least 2 photos.");
 
+  let beforeIndex = 0;
+  let afterIndex = 1;
+
   const modal = document.createElement("div");
   modal.className = "luxuryModal";
   modal.innerHTML = `
-    <div class="luxuryBox" style="max-width:760px;">
-      <h2>Before / After Pro</h2>
-      <div class="photoCompareWrap">
-        <img src="${photos[1]}" class="compareAfter">
-        <img src="${photos[0]}" class="compareBefore" id="compareBeforeImg">
-        <input type="range" min="0" max="100" value="50" class="compareSlider" id="compareSlider">
+    <div class="luxuryBox" style="max-width:780px;">
+      <h2>Before / After Morph</h2>
+      <p style="color:var(--muted);font-weight:800;margin-bottom:14px;">
+        This creates a smooth visual transition between the before and after photos.
+      </p>
+
+      <div class="baMorphWrap">
+        <span class="baGhostLabel before">Before</span>
+        <span class="baGhostLabel after">After</span>
+        <img src="${photos[beforeIndex]}" id="baBeforeImg" class="baMorphBefore">
+        <img src="${photos[afterIndex]}" id="baAfterImg" class="baMorphAfter">
       </div>
-      <div class="luxuryActions">
-        <button class="secondary" id="swapCompare">Swap</button>
+
+      <div class="baControlPanel">
+        <input type="range" min="0" max="100" value="50" id="baMorphSlider">
+        <button class="secondary" id="baPrevBefore">Before photo</button>
+        <button class="secondary" id="baNextAfter">After photo</button>
+        <button class="primary" id="baAutoPlay">Auto transition</button>
         <button class="secondary" onclick="this.closest('.luxuryModal').remove()">Close</button>
       </div>
     </div>
   `;
+
   document.body.appendChild(modal);
 
-  const slider = modal.querySelector("#compareSlider");
-  const before = modal.querySelector("#compareBeforeImg");
-  slider.oninput = () => before.style.clipPath = `inset(0 ${100 - slider.value}% 0 0)`;
-  modal.querySelector("#swapCompare").onclick = () => {
-    const imgs = modal.querySelectorAll(".photoCompareWrap img");
-    const tmp = imgs[0].src;
-    imgs[0].src = imgs[1].src;
-    imgs[1].src = tmp;
+  const slider = modal.querySelector("#baMorphSlider");
+  const before = modal.querySelector("#baBeforeImg");
+  const after = modal.querySelector("#baAfterImg");
+
+  function updateMorph() {
+    const v = Number(slider.value) / 100;
+    before.style.opacity = String(1 - v);
+    after.style.opacity = String(v);
+    before.style.filter = `brightness(${1 - v * .15}) blur(${v * 1.2}px)`;
+    after.style.filter = `brightness(${.9 + v * .12}) blur(${(1 - v) * 1.2}px)`;
+    before.style.transform = `scale(${1 + v * .025})`;
+    after.style.transform = `scale(${1.025 - v * .025})`;
+  }
+
+  function updateImages() {
+    before.src = photos[beforeIndex];
+    after.src = photos[afterIndex];
+    updateMorph();
+  }
+
+  slider.oninput = updateMorph;
+  updateMorph();
+
+  modal.querySelector("#baPrevBefore").onclick = () => {
+    beforeIndex = (beforeIndex + 1) % photos.length;
+    if (beforeIndex === afterIndex) beforeIndex = (beforeIndex + 1) % photos.length;
+    updateImages();
+  };
+
+  modal.querySelector("#baNextAfter").onclick = () => {
+    afterIndex = (afterIndex + 1) % photos.length;
+    if (afterIndex === beforeIndex) afterIndex = (afterIndex + 1) % photos.length;
+    updateImages();
+  };
+
+  modal.querySelector("#baAutoPlay").onclick = () => {
+    let v = 0;
+    const timer = setInterval(() => {
+      v += 2;
+      slider.value = v;
+      updateMorph();
+      if (v >= 100) clearInterval(timer);
+    }, 35);
   };
 };
 
