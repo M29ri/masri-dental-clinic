@@ -156,7 +156,7 @@ window.openClinicMenu = function() {
   drawer.innerHTML = `
     <div class="drawerHead">
       <h2>Menu</h2>
-      <button class="drawerClose" onclick="closeClinicMenu()">Ã</button>
+      <button class="drawerClose" onclick="closeClinicMenu()" aria-label="Close"></button>
     </div>
 
     <div class="drawerUser">
@@ -2410,6 +2410,171 @@ nav button[onclick*="settings"],.tabs button[onclick*="settings"],.tabBar button
   .toothNo{font-size:7px!important}
 }
 
+  
+/* FINAL REQUEST: drawer X, selectable before/after, compact clean odontogram */
+.drawerClose,
+.sideDrawer .drawerClose,
+#sideDrawer .drawerClose{
+  width:48px!important;
+  height:48px!important;
+  min-width:48px!important;
+  border-radius:16px!important;
+  background:linear-gradient(135deg,var(--theme1,#f5d76e),var(--theme2,#b8860b))!important;
+  color:#050505!important;
+  border:0!important;
+  font-size:0!important;
+  display:grid!important;
+  place-items:center!important;
+  padding:0!important;
+}
+.drawerClose::before,
+.sideDrawer .drawerClose::before,
+#sideDrawer .drawerClose::before{
+  content:"Ã"!important;
+  font-size:32px!important;
+  line-height:1!important;
+  font-weight:1000!important;
+  color:#050505!important;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif!important;
+}
+
+/* Make chart clinical/simple instead of fake 3D */
+.proMouthChart{
+  height:auto!important;
+  padding:18px 12px 22px!important;
+  border-radius:28px!important;
+  background:linear-gradient(145deg,#050914,#0b1220 60%,#030507)!important;
+  display:grid!important;
+  gap:18px!important;
+  overflow:hidden!important;
+}
+.proMouthChart::before,.proMouthChart::after{display:none!important}
+.dentalArch{
+  position:relative!important;
+  width:100%!important;
+  max-width:640px!important;
+  height:155px!important;
+  margin:0 auto!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  clip-path:none!important;
+  overflow:visible!important;
+}
+.dentalArch::before{
+  content:""!important;
+  position:absolute!important;
+  left:4%!important;
+  right:4%!important;
+  height:72px!important;
+  background:linear-gradient(180deg,rgba(208,92,100,.92),rgba(122,37,50,.96))!important;
+  border:1px solid rgba(255,220,220,.24)!important;
+  box-shadow:inset 0 16px 24px rgba(255,255,255,.12), inset 0 -14px 22px rgba(70,0,10,.28)!important;
+  z-index:1!important;
+}
+.dentalArch.upper::before{
+  top:32px!important;
+  border-radius:90px 90px 20px 20px!important;
+}
+.dentalArch.lower::before{
+  bottom:32px!important;
+  border-radius:20px 20px 90px 90px!important;
+}
+.archLabel{
+  display:none!important;
+}
+.proTooth{
+  position:absolute!important;
+  border:none!important;
+  background:transparent!important;
+  padding:0!important;
+  transform:translate(-50%,-50%) rotate(var(--rot,0deg))!important;
+  z-index:6!important;
+  overflow:visible!important;
+  transition:transform .15s ease, filter .15s ease!important;
+}
+.proTooth:hover,.proTooth:focus{
+  transform:translate(-50%,-50%) rotate(var(--rot,0deg)) scale(1.13)!important;
+  filter:drop-shadow(0 0 12px var(--accent,#d4af37))!important;
+  z-index:20!important;
+}
+.proTooth.hiddenByQuad{opacity:.12!important;pointer-events:none!important;filter:grayscale(1)!important}
+.toothArt,.proTooth svg{
+  display:block!important;
+  overflow:visible!important;
+  filter:drop-shadow(0 6px 7px rgba(0,0,0,.38))!important;
+}
+.proTooth.incisor .toothArt,.proTooth.incisor svg{width:16px!important;height:39px!important}
+.proTooth.canine .toothArt,.proTooth.canine svg{width:20px!important;height:42px!important}
+.proTooth.premolar .toothArt,.proTooth.premolar svg{width:27px!important;height:33px!important}
+.proTooth.molar .toothArt,.proTooth.molar svg{width:32px!important;height:34px!important}
+.toothNo{
+  display:block!important;
+  position:absolute!important;
+  left:50%!important;
+  transform:translateX(-50%)!important;
+  color:#fff!important;
+  font-size:7px!important;
+  font-weight:1000!important;
+  text-shadow:0 2px 5px #000!important;
+}
+.dentalArch.upper .toothNo{top:calc(100% + 1px)!important}
+.dentalArch.lower .toothNo{bottom:calc(100% + 1px)!important}
+
+/* Before/After picker */
+.baPickerGrid{
+  display:grid!important;
+  grid-template-columns:repeat(2,1fr)!important;
+  gap:10px!important;
+  margin:12px 0!important;
+  max-height:300px!important;
+  overflow:auto!important;
+}
+.baPickCard{
+  border:2px solid rgba(148,163,184,.20)!important;
+  border-radius:16px!important;
+  overflow:hidden!important;
+  background:#020617!important;
+  position:relative!important;
+}
+.baPickCard.selectedBefore{border-color:#22c55e!important;box-shadow:0 0 0 3px rgba(34,197,94,.18)!important}
+.baPickCard.selectedAfter{border-color:var(--accent,#d4af37)!important;box-shadow:0 0 0 3px color-mix(in srgb,var(--accent,#d4af37) 20%, transparent)!important}
+.baPickCard img{
+  width:100%!important;
+  height:130px!important;
+  object-fit:cover!important;
+  display:block!important;
+}
+.baPickActions{
+  display:grid!important;
+  grid-template-columns:1fr 1fr!important;
+  gap:6px!important;
+  padding:8px!important;
+}
+.baPickActions button{
+  min-height:34px!important;
+  border:0!important;
+  border-radius:10px!important;
+  font-weight:1000!important;
+  background:#1f2937!important;
+  color:#fff!important;
+}
+.baPickActions button.active{
+  background:linear-gradient(135deg,var(--theme1,#f5d76e),var(--theme2,#b8860b))!important;
+  color:#050505!important;
+}
+.beforeAfterSwipe{
+  height:330px!important;
+}
+@media(max-width:480px){
+  .dentalArch{height:132px!important}
+  .proTooth.incisor .toothArt,.proTooth.incisor svg{width:14px!important;height:34px!important}
+  .proTooth.canine .toothArt,.proTooth.canine svg{width:17px!important;height:36px!important}
+  .proTooth.premolar .toothArt,.proTooth.premolar svg{width:23px!important;height:29px!important}
+  .proTooth.molar .toothArt,.proTooth.molar svg{width:27px!important;height:30px!important}
+  .baPickCard img{height:105px!important}
+}
+
   `;
   document.head.appendChild(style);
 }
@@ -3400,17 +3565,17 @@ function renderToothChart(p) {
   const teeth = data.teeth || {};
 
   const upper = [
-    [18,7,66,-20],[17,14,52,-15],[16,22,41,-10],[15,31,32,-7],
-    [14,40,26,-4],[13,48,22,-2],[12,56,20,-1],[11,64,20,0],
-    [21,36,20,0],[22,44,20,1],[23,52,22,2],[24,60,26,4],
-    [25,69,32,7],[26,78,41,10],[27,86,52,15],[28,93,66,20]
+    [18,9,58,-22],[17,15,49,-17],[16,22,42,-12],[15,30,36,-8],
+    [14,38,31,-5],[13,46,28,-2],[12,53,27,-1],[11,60,27,0],
+    [21,40,27,0],[22,47,27,1],[23,54,28,2],[24,62,31,5],
+    [25,70,36,8],[26,78,42,12],[27,85,49,17],[28,91,58,22]
   ];
 
   const lower = [
-    [48,7,34,20],[47,14,48,15],[46,22,59,10],[45,31,68,7],
-    [44,40,74,4],[43,48,78,2],[42,56,80,1],[41,64,80,0],
-    [31,36,80,0],[32,44,80,-1],[33,52,78,-2],[34,60,74,-4],
-    [35,69,68,-7],[36,78,59,-10],[37,86,48,-15],[38,93,34,-20]
+    [48,9,42,22],[47,15,51,17],[46,22,58,12],[45,30,64,8],
+    [44,38,69,5],[43,46,72,2],[42,53,73,1],[41,60,73,0],
+    [31,40,73,0],[32,47,73,-1],[33,54,72,-2],[34,62,69,-5],
+    [35,70,64,-8],[36,78,58,-12],[37,85,51,-17],[38,91,42,-22]
   ];
 
   const toothButton = ([n,x,y,r]) => {
@@ -3418,7 +3583,6 @@ function renderToothChart(p) {
     const status = typeof toothInfo === "string" ? toothInfo : (toothInfo.status || "healthy");
     const surfaces = typeof toothInfo === "string" ? [] : (toothInfo.surfaces || []);
     const type = getToothType(n);
-
     return `
       <button type="button" class="proTooth ${safeText(status)} ${type}" data-tooth="${n}" style="left:${x}%;top:${y}%;--rot:${r}deg" onclick="window.openToothPopup('${p.id}', '${n}')">
         <span class="toothArt">${toothSvg(type)}${surfaceOverlayHTML(toothInfo)}${toothExtraOverlay(status)}</span>
@@ -3434,16 +3598,9 @@ function renderToothChart(p) {
       <button data-quad="lowerL" onclick="setQuadrantFilter('lowerL')">LL</button>
       <button data-quad="lowerR" onclick="setQuadrantFilter('lowerR')">LR</button>
     </div>
-
     <div class="proMouthChart">
-      <div class="dentalArch upper">
-        <span class="archLabel">UPPER</span>
-        ${upper.map(toothButton).join("")}
-      </div>
-      <div class="dentalArch lower">
-        <span class="archLabel">LOWER</span>
-        ${lower.map(toothButton).join("")}
-      </div>
+      <div class="dentalArch upper">${upper.map(toothButton).join("")}</div>
+      <div class="dentalArch lower">${lower.map(toothButton).join("")}</div>
     </div>`;
 }
 function treatmentProgressItems(patient) {
@@ -5677,3 +5834,100 @@ window.openSimplePhotoViewer = function(patientId, index = 0) {
 };
 
 try { enhancePremiumHeader(); } catch(e) {}
+
+
+/* FINAL DRAWER AND BEFORE/AFTER OVERRIDES */
+window.openClinicMenu = function() {
+  closeClinicMenu();
+  const overlay = document.createElement("div");
+  overlay.className = "drawerOverlay";
+  overlay.id = "drawerOverlay";
+  overlay.onclick = closeClinicMenu;
+
+  const drawer = document.createElement("aside");
+  drawer.className = "sideDrawer";
+  drawer.id = "sideDrawer";
+  drawer.innerHTML = `
+    <div class="drawerHead">
+      <h2>Menu</h2>
+      <button class="drawerClose" onclick="closeClinicMenu()" aria-label="Close"></button>
+    </div>
+    <div class="drawerUser">
+      <div>${safeText(currentUser?.full_name || currentUser?.username || "Doctor")}</div>
+      <small>${safeText((currentUser?.role || "doctor").toUpperCase())}</small>
+    </div>
+    <div class="drawerMenu">
+      <button class="primaryItem" onclick="closeClinicMenu(); showPage('dashboard')">Dashboard</button>
+      <button onclick="closeClinicMenu(); showPage('patients')">Patients</button>
+      <button onclick="closeClinicMenu(); showPage('settings')">Profile / Branding</button>
+      <button onclick="closeClinicMenu(); backupData()">Backup</button>
+      <button onclick="closeClinicMenu(); restoreBackup()">Restore</button>
+      <button onclick="closeClinicMenu(); alert('Open a patient file and use WhatsApp Reminder from patient tools.')">Reminders</button>
+      <button onclick="closeClinicMenu(); backupData()">Daily Backup</button>
+      <button onclick="closeClinicMenu(); typeof addUser==='function' ? addUser() : alert('Users are managed by admin setup.')">Users</button>
+      <button onclick="closeClinicMenu(); openThemeMenu()">Themes</button>
+      <button class="dangerItem" onclick="logout()">Logout</button>
+    </div>`;
+  document.body.appendChild(overlay);
+  document.body.appendChild(drawer);
+};
+
+window.showBeforeAfter = function(id) {
+  const p = patients.find(x => x.id === id);
+  if (!p) return;
+  const photos = (p.photos || []).map(photoUrl).filter(Boolean);
+  if (photos.length < 2) return alert("Need at least 2 photos.");
+
+  let before = 0;
+  let after = 1;
+
+  const modal = document.createElement("div");
+  modal.className = "luxuryModal";
+  modal.innerHTML = `
+    <div class="luxuryBox" style="max-width:760px;">
+      <h2>Choose Before / After</h2>
+      <p style="color:var(--muted);font-weight:900;margin:6px 0 10px">Select one before image and one after image.</p>
+      <div class="baPickerGrid" id="baPickerGrid"></div>
+      <button class="primary" style="width:100%;margin-top:8px" id="baShowBtn">Show Swipe</button>
+      <button class="secondary" style="width:100%;margin-top:8px" onclick="this.closest('.luxuryModal').remove()">Close</button>
+    </div>`;
+  document.body.appendChild(modal);
+
+  const grid = modal.querySelector("#baPickerGrid");
+  const renderPicker = () => {
+    grid.innerHTML = photos.map((url, i) => `
+      <div class="baPickCard ${i === before ? "selectedBefore" : ""} ${i === after ? "selectedAfter" : ""}">
+        <img src="${url}">
+        <div class="baPickActions">
+          <button class="${i === before ? "active" : ""}" data-i="${i}" data-kind="before">Before</button>
+          <button class="${i === after ? "active" : ""}" data-i="${i}" data-kind="after">After</button>
+        </div>
+      </div>`).join("");
+    grid.querySelectorAll("button").forEach(btn => {
+      btn.onclick = () => {
+        const i = Number(btn.dataset.i);
+        if (btn.dataset.kind === "before") before = i;
+        if (btn.dataset.kind === "after") after = i;
+        if (before === after) after = (before + 1) % photos.length;
+        renderPicker();
+      };
+    });
+  };
+  renderPicker();
+
+  modal.querySelector("#baShowBtn").onclick = () => {
+    modal.querySelector(".luxuryBox").innerHTML = `
+      <h2>Before / After</h2>
+      <div class="beforeAfterSwipe">
+        <span class="label before">Before</span>
+        <span class="label after">After</span>
+        <img src="${photos[before]}">
+        <div class="afterClip" id="afterClip"><img src="${photos[after]}"></div>
+        <input type="range" min="0" max="100" value="50" id="beforeAfterRange">
+      </div>
+      <button class="secondary" style="width:100%" onclick="this.closest('.luxuryModal').remove()">Close</button>`;
+    const range = modal.querySelector("#beforeAfterRange");
+    const clip = modal.querySelector("#afterClip");
+    range.oninput = () => clip.style.clipPath = `inset(0 0 0 ${range.value}%)`;
+  };
+};
