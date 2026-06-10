@@ -1584,15 +1584,25 @@ window.showBeforeAfter = function(id) {
   modal.querySelector("#baSlider").oninput = (e) => {
     modal.querySelector("#baClip").style.width = e.target.value + "%";
   };
+  const fadeSwap = (img, src) => {
+  img.style.transition = "opacity .35s ease, filter .35s ease";
+  img.style.opacity = "0";
+  img.style.filter = "blur(6px)";
+  setTimeout(() => {
+    img.src = src;
+    img.style.opacity = "1";
+    img.style.filter = "blur(0)";
+  }, 180);
+};
   modal.querySelector("#baPrevBefore").onclick = () => {
     beforeIdx = (beforeIdx - 1 + photos.length) % photos.length;
     if (beforeIdx === afterIdx) beforeIdx = (beforeIdx - 1 + photos.length) % photos.length;
-    modal.querySelector("#baClip img").src = photos[beforeIdx];
+   fadeSwap(modal.querySelector("#baClip img"), photos[beforeIdx]);
   };
   modal.querySelector("#baNextAfter").onclick = () => {
     afterIdx = (afterIdx + 1) % photos.length;
     if (afterIdx === beforeIdx) afterIdx = (afterIdx + 1) % photos.length;
-    modal.querySelector(".before-after-wrap > img").src = photos[afterIdx];
+    fadeSwap(modal.querySelector(".before-after-wrap > img"), photos[afterIdx]);
   };
  modal.querySelector("#baAuto").onclick = () => {
   const beforeImg = modal.querySelector("#baClip img");
