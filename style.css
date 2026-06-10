@@ -243,14 +243,14 @@ body {
   background: rgba(7, 11, 16, 0.82);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
-  padding: 10px 0 14px;
+  padding: 6px 0 10px;
   margin-bottom: 18px;
 }
 
 .tab {
   border: none;
   border-radius: 16px;
-  padding: 12px 8px;
+  padding: 11px 6px;
   background: var(--bg-elevated);
   color: var(--text-secondary);
   font-family: inherit;
@@ -560,7 +560,7 @@ select {
    SEARCH
    ============================================ */
 .search-wrap {
-  margin-bottom: 18px;
+  margin-bottom: 12px;
 }
 
 #search {
@@ -675,8 +675,8 @@ select {
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
   border-radius: 28px;
-  padding: 18px;
-  margin-bottom: 14px;
+  padding: 16px;
+  margin-bottom: 10px;
   box-shadow: var(--shadow-card);
   transition: var(--transition);
 }
@@ -719,7 +719,7 @@ select {
   background: var(--bg-elevated);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  padding: 14px;
+  padding: 10px;
   text-align: center;
 }
 
