@@ -500,3 +500,13 @@ justify-self:end !important;
 .refreshBtn{
 display:none !important;
 }
+button[onclick*="loadPatients"],
+button[onclick*="loadData"],
+button[onclick*="refresh"],
+button[onclick*="location.reload"],
+.refreshBtn,
+.syncBtn,
+#refreshBtn,
+#syncBtn{
+  display:none !important;
+}
