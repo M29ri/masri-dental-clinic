@@ -1214,541 +1214,288 @@ function injectExtraStyles() {
     }
 
   
-    /* BoneBox inspired premium patient workspace */
-    .patientWorkspace{display:grid!important;grid-template-columns:300px minmax(0,1fr)!important;gap:18px!important;align-items:start!important;margin-top:14px!important}
-    .patientSidePanel{position:sticky!important;top:14px!important;background:linear-gradient(145deg,#0b1220,#111827)!important;border:1px solid rgba(148,163,184,.16)!important;border-radius:28px!important;padding:18px!important;box-shadow:0 22px 70px rgba(0,0,0,.35)!important}
-    .backPatientsBtn{display:flex!important;align-items:center!important;gap:8px!important;border:none!important;background:transparent!important;color:#e5e7eb!important;font-weight:1000!important;padding:4px 0 14px!important;font-size:15px!important}
-    .patientIdentity{display:flex!important;gap:14px!important;align-items:center!important;padding-bottom:16px!important;border-bottom:1px solid rgba(148,163,184,.14)!important;margin-bottom:14px!important}
-    .patientPhotoAvatar{width:82px!important;height:82px!important;border-radius:28px!important;background:linear-gradient(135deg,#f5d76e,#b8860b)!important;color:#050505!important;display:grid!important;place-items:center!important;font-size:30px!important;font-weight:1000!important;box-shadow:0 14px 35px rgba(0,0,0,.38)!important;flex:0 0 auto!important;overflow:hidden!important;position:relative!important}
-    .patientPhotoAvatar img{width:100%!important;height:100%!important;object-fit:cover!important}.cameraDot{position:absolute!important;right:-2px!important;bottom:-2px!important;width:30px!important;height:30px!important;border-radius:50%!important;background:#111827!important;border:2px solid rgba(255,255,255,.65)!important;display:grid!important;place-items:center!important;color:#fff!important;font-size:14px!important}
-    .sideStats{display:grid!important;grid-template-columns:repeat(3,1fr)!important;gap:8px!important;margin:14px 0!important}.sideStat{border:1px solid rgba(148,163,184,.16)!important;background:#0f1620!important;border-radius:16px!important;padding:10px 8px!important}.sideStat small{display:block!important;color:#d4af37!important;font-weight:1000!important;font-size:11px!important}.sideStat b{display:block!important;color:#22c58b!important;font-size:24px!important;margin-top:4px!important}
-    .patientMenu{background:#0b1220!important;border:1px solid rgba(148,163,184,.13)!important;border-radius:24px!important;padding:10px!important;display:grid!important;gap:8px!important;margin-top:12px!important}.patientMenu button{display:flex!important;justify-content:space-between!important;align-items:center!important;min-height:48px!important;border-radius:16px!important;border:none!important;background:transparent!important;color:#cbd5e1!important;font-weight:900!important;padding:0 12px!important;text-align:left!important}.patientMenu button.active{background:linear-gradient(135deg,rgba(245,215,110,.92),rgba(184,134,11,.76))!important;color:#050505!important;box-shadow:0 10px 25px rgba(212,175,55,.18)!important}
-    .menuBadge{min-width:26px!important;height:26px!important;border-radius:999px!important;display:grid!important;place-items:center!important;background:rgba(148,163,184,.18)!important;color:#e5e7eb!important;font-size:12px!important}
-    .patientMainPanel{display:grid!important;gap:16px!important}.workspaceCard{background:linear-gradient(145deg,#0b1220,#111827)!important;border:1px solid rgba(148,163,184,.16)!important;border-radius:28px!important;padding:18px!important;box-shadow:0 22px 70px rgba(0,0,0,.28)!important}.workspaceHeader{display:flex!important;justify-content:space-between!important;gap:12px!important;align-items:center!important;margin-bottom:14px!important}.workspaceHeader h2{margin:0!important;color:#f8fafc!important;font-size:24px!important}
-    .viewTabs{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:8px!important;margin-bottom:14px!important}.viewTabs button{min-height:74px!important;border-radius:18px!important;border:1px solid rgba(148,163,184,.16)!important;background:#0f1620!important;color:#cbd5e1!important;font-weight:900!important;display:grid!important;place-items:center!important;padding:8px!important}.viewTabs button.active{background:linear-gradient(135deg,rgba(245,215,110,.30),rgba(184,134,11,.20))!important;color:#f8fafc!important;border-color:rgba(212,175,55,.45)!important}.viewTabs .tabIcon{width:38px!important;height:38px!important;border-radius:12px!important;display:grid!important;place-items:center!important;background:rgba(212,175,55,.12)!important;color:#d4af37!important;font-size:22px!important}
-    .mouthStage{position:relative!important;min-height:620px!important;border-radius:26px!important;overflow:hidden!important;background:radial-gradient(circle at 50% 50%,rgba(59,130,246,.12),transparent 46%),radial-gradient(circle at 52% 33%,rgba(212,175,55,.11),transparent 25%),linear-gradient(145deg,#050914,#0b1220 55%,#030507)!important;border:1px solid rgba(148,163,184,.15)!important;perspective:1100px!important}
-    .mouthModel{position:absolute!important;left:50%!important;top:52%!important;width:520px!important;height:500px!important;transform:translate(-50%,-50%) rotateX(var(--mouthX,12deg)) rotateY(var(--mouthY,-12deg)) scale(var(--mouthScale,1))!important;transform-style:preserve-3d!important;transition:transform .45s ease!important}
-    .jaw{position:absolute!important;left:50%!important;width:440px!important;height:170px!important;transform-style:preserve-3d!important;filter:drop-shadow(0 32px 34px rgba(0,0,0,.45))!important}.upperJaw{top:55px!important;transform:translateX(-50%) rotateX(var(--upperOpen,-18deg)) translateZ(24px)!important;transform-origin:center bottom!important;transition:transform .5s ease!important}.lowerJaw{bottom:45px!important;transform:translateX(-50%) rotateX(var(--lowerOpen,18deg)) translateZ(10px)!important;transform-origin:center top!important;transition:transform .5s ease!important}
-    .gum{position:absolute!important;left:0!important;right:0!important;height:112px!important;border-radius:58% 58% 30% 30%!important;background:radial-gradient(circle at 35% 35%,rgba(255,255,255,.28),transparent 14%),radial-gradient(circle at 65% 38%,rgba(255,255,255,.20),transparent 13%),linear-gradient(135deg,#ffb1a4,#c85f61 48%,#7f2634)!important;box-shadow:inset 0 16px 25px rgba(255,255,255,.18),inset 0 -18px 28px rgba(70,10,20,.38)!important;border:1px solid rgba(255,255,255,.18)!important}.upperJaw .gum{top:0!important;border-radius:36% 36% 58% 58%!important}.lowerJaw .gum{bottom:0!important;border-radius:58% 58% 36% 36%!important}
-    .mouthTeeth{position:absolute!important;left:50%!important;width:430px!important;height:155px!important;transform:translateX(-50%)!important;z-index:5!important}.upperJaw .mouthTeeth{bottom:3px!important}.lowerJaw .mouthTeeth{top:3px!important}
-    .mouthTooth{position:absolute!important;transform:translate(-50%,-50%) rotate(var(--rot,0deg))!important;width:38px!important;height:54px!important;border:none!important;background:transparent!important;padding:0!important;overflow:visible!important;z-index:8!important;transition:transform .18s ease,filter .18s ease!important}.mouthTooth:hover,.mouthTooth.selected{transform:translate(-50%,-50%) rotate(var(--rot,0deg)) scale(1.17)!important;filter:drop-shadow(0 0 16px rgba(212,175,55,.85))!important;z-index:20!important}
-    .mouthTooth svg{width:46px!important;height:58px!important;overflow:visible!important}.mouthTooth svg path:first-child{fill:#fff8e8!important;stroke:rgba(255,255,255,.90)!important;stroke-width:2!important}.mouthTooth.caries svg path:first-child{fill:#ef4444!important}.mouthTooth.filling svg path:first-child{fill:#60a5fa!important}.mouthTooth.rct svg path:first-child{fill:#8b5cf6!important}.mouthTooth.crown svg path:first-child{fill:#d4af37!important}.mouthTooth.implant svg path:first-child{fill:#2dd4bf!important}.mouthTooth.missing svg path:first-child{fill:#475569!important;opacity:.45!important}.mouthTooth.extraction svg path:first-child{fill:#fb7185!important}
-    .mouthToothNo{position:absolute!important;left:50%!important;top:54px!important;transform:translateX(-50%)!important;color:#e5e7eb!important;text-shadow:0 2px 8px #000!important;font-size:10px!important;font-weight:1000!important}
-    .mouthControls{position:absolute!important;right:16px!important;top:50%!important;transform:translateY(-50%)!important;display:grid!important;gap:10px!important;z-index:30!important}.mouthControls button{width:70px!important;height:72px!important;border-radius:18px!important;background:#0f1620!important;border:1px solid rgba(148,163,184,.18)!important;color:#e5e7eb!important;font-weight:1000!important;display:grid!important;place-items:center!important;padding:6px!important}.mouthControls button.gold{background:linear-gradient(135deg,rgba(245,215,110,.45),rgba(184,134,11,.28))!important;border-color:rgba(212,175,55,.45)!important}
-    .mouthLegend{position:absolute!important;left:18px!important;right:18px!important;bottom:18px!important;display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:8px!important;padding:12px!important;border-radius:20px!important;background:rgba(15,22,32,.78)!important;border:1px solid rgba(148,163,184,.18)!important;backdrop-filter:blur(10px)!important;z-index:25!important}.mouthLegend span{display:grid!important;place-items:center!important;color:#e5e7eb!important;font-weight:900!important;font-size:12px!important}.dot{width:15px!important;height:15px!important;border-radius:50%!important;margin-bottom:5px!important}
-    .selectedToothPanel{display:grid!important;grid-template-columns:360px minmax(0,1fr)!important;gap:16px!important;align-items:stretch!important}.miniArch{position:relative!important;min-height:260px!important;border-radius:24px!important;background:#0b1220!important;border:1px solid rgba(148,163,184,.14)!important;overflow:hidden!important}.selectedInfo{border-radius:24px!important;background:#0b1220!important;border:1px solid rgba(148,163,184,.14)!important;padding:18px!important}.selectedInfo h2{margin:0 0 10px!important;color:#f8fafc!important}.selectedInfo .infoRow{border-top:1px solid rgba(148,163,184,.12)!important;padding:12px 0!important;color:#cbd5e1!important;font-weight:800!important}
-    .bottomClinicNav{position:sticky!important;bottom:0!important;z-index:50!important;display:grid!important;grid-template-columns:repeat(6,1fr)!important;gap:6px!important;background:rgba(3,7,18,.88)!important;backdrop-filter:blur(16px)!important;border-top:1px solid rgba(148,163,184,.15)!important;padding:10px 8px calc(10px + env(safe-area-inset-bottom))!important;margin-top:18px!important}.bottomClinicNav button{min-height:54px!important;border:none!important;border-radius:18px!important;background:transparent!important;color:#cbd5e1!important;font-weight:900!important;display:grid!important;place-items:center!important;font-size:12px!important}.bottomClinicNav button.active{background:linear-gradient(135deg,rgba(245,215,110,.32),rgba(184,134,11,.25))!important;color:#facc15!important}
-    .baMorphWrap img{filter:none!important;image-rendering:auto!important}.baMorphAfter{opacity:0!important}
-    @media(max-width:800px){.patientWorkspace{grid-template-columns:1fr!important}.patientSidePanel{position:relative!important;top:0!important}.viewTabs{grid-template-columns:repeat(3,1fr)!important}.mouthStage{min-height:620px!important}.mouthModel{width:410px!important;height:430px!important}.jaw{width:360px!important}.mouthTeeth{width:355px!important}.mouthControls{right:10px!important}.mouthControls button{width:58px!important;height:62px!important;font-size:12px!important}.mouthLegend{grid-template-columns:repeat(3,1fr)!important}.selectedToothPanel{grid-template-columns:1fr!important}.bottomClinicNav{grid-template-columns:repeat(3,1fr)!important}}
-
-  
-    /* Compact professional mobile cleanup */
-    body{
-      overflow-x:hidden!important;
-    }
-    body.detailMode .brand,
-    body.detailMode .userBox,
-    body.detailMode #refreshBtn,
-    body.detailMode #logoutBtn,
-    body.detailMode nav:not(.patientMenu):not(.bottomClinicNav){
-      transform:scale(.78)!important;
-      transform-origin:top left!important;
-    }
-    body.detailMode .tabs,
-    body.detailMode .tabBar,
-    body.detailMode .topNav{
-      transform:scale(.82)!important;
-      transform-origin:top left!important;
-    }
-    .patientWorkspace{
-      display:block!important;
-      margin-top:8px!important;
-    }
-    .patientSidePanel{
-      position:relative!important;
-      top:auto!important;
-      padding:12px!important;
-      border-radius:20px!important;
-      margin:8px 0 12px!important;
-      box-shadow:0 10px 30px rgba(0,0,0,.25)!important;
-    }
-    .patientIdentity{
-      gap:10px!important;
-      margin-bottom:10px!important;
-      padding-bottom:10px!important;
-    }
-    .patientPhotoAvatar{
-      width:56px!important;
-      height:56px!important;
-      border-radius:18px!important;
-      font-size:22px!important;
-    }
-    .cameraDot{
-      width:22px!important;
-      height:22px!important;
-      font-size:11px!important;
-    }
-    .patientIdentity h2{
+    /* FULL LAUNCH RELEASE UI */
+    body{overflow-x:hidden!important}
+    .card{border-radius:24px!important}
+    .sectionTitle{
+      margin:24px 0 12px!important;
+      color:#d4af37!important;
       font-size:20px!important;
-      line-height:1.05!important;
-      margin-bottom:4px!important;
+      letter-spacing:.2px!important;
     }
-    .patientIdentity p{
-      font-size:12px!important;
-      margin:4px 0 0!important;
-    }
-    .backPatientsBtn{
-      font-size:13px!important;
-      padding-bottom:8px!important;
-    }
-    .sideStats{
-      grid-template-columns:repeat(3,1fr)!important;
-      gap:6px!important;
-      margin:10px 0!important;
-    }
-    .sideStat{
-      padding:8px!important;
-      border-radius:14px!important;
-    }
-    .sideStat small{
-      font-size:10px!important;
-    }
-    .sideStat b{
-      font-size:20px!important;
-    }
-    .patientSidePanel .completionRing{
-      width:62px!important;
-      height:62px!important;
-      margin:10px auto!important;
-    }
-    .patientSidePanel .completionRing span{
-      width:48px!important;
-      height:48px!important;
-      font-size:12px!important;
-    }
-    .patientMenu{
-      grid-template-columns:repeat(2,1fr)!important;
-      display:grid!important;
-      gap:6px!important;
-      padding:8px!important;
-      border-radius:18px!important;
-    }
-    .patientMenu button{
-      min-height:38px!important;
-      border-radius:12px!important;
-      font-size:12px!important;
-      padding:0 8px!important;
-    }
-    .menuBadge{
-      min-width:20px!important;
-      height:20px!important;
-      font-size:10px!important;
-    }
-    .patientMainPanel{
-      gap:10px!important;
-    }
-    .workspaceCard{
-      padding:12px!important;
-      border-radius:20px!important;
-      margin:10px 0!important;
-    }
-    .workspaceHeader{
-      margin-bottom:10px!important;
-    }
-    .workspaceHeader h2,
-    .workspaceCard h2{
-      font-size:20px!important;
-      line-height:1.1!important;
-      margin:0 0 10px!important;
-    }
-    .kv{
-      padding:10px!important;
-      border-radius:14px!important;
-      margin:8px 0!important;
-    }
-    .kv b{
-      font-size:12px!important;
-    }
-    .kv span{
-      font-size:14px!important;
-      line-height:1.25!important;
-    }
-
-    /* Clean labels: no corrupted emoji/icons */
-    .viewTabs{
-      grid-template-columns:repeat(3,1fr)!important;
-      gap:6px!important;
-    }
-    .viewTabs button{
-      min-height:48px!important;
-      border-radius:14px!important;
-      font-size:11px!important;
-      line-height:1.1!important;
-    }
-    .viewTabs .tabIcon{
-      display:none!important;
-    }
-    .mouthStage{
-      min-height:430px!important;
-      border-radius:18px!important;
-    }
-    .mouthModel{
-      width:330px!important;
-      height:330px!important;
-      top:47%!important;
-    }
-    .jaw{
-      width:300px!important;
-      height:115px!important;
-    }
-    .upperJaw{
-      top:44px!important;
-    }
-    .lowerJaw{
-      bottom:34px!important;
-    }
-    .gum{
-      height:74px!important;
-    }
-    .mouthTeeth{
-      width:300px!important;
-      height:105px!important;
-    }
-    .mouthTooth{
-      width:25px!important;
-      height:36px!important;
-    }
-    .mouthTooth svg{
-      width:30px!important;
-      height:38px!important;
-    }
-    .mouthToothNo{
-      top:35px!important;
-      font-size:7px!important;
-    }
-    .toothSurfaceText{
-      min-width:16px!important;
-      height:16px!important;
-      font-size:6px!important;
-      top:-4px!important;
-      right:-4px!important;
-    }
-    .surfaceOverlay{
-      width:22px!important;
-      height:22px!important;
-    }
-    .mouthControls{
-      right:8px!important;
-      gap:6px!important;
-    }
-    .mouthControls button{
-      width:46px!important;
-      height:48px!important;
-      border-radius:12px!important;
-      font-size:14px!important;
-      padding:3px!important;
-    }
-    .mouthControls small{
-      font-size:8px!important;
-    }
-    .mouthLegend{
-      left:8px!important;
-      right:8px!important;
-      bottom:8px!important;
-      grid-template-columns:repeat(3,1fr)!important;
-      padding:8px!important;
-      gap:5px!important;
-      border-radius:14px!important;
-    }
-    .mouthLegend span{
-      font-size:9px!important;
-    }
-    .dot{
-      width:10px!important;
-      height:10px!important;
-      margin-bottom:2px!important;
-    }
-
-    .selectedToothPanel{
-      display:block!important;
-    }
-    .miniArch{
-      display:none!important;
-    }
-    .selectedInfo{
-      padding:12px!important;
-      border-radius:16px!important;
-    }
-    .selectedInfo h2{
-      font-size:18px!important;
-    }
-    .selectedInfo .infoRow{
-      padding:8px 0!important;
-      font-size:13px!important;
-    }
-
-    /* Photos should never be huge */
-    .photoGrid{
-      display:grid!important;
-      grid-template-columns:repeat(2,minmax(0,1fr))!important;
-      gap:8px!important;
-    }
-    .photoCard{
-      height:190px!important;
-      border-radius:14px!important;
-      overflow:hidden!important;
-      background:#05070a!important;
-    }
-    .photoCard img{
-      width:100%!important;
-      height:100%!important;
-      object-fit:cover!important;
-      display:block!important;
-    }
-    .photoTag{
-      font-size:10px!important;
-      padding:4px 8px!important;
-    }
-
-    /* Bottom nav compact and readable */
-    .bottomClinicNav{
-      left:0!important;
-      right:0!important;
-      width:100%!important;
-      grid-template-columns:repeat(5,1fr)!important;
-      gap:4px!important;
-      padding:6px 6px calc(6px + env(safe-area-inset-bottom))!important;
-      border-radius:0!important;
-      margin-top:10px!important;
-    }
-    .bottomClinicNav button{
-      min-height:42px!important;
-      font-size:10px!important;
-      border-radius:12px!important;
-      white-space:nowrap!important;
-    }
-
-    .reportCenterGrid,
     .actions{
+      display:flex!important;
+      flex-wrap:wrap!important;
       gap:8px!important;
+      margin:10px 0!important;
     }
-    .reportCenterGrid button,
     .actions button{
       min-height:44px!important;
       border-radius:14px!important;
       font-size:13px!important;
+      font-weight:900!important;
     }
 
-    /* Before/After modal compact */
-    .baMorphWrap{
-      height:340px!important;
-      border-radius:18px!important;
+    /* Patient page full but clean */
+    .profileHero{
+      display:grid!important;
+      grid-template-columns:1fr auto!important;
+      gap:14px!important;
+      align-items:center!important;
+      padding:16px!important;
+      border-radius:26px!important;
+      background:linear-gradient(145deg,#0b1220,#111827)!important;
+      border:1px solid rgba(212,175,55,.18)!important;
+      margin-bottom:14px!important;
     }
-    .baMorphWrap img{
-      object-fit:contain!important;
-      filter:none!important;
+    .profileHero h2{
+      font-size:24px!important;
+      margin:0 0 8px!important;
+      color:#f8fafc!important;
     }
-    .baControlPanel{
-      gap:8px!important;
-    }
-
-    @media(max-width:480px){
-      .photoGrid{grid-template-columns:1fr 1fr!important}
-      .photoCard{height:160px!important}
-      .mouthStage{min-height:390px!important}
-      .mouthModel{width:300px!important;height:300px!important}
-      .jaw{width:275px!important}
-      .mouthTeeth{width:275px!important}
-      .bottomClinicNav{grid-template-columns:repeat(3,1fr)!important}
-    }
-
-  
-    /* Final mobile polish: clean text, compact chart, clinical/xray gallery */
-    body.detailMode .tabs,
-    body.detailMode nav:not(.patientMenu):not(.bottomClinicNav),
-    body.detailMode .topNav{
-      position:relative!important;
-      z-index:1!important;
-      transform:none!important;
-      max-width:100%!important;
+    .patientAvatar{
+      width:78px!important;
+      height:78px!important;
+      border-radius:24px!important;
       overflow:hidden!important;
-      opacity:.92!important;
-    }
-    body.detailMode #app,body.detailMode main,body.detailMode .page{overflow-x:hidden!important}
-    .workspaceHeader .pill{font-size:11px!important;line-height:1.2!important;white-space:normal!important;max-width:180px!important;text-align:center!important;color:transparent!important;position:relative!important}
-    .workspaceHeader .pill::before{content:"Tap tooth â¢ Rotate â¢ Open/Close";color:#e5e7eb!important;position:absolute!important;inset:0!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:0 8px!important}
-    .mouthStage{min-height:360px!important;padding:0!important;border-radius:18px!important}
-    .mouthModel{width:275px!important;height:275px!important;top:45%!important}
-    .jaw{width:255px!important;height:98px!important}
-    .upperJaw{top:42px!important}.lowerJaw{bottom:26px!important}.gum{height:62px!important}
-    .mouthTeeth{width:252px!important;height:92px!important}
-    .mouthTooth{width:22px!important;height:32px!important}
-    .mouthTooth svg{width:27px!important;height:34px!important}
-    .mouthToothNo,.toothSurfaceText{display:none!important}
-    .surfaceOverlay{width:18px!important;height:18px!important}
-    .mouthControls{right:6px!important;gap:5px!important}
-    .mouthControls button{width:42px!important;height:42px!important;border-radius:12px!important;font-size:11px!important;line-height:1!important}
-    .mouthControls small{display:none!important}
-    .mouthLegend{left:8px!important;right:8px!important;bottom:8px!important;grid-template-columns:repeat(6,1fr)!important;gap:3px!important;padding:6px!important}
-    .mouthLegend span{font-size:8px!important}.dot{width:10px!important;height:10px!important;margin-bottom:2px!important}
-    .viewTabs button{min-height:42px!important;font-size:12px!important}.viewTabs .tabIcon{display:none!important}
-    .photoSectionTabs{display:grid!important;grid-template-columns:repeat(2,1fr)!important;gap:8px!important;margin:10px 0!important}
-    .photoSectionTabs button{min-height:44px!important;border-radius:14px!important;border:none!important;background:#1f2937!important;color:#e5e7eb!important;font-weight:1000!important}
-    .photoSectionTabs button.active{background:linear-gradient(135deg,#f5d76e,#b8860b)!important;color:#050505!important}
-    .photoGalleryHeader{display:flex!important;justify-content:space-between!important;align-items:center!important;gap:8px!important;margin:10px 0!important}
-    .photoGalleryHeader h3{margin:0!important;color:#d4af37!important;font-size:18px!important}
-    .galleryControls{display:flex!important;gap:8px!important}
-    .galleryControls button{width:42px!important;height:38px!important;border:none!important;border-radius:12px!important;background:#1f2937!important;color:#fff!important;font-weight:1000!important}
-    .premiumPhotoViewer{height:360px!important;border-radius:18px!important;overflow:hidden!important;background:#020617!important;border:1px solid #263241!important;display:grid!important;place-items:center!important;position:relative!important;margin-bottom:10px!important}
-    .premiumPhotoViewer img{width:100%!important;height:100%!important;object-fit:contain!important;filter:none!important}
-    .photoThumbs{display:flex!important;gap:8px!important;overflow-x:auto!important;padding:6px 0!important}
-    .photoThumbs img{width:82px!important;height:70px!important;object-fit:cover!important;border-radius:12px!important;border:2px solid transparent!important;flex:0 0 auto!important}
-    .photoThumbs img.active{border-color:#d4af37!important}
-    .photoGrid{display:none!important}
-    .baMorphWrap{height:360px!important;background:#020617!important}
-    .baMorphWrap img{object-fit:contain!important;filter:none!important;opacity:1!important}
-    .baMorphAfter{opacity:0!important}
-    .baControlPanel{grid-template-columns:1fr 1fr!important}
-    .bottomClinicNav{position:sticky!important;bottom:0!important;width:100%!important;grid-template-columns:repeat(5,1fr)!important;padding:6px!important;margin:8px 0 0!important;border-radius:0!important}
-    .bottomClinicNav button{min-height:38px!important;font-size:11px!important}
-    .bottomClinicNav button:nth-child(6){display:none!important}
-
-  
-    /* Final fixes: readable text, profile image, zoom controls, realistic arch chart */
-    body.detailMode .brand,
-    body.detailMode .userBox,
-    body.detailMode #refreshBtn,
-    body.detailMode #logoutBtn{
-      transform:none!important;
-    }
-    body.detailMode nav:not(.patientMenu):not(.bottomClinicNav),
-    body.detailMode .tabs,
-    body.detailMode .tabBar,
-    body.detailMode .topNav{
-      position:static!important;
-      transform:none!important;
-      max-width:100%!important;
-      opacity:1!important;
-      margin-bottom:10px!important;
-    }
-    .patientPhotoAvatar{
       cursor:pointer!important;
-    }
-    .patientPhotoAvatar .cameraDot{
-      font-size:0!important;
-    }
-    .patientPhotoAvatar .cameraDot::after{
-      content:"Edit";
-      font-size:9px!important;
+      position:relative!important;
+      background:linear-gradient(135deg,#f5d76e,#b8860b)!important;
+      color:#050505!important;
+      display:grid!important;
+      place-items:center!important;
+      font-size:30px!important;
       font-weight:1000!important;
     }
-    .workspaceHeader .pill{
-      color:#e5e7eb!important;
-      position:static!important;
+    .patientAvatar img{width:100%!important;height:100%!important;object-fit:cover!important}
+    .patientAvatar::after{
+      content:"Edit";
+      position:absolute;
+      right:3px;
+      bottom:3px;
+      background:#111827;
+      color:#fff;
+      border:1px solid rgba(255,255,255,.65);
+      border-radius:999px;
+      font-size:9px;
+      font-weight:1000;
+      padding:3px 6px;
+    }
+    .completionRing{
+      width:78px!important;
+      height:78px!important;
+    }
+    .completionRing span{
+      width:58px!important;
+      height:58px!important;
+      font-size:14px!important;
+    }
+    .kv.cleanField{
+      border-radius:16px!important;
+      padding:12px!important;
+      margin:9px 0!important;
+    }
+
+    /* Full premium tooth chart: clean arch, no fake 3D */
+    .toothChartBox{
+      display:flex!important;
+      flex-wrap:wrap!important;
+      gap:6px!important;
+      margin:8px 0 12px!important;
+    }
+    .legendItem{
+      padding:6px 10px!important;
+      border-radius:999px!important;
       font-size:11px!important;
-      max-width:180px!important;
-      white-space:normal!important;
-      line-height:1.15!important;
+      background:rgba(212,175,55,.10)!important;
+      border:1px solid rgba(212,175,55,.22)!important;
+      color:#d4af37!important;
+      font-weight:900!important;
     }
-    .workspaceHeader .pill::before{content:none!important}
-    .mouthStage{
-      min-height:430px!important;
-      border-radius:22px!important;
+    .quadTabs{
+      display:grid!important;
+      grid-template-columns:repeat(5,1fr)!important;
+      gap:7px!important;
+      margin:8px 0 12px!important;
+    }
+    .quadTabs button{
+      min-height:40px!important;
+      border:none!important;
+      border-radius:14px!important;
+      background:#1f2937!important;
+      color:#e5e7eb!important;
+      font-weight:1000!important;
+      font-size:12px!important;
+    }
+    .quadTabs button.active{
+      background:linear-gradient(135deg,#f5d76e,#b8860b)!important;
+      color:#050505!important;
+    }
+    .proMouthChart{
+      height:480px!important;
+      max-width:100%!important;
+      border-radius:28px!important;
       background:
-        radial-gradient(ellipse at 50% 45%,rgba(160,42,60,.18),transparent 42%),
-        radial-gradient(ellipse at 50% 58%,rgba(20,120,160,.08),transparent 44%),
+        radial-gradient(ellipse at 50% 49%,rgba(143,36,52,.22),transparent 42%),
+        radial-gradient(ellipse at 50% 35%,rgba(212,175,55,.10),transparent 28%),
         linear-gradient(145deg,#050914,#0b1220 55%,#030507)!important;
+      border:1px solid rgba(212,175,55,.16)!important;
+      position:relative!important;
+      overflow:hidden!important;
+      box-shadow:inset 0 0 80px rgba(212,175,55,.04),0 18px 50px rgba(0,0,0,.28)!important;
     }
-    .mouthStage::before{
+    .proMouthChart::before{
       content:"";
       position:absolute;
       left:50%;
       top:50%;
-      width:210px;
+      width:250px;
       height:170px;
       transform:translate(-50%,-50%);
       border-radius:50%;
-      background:radial-gradient(ellipse at center,rgba(0,0,0,.55),rgba(0,0,0,.05) 62%,transparent 70%);
+      background:radial-gradient(ellipse at center,rgba(0,0,0,.55),rgba(0,0,0,.10) 60%,transparent 72%);
       pointer-events:none;
       z-index:1;
     }
-    .mouthModel{
-      width:320px!important;
-      height:330px!important;
-      top:49%!important;
+    .proMouthLabel,.proMidLine,.proHorizontalLine{display:none!important}
+    .proTooth{
+      position:absolute!important;
+      width:31px!important;
+      height:48px!important;
+      border:none!important;
+      background:transparent!important;
+      padding:0!important;
+      transform:translate(-50%,-50%) rotate(var(--rot,0deg))!important;
       z-index:5!important;
+      transition:transform .15s ease,filter .15s ease,opacity .15s ease!important;
+      overflow:visible!important;
     }
-    .jaw{
-      width:310px!important;
-      height:126px!important;
+    .proTooth:hover,.proTooth:focus{
+      transform:translate(-50%,-50%) rotate(var(--rot,0deg)) scale(1.18)!important;
+      filter:drop-shadow(0 0 13px rgba(212,175,55,.85))!important;
+      z-index:20!important;
     }
-    .upperJaw{top:32px!important}
-    .lowerJaw{bottom:24px!important}
-    .gum{
-      height:78px!important;
-      background:
-        radial-gradient(circle at 28% 38%,rgba(255,255,255,.22),transparent 12%),
-        radial-gradient(circle at 62% 34%,rgba(255,255,255,.16),transparent 13%),
-        linear-gradient(135deg,#ffb7aa,#ce6668 52%,#8a2936)!important;
-      box-shadow:inset 0 14px 26px rgba(255,255,255,.18),inset 0 -18px 30px rgba(70,10,20,.38),0 18px 28px rgba(0,0,0,.22)!important;
+    .proTooth.hiddenByQuad{
+      opacity:.13!important;
+      pointer-events:none!important;
+      filter:grayscale(1)!important;
     }
-    .upperJaw .gum{
-      top:0!important;
-      border-radius:55% 55% 42% 42%!important;
+    .toothArt{
+      display:block!important;
+      width:34px!important;
+      height:45px!important;
+      filter:drop-shadow(0 7px 8px rgba(0,0,0,.38))!important;
     }
-    .lowerJaw .gum{
-      bottom:0!important;
-      border-radius:42% 42% 55% 55%!important;
+    .proToothSvg,.proTooth svg{
+      width:34px!important;
+      height:45px!important;
+      overflow:visible!important;
     }
-    .mouthTeeth{
-      width:304px!important;
-      height:118px!important;
-    }
-    .upperJaw .mouthTeeth{bottom:0!important}
-    .lowerJaw .mouthTeeth{top:0!important}
-    .mouthTooth{
-      width:24px!important;
-      height:38px!important;
-    }
-    .mouthTooth svg{
-      width:30px!important;
-      height:40px!important;
-    }
-    .mouthTooth svg path:first-child{
+    .proToothSvg path:first-child,.proTooth svg path:first-child{
       fill:#fff7e6!important;
       stroke:rgba(255,255,255,.95)!important;
       stroke-width:1.8!important;
-      filter:drop-shadow(0 4px 4px rgba(0,0,0,.25));
     }
-    .mouthTooth:hover,.mouthTooth.selected{
-      transform:translate(-50%,-50%) rotate(var(--rot,0deg)) scale(1.22)!important;
-      filter:drop-shadow(0 0 14px rgba(212,175,55,.9))!important;
+    .proTooth.caries path:first-child{fill:#ef4444!important}
+    .proTooth.filling path:first-child{fill:#60a5fa!important}
+    .proTooth.rct path:first-child{fill:#8b5cf6!important}
+    .proTooth.crown path:first-child{fill:#d4af37!important}
+    .proTooth.implant path:first-child{fill:#2dd4bf!important}
+    .proTooth.missing path:first-child{fill:#475569!important;opacity:.45!important}
+    .proTooth.extraction path:first-child{fill:#fb7185!important}
+    .toothNo{display:none!important}
+    .toothSurfaceText{
+      min-width:18px!important;
+      height:18px!important;
+      border-radius:999px!important;
+      top:-5px!important;
+      right:-5px!important;
+      font-size:7px!important;
     }
-    .mouthToothNo{
-      display:none!important;
-    }
-    .mouthControls button{
-      font-size:10px!important;
-      width:42px!important;
-      height:42px!important;
-    }
-    .mouthControls small{display:none!important}
-    .mouthLegend{
-      grid-template-columns:repeat(6,1fr)!important;
-      padding:7px!important;
-      bottom:8px!important;
-    }
-    .mouthLegend span{
-      font-size:8px!important;
-    }
+    .surfaceOverlay{width:20px!important;height:20px!important}
 
+    /* Full gallery */
+    .photoTabs,.photoGrid{display:none!important}
+    .photoSectionTabs{
+      display:grid!important;
+      grid-template-columns:repeat(2,1fr)!important;
+      gap:8px!important;
+      margin:10px 0!important;
+    }
+    .photoSectionTabs button{
+      min-height:44px!important;
+      border-radius:14px!important;
+      border:none!important;
+      background:#1f2937!important;
+      color:#e5e7eb!important;
+      font-weight:1000!important;
+    }
+    .photoSectionTabs button.active{
+      background:linear-gradient(135deg,#f5d76e,#b8860b)!important;
+      color:#050505!important;
+    }
+    .photoGalleryHeader{
+      display:flex!important;
+      justify-content:space-between!important;
+      align-items:center!important;
+      gap:8px!important;
+      margin:10px 0!important;
+    }
+    .photoGalleryHeader h3{
+      margin:0!important;
+      color:#d4af37!important;
+      font-size:18px!important;
+    }
+    .galleryControls{display:flex!important;gap:8px!important}
+    .galleryControls button{
+      min-width:56px!important;
+      height:38px!important;
+      border:none!important;
+      border-radius:12px!important;
+      background:#1f2937!important;
+      color:#fff!important;
+      font-weight:1000!important;
+    }
+    .premiumPhotoViewer{
+      height:330px!important;
+      border-radius:18px!important;
+      overflow:hidden!important;
+      background:#020617!important;
+      border:1px solid #263241!important;
+      display:grid!important;
+      place-items:center!important;
+      position:relative!important;
+      margin-bottom:10px!important;
+    }
+    .premiumPhotoViewer img{
+      width:100%!important;
+      height:100%!important;
+      object-fit:contain!important;
+      filter:none!important;
+    }
+    .photoThumbs{
+      display:flex!important;
+      gap:8px!important;
+      overflow-x:auto!important;
+      padding:6px 0!important;
+    }
+    .photoThumbs img{
+      width:82px!important;
+      height:70px!important;
+      object-fit:cover!important;
+      border-radius:12px!important;
+      border:2px solid transparent!important;
+      flex:0 0 auto!important;
+    }
+    .photoThumbs img.active{border-color:#d4af37!important}
+
+    /* Zoom and before/after */
     .zoomOverlay{
       position:fixed!important;
       inset:0!important;
-      background:rgba(0,0,0,.92)!important;
+      background:rgba(0,0,0,.94)!important;
       z-index:999999!important;
       display:flex!important;
-      flex-direction:column!important;
       align-items:center!important;
       justify-content:center!important;
       padding:18px!important;
@@ -1761,7 +1508,6 @@ function injectExtraStyles() {
       display:flex!important;
       justify-content:space-between!important;
       gap:8px!important;
-      z-index:2!important;
     }
     .zoomToolbar button{
       border:none!important;
@@ -1769,7 +1515,7 @@ function injectExtraStyles() {
       background:#1f2937!important;
       color:white!important;
       min-height:42px!important;
-      padding:0 14px!important;
+      padding:0 13px!important;
       font-weight:1000!important;
     }
     .zoomOverlay img{
@@ -1781,16 +1527,41 @@ function injectExtraStyles() {
       transition:transform .15s ease!important;
       filter:none!important;
     }
-    .photoSectionTabs{display:grid!important;grid-template-columns:repeat(2,1fr)!important;gap:8px!important;margin:10px 0!important}
-    .photoSectionTabs button{min-height:44px!important;border-radius:14px!important;border:none!important;background:#1f2937!important;color:#e5e7eb!important;font-weight:1000!important}
-    .photoSectionTabs button.active{background:linear-gradient(135deg,#f5d76e,#b8860b)!important;color:#050505!important}
-    .premiumPhotoViewer{height:310px!important;border-radius:18px!important;overflow:hidden!important;background:#020617!important;border:1px solid #263241!important;display:grid!important;place-items:center!important;position:relative!important;margin-bottom:10px!important}
-    .premiumPhotoViewer img{width:100%!important;height:100%!important;object-fit:contain!important;filter:none!important}
-    .photoThumbs{display:flex!important;gap:8px!important;overflow-x:auto!important;padding:6px 0!important}
-    .photoThumbs img{width:82px!important;height:70px!important;object-fit:cover!important;border-radius:12px!important;border:2px solid transparent!important;flex:0 0 auto!important}
-    .photoThumbs img.active{border-color:#d4af37!important}
-    .photoGrid{display:none!important}
-    .baMorphWrap img{filter:none!important;object-fit:contain!important}
+    .baMorphWrap{
+      height:350px!important;
+      border-radius:18px!important;
+      background:#020617!important;
+      overflow:hidden!important;
+      position:relative!important;
+      display:grid!important;
+      place-items:center!important;
+    }
+    .baMorphWrap img{
+      position:absolute!important;
+      inset:0!important;
+      width:100%!important;
+      height:100%!important;
+      object-fit:contain!important;
+      filter:none!important;
+    }
+    .baMorphAfter{opacity:0!important}
+    .baControlPanel{
+      display:grid!important;
+      grid-template-columns:1fr 1fr!important;
+      gap:8px!important;
+      margin-top:12px!important;
+    }
+    .baControlPanel input{grid-column:1/-1!important;width:100%!important}
+
+    @media(max-width:480px){
+      .profileHero{grid-template-columns:1fr!important}
+      .patientAvatar{width:66px!important;height:66px!important}
+      .proMouthChart{height:405px!important}
+      .proTooth{width:26px!important;height:40px!important}
+      .proToothSvg,.proTooth svg,.toothArt{width:28px!important;height:38px!important}
+      .premiumPhotoViewer{height:285px!important}
+      .baMorphWrap{height:300px!important}
+    }
 
   `;
   document.head.appendChild(style);
@@ -2751,17 +2522,12 @@ window.setQuadrantFilter = function(q) {
     lowerL: n => n >= 31 && n <= 38,
     lowerR: n => n >= 41 && n <= 48
   };
-
   const fn = map[q] || map.all;
-
   document.querySelectorAll(".proTooth").forEach(btn => {
     const n = Number(btn.getAttribute("data-tooth") || btn.dataset.tooth || 0);
     btn.classList.toggle("hiddenByQuad", !fn(n));
   });
-
-  document.querySelectorAll(".quadTabs button").forEach(b => {
-    b.classList.toggle("active", b.getAttribute("data-quad") === q);
-  });
+  document.querySelectorAll(".quadTabs button").forEach(b => b.classList.toggle("active", b.getAttribute("data-quad") === q));
 };
 
 
@@ -2785,21 +2551,16 @@ function toothExtraOverlay(status) {
 function renderToothChart(p) {
   const data = parseClinicData(p.progress_notes);
   const teeth = data.teeth || {};
-
- const toothData = [
-  [18,18,44,-28],[17,24,37,-22],[16,30,31,-16],[15,36,25,-10],
-  [14,42,19,-5],[13,48,14,-2],[12,54,10,0],[11,59,9,0],
-
-  [21,63,9,0],[22,68,10,0],[23,73,14,2],[24,78,19,5],
-  [25,84,25,10],[26,89,31,16],[27,93,37,22],[28,95,44,28],
-
-  [48,18,60,-152],[47,24,67,-158],[46,30,74,-164],[45,36,81,-170],
-  [44,43,88,-176],[43,49,92,180],[42,54,95,180],[41,58,96,180],
-
-  [31,62,96,180],[32,66,95,180],[33,71,92,180],[34,77,88,176],
-  [35,83,81,170],[36,86,74,164],[37,91,67,158],[38,93,60,152]
-];
-
+  const toothData = [
+    [18,17,31,-34],[17,23,25,-28],[16,31,21,-20],[15,40,18,-12],
+    [14,49,16,-6],[13,58,15,-2],[12,66,15,0],[11,73,16,2],
+    [21,27,16,-2],[22,34,15,0],[23,42,15,2],[24,51,16,6],
+    [25,60,18,12],[26,69,21,20],[27,77,25,28],[28,83,31,34],
+    [48,17,69,34],[47,23,75,28],[46,31,79,20],[45,40,82,12],
+    [44,49,84,6],[43,58,85,2],[42,66,85,0],[41,73,84,-2],
+    [31,27,84,2],[32,34,85,0],[33,42,85,-2],[34,51,84,-6],
+    [35,60,82,-12],[36,69,79,-20],[37,77,75,-28],[38,83,69,-34]
+  ];
   return `
     <div class="quadTabs">
       <button class="active" data-quad="all" onclick="setQuadrantFilter('all')">All</button>
@@ -2809,34 +2570,18 @@ function renderToothChart(p) {
       <button data-quad="lowerR" onclick="setQuadrantFilter('lowerR')">LR</button>
     </div>
     <div class="proMouthChart">
-      <div class="proMouthLabel upper">UPPER</div>
-      <div class="proMouthLabel lower">LOWER</div>
-      <div class="proMidLine"></div>
-      <div class="proHorizontalLine"></div>
-
       ${toothData.map(([n,x,y,r]) => {
         const toothInfo = teeth[n] || "healthy";
         const status = typeof toothInfo === "string" ? toothInfo : (toothInfo.status || "healthy");
         const surfaces = typeof toothInfo === "string" ? [] : (toothInfo.surfaces || []);
         const type = getToothType(n);
-
         return `
-          <button
-            type="button"
-            class="proTooth ${safeText(status)} ${type}"
-            data-tooth="${n}"
-            style="left:${x}%;top:${y}%"
-            onclick="window.openToothPopup('${p.id}', '${n}')"
-          >
-            <span class="toothArt" style="transform:rotate(${r}deg)">
-              ${toothSvg(type)}${surfaceOverlayHTML(toothInfo)}${toothExtraOverlay(status)}
-            </span>
+          <button type="button" class="proTooth ${safeText(status)} ${type}" data-tooth="${n}" style="left:${x}%;top:${y}%;--rot:${r}deg" onclick="window.openToothPopup('${p.id}', '${n}')">
+            <span class="toothArt">${toothSvg(type)}${surfaceOverlayHTML(toothInfo)}${toothExtraOverlay(status)}</span>
             <span class="toothNo">${n}</span>${surfaces.length ? `<span class="toothSurfaceText">${safeText(surfaces.join(""))}</span>` : ""}
-          </button>
-        `;
+          </button>`;
       }).join("")}
-    </div>
-  `;
+    </div>`;
 }
 
 function treatmentProgressItems(patient) {
@@ -2914,59 +2659,47 @@ window.deleteLabWork = async function(patientId, index) {
 
 
 
-function renderPhotosSafe(patient) {
-  const photos = (patient.photos || []).map(photoUrl).filter(Boolean);
-  if (!photos.length) return `<p style="color:var(--muted);font-weight:800">No photos yet</p>`;
-  return `<div class="photoGrid compactPhotos">${photos.map((u, i) => `
-    <div class="photoCard">
-      <img src="${u}" onclick="openPhotoZoom('${u}')">
-      <span class="photoTag">Photo ${i + 1}</span>
-    </div>
-  `).join("")}</div>`;
+function patientProfilePhoto(patient) {
+  const data = parseClinicData(patient.progress_notes);
+  return data.profile_photo || (patient.photos || []).map(photoUrl).filter(Boolean)[0] || "";
 }
 
-function renderVisitsSafe(data) {
-  const visits = data.visits || [];
-  return visits.length ? visits.map((v,i)=>`<div class="kv"><b>${safeText(v.treatment || ("Visit " + (i+1)))}</b><span>${safeText(v.date || "")}</span><br><span>${safeText(v.note || "")}</span></div>`).join("") : `<div class="kv"><span>No visits yet</span></div>`;
-}
+window.changePatientProfilePhoto = async function(patientId) {
+  const p = patients.find(x => x.id === patientId);
+  if (!p) return;
+  const photos = (p.photos || []).map(photoUrl).filter(Boolean);
+  if (!photos.length) return alert("Add patient photos first, then choose one as profile photo.");
+  const modal = document.createElement("div");
+  modal.className = "luxuryModal";
+  modal.innerHTML = `
+    <div class="luxuryBox" style="max-width:720px;">
+      <h2>Choose patient profile photo</h2>
+      <div class="photoThumbs" style="display:grid!important;grid-template-columns:repeat(3,1fr)!important;gap:10px!important;overflow:visible!important;">
+        ${photos.map(u => `<img src="${u}" style="width:100%!important;height:120px!important;object-fit:cover!important;border-radius:14px!important;" onclick="savePatientProfilePhoto('${patientId}', '${encodeURIComponent(u)}')">`).join("")}
+      </div>
+      <button class="secondary" style="width:100%;margin-top:12px;" onclick="this.closest('.luxuryModal').remove()">Cancel</button>
+    </div>`;
+  document.body.appendChild(modal);
+};
 
-function mouthToothPositions() {
-  return {
-    upper: [
-      [18,12,78,-34],[17,17,65,-28],[16,24,54,-18],[15,32,46,-10],
-      [14,41,40,-6],[13,50,37,-2],[12,58,35,0],[11,66,34,1],
-      [21,74,34,-1],[22,82,35,0],[23,90,38,4],[24,99,44,8],
-      [25,106,53,15],[26,112,64,24],[27,116,77,30],[28,118,90,36]
-    ],
-    lower: [
-      [48,13,22,34],[47,18,35,28],[46,25,47,18],[45,33,56,10],
-      [44,42,63,6],[43,51,67,2],[42,59,69,0],[41,67,70,-1],
-      [31,75,70,1],[32,83,69,0],[33,91,66,-2],[34,100,61,-7],
-      [35,107,53,-14],[36,113,42,-22],[37,117,29,-30],[38,118,16,-36]
-    ]
-  };
-}
-
-function render3DMouth(patient) {
-  const data = parseClinicData(patient.progress_notes), teeth = data.teeth || {}, pos = mouthToothPositions();
-  function tbtn(arr) { return arr.map(([n,x,y,r]) => { const info = teeth[n] || "healthy"; const status = typeof info === "string" ? info : (info.status || "healthy"); const surfaces = typeof info === "string" ? [] : (info.surfaces || []); const type = getToothType(n); return `<button class="mouthTooth ${safeText(status)}" style="left:${x}%;top:${y}%;--rot:${r}deg" data-mouth-tooth="${n}" onclick="selectMouthTooth('${patient.id}','${n}')">${toothSvg(type)}${typeof surfaceOverlayHTML==="function"?surfaceOverlayHTML(info):""}${typeof toothExtraOverlay==="function"?toothExtraOverlay(status):""}${surfaces.length?`<span class="toothSurfaceText">${safeText(surfaces.join(""))}</span>`:""}<span class="mouthToothNo">${n}</span></button>`; }).join(""); }
-  return `<div class="viewTabs"><button class="active" onclick="setMouthView('iso')"><span class="tabIcon">3D</span>3D Mouth</button><button onclick="setMouthView('upper')"><span class="tabIcon">Open</span>Upper</button><button onclick="setMouthView('lower')"><span class="tabIcon">Close</span>Lower</button><button onclick="setMouthView('left')"><span class="tabIcon">Left</span>Left</button><button onclick="setMouthView('right')"><span class="tabIcon">Right</span>Right</button><button onclick="setMouthView('front')"><span class="tabIcon">Front</span>Front</button></div><div class="mouthStage" id="mouthStage"><div class="mouthModel" id="mouthModel"><div class="jaw upperJaw"><div class="gum"></div><div class="mouthTeeth">${tbtn(pos.upper)}</div></div><div class="jaw lowerJaw"><div class="gum"></div><div class="mouthTeeth">${tbtn(pos.lower)}</div></div></div><div class="mouthControls"><button onclick="rotateMouth()">Rotate</button><button class="gold" onclick="openCloseMouth('open')">Open</button><button onclick="openCloseMouth('close')">Close</button><button onclick="setMouthView('iso')">Reset</button></div><div class="mouthLegend"><span><i class="dot" style="background:#6b7280"></i>Healthy</span><span><i class="dot" style="background:#ef4444"></i>Caries</span><span><i class="dot" style="background:#60a5fa"></i>Filling</span><span><i class="dot" style="background:#d4af37"></i>Crown</span><span><i class="dot" style="background:#2dd4bf"></i>Implant</span><span><i class="dot" style="background:#475569"></i>Missing</span></div></div>`;
-}
-window.setMouthView=function(view="iso"){const model=document.getElementById("mouthModel");if(!model)return;const views={iso:["12deg","-12deg","1"],upper:["58deg","0deg",".95"],lower:["-52deg","0deg",".95"],left:["8deg","42deg","1"],right:["8deg","-42deg","1"],front:["0deg","0deg","1.02"]};const v=views[view]||views.iso;model.style.setProperty("--mouthX",v[0]);model.style.setProperty("--mouthY",v[1]);model.style.setProperty("--mouthScale",v[2]);document.querySelectorAll(".viewTabs button").forEach(btn=>btn.classList.remove("active"));const index=["iso","upper","lower","left","right","front"].indexOf(view);if(index>=0)document.querySelectorAll(".viewTabs button")[index]?.classList.add("active")};
-window.rotateMouth=function(){const model=document.getElementById("mouthModel");if(!model)return;const current=Number(model.dataset.rot||"-12");const next=current+45;model.dataset.rot=String(next);model.style.setProperty("--mouthY",`${next}deg`)};
-window.openCloseMouth=function(mode){const model=document.getElementById("mouthModel");if(!model)return;if(mode==="close"){model.style.setProperty("--upperOpen","-4deg");model.style.setProperty("--lowerOpen","4deg")}else{model.style.setProperty("--upperOpen","-20deg");model.style.setProperty("--lowerOpen","22deg")}};
-window.selectMouthTooth=function(patientId,toothNumber){document.querySelectorAll(".mouthTooth").forEach(t=>t.classList.remove("selected"));document.querySelector(`[data-mouth-tooth="${toothNumber}"]`)?.classList.add("selected");const p=patients.find(x=>x.id===patientId);const data=parseClinicData(p?.progress_notes);const info=(data.teeth||{})[toothNumber]||"healthy";const status=typeof info==="string"?info:(info.status||"healthy");const surfaces=typeof info==="string"?[]:(info.surfaces||[]);const box=document.getElementById("selectedToothInfo");if(box)box.innerHTML=`<h2>Tooth #${safeText(toothNumber)}</h2><span class="pill">${safeText(status.toUpperCase())}</span><div class="infoRow"><b>Surface</b><br>${surfaces.length?safeText(surfaces.join(", ")):"No surface selected"}</div><div class="infoRow"><b>Notes</b><br>${status==="healthy"?"No treatment recorded.":"Tap edit to update status and surfaces."}</div><div class="actions"><button class="primary" onclick="openToothPopup('${patientId}', '${toothNumber}')">Add Treatment</button><button class="secondary" onclick="openToothPopup('${patientId}', '${toothNumber}')">Edit</button></div>`};
-function renderMiniArch(patient){const data=parseClinicData(patient.progress_notes),teeth=data.teeth||{};const nums=[18,17,16,15,14,13,12,11,21,22,23,24,25,26,27,28,48,47,46,45,44,43,42,41,31,32,33,34,35,36,37,38];return `<div class="miniArch">${nums.map((n,i)=>{const angle=(i/nums.length)*Math.PI*2-Math.PI/2;const x=50+Math.cos(angle)*38;const y=50+Math.sin(angle)*38;const info=teeth[n]||"healthy";const status=typeof info==="string"?info:(info.status||"healthy");return `<button class="mouthTooth ${safeText(status)}" style="left:${x}%;top:${y}%;transform:translate(-50%,-50%) scale(.58)" onclick="selectMouthTooth('${patient.id}','${n}')">${toothSvg(getToothType(n))}<span class="mouthToothNo">${n}</span></button>`}).join("")}</div>`}
-
+window.savePatientProfilePhoto = async function(patientId, encodedUrl) {
+  const p = patients.find(x => x.id === patientId);
+  if (!p) return;
+  const data = parseClinicData(p.progress_notes);
+  data.profile_photo = decodeURIComponent(encodedUrl);
+  await api(`patients?id=eq.${patientId}`, { method: "PATCH", body: JSON.stringify({ progress_notes: saveClinicData(data) }) });
+  document.querySelector(".luxuryModal")?.remove();
+  await refreshPatientKeepingScroll(patientId);
+};
 
 function categorizedPhotos(patient) {
   const photos = (patient.photos || []).map((x, i) => ({
     url: photoUrl(x),
+    category: String(x?.category || "").toLowerCase(),
     name: String(x?.name || x?.filename || "").toLowerCase(),
     index: i
   })).filter(x => x.url);
-
-  const xrays = photos.filter(x => x.name.includes("xray") || x.name.includes("x-ray") || x.name.includes("x_ray") || x.name.includes("radiograph"));
+  const xrays = photos.filter(x => x.category.includes("x") || x.name.includes("xray") || x.name.includes("x-ray") || x.name.includes("radiograph"));
   const clinical = photos.filter(x => !xrays.includes(x));
   return { clinical, xrays };
 }
@@ -2978,15 +2711,10 @@ function renderPhotoGalleryPro(patient, type = "clinical") {
   const list = type === "xray" ? cats.xrays : cats.clinical;
   const fallback = type === "xray" ? cats.clinical : cats.xrays;
   const photos = list.length ? list : fallback;
-
-  if (!photos.length) {
-    return `<p style="color:var(--muted);font-weight:800">No ${type === "xray" ? "X-ray" : "clinical"} photos yet</p>`;
-  }
-
+  if (!photos.length) return `<p style="color:var(--muted);font-weight:800">No photos yet</p>`;
   const key = `${patient.id}-${type}`;
   const current = Math.min(window.photoGalleryState[key] || 0, photos.length - 1);
   const img = photos[current];
-
   return `
     <div class="photoSectionTabs">
       <button class="${type === "clinical" ? "active" : ""}" onclick="switchPhotoType('${patient.id}','clinical')">Clinical</button>
@@ -2995,8 +2723,8 @@ function renderPhotoGalleryPro(patient, type = "clinical") {
     <div class="photoGalleryHeader">
       <h3>${type === "xray" ? "X-ray Gallery" : "Clinical Gallery"}</h3>
       <div class="galleryControls">
-        <button onclick="movePhotoGallery('${patient.id}','${type}',-1)">â¹</button>
-        <button onclick="movePhotoGallery('${patient.id}','${type}',1)">âº</button>
+        <button onclick="movePhotoGallery('${patient.id}','${type}',-1)">Prev</button>
+        <button onclick="movePhotoGallery('${patient.id}','${type}',1)">Next</button>
       </div>
     </div>
     <div class="premiumPhotoViewer">
@@ -3005,8 +2733,7 @@ function renderPhotoGalleryPro(patient, type = "clinical") {
     </div>
     <div class="photoThumbs">
       ${photos.map((p, i) => `<img class="${i === current ? "active" : ""}" src="${p.url}" onclick="setPhotoGalleryIndex('${patient.id}','${type}',${i})">`).join("")}
-    </div>
-  `;
+    </div>`;
 }
 
 window.switchPhotoType = function(patientId, type) {
@@ -3035,50 +2762,46 @@ window.movePhotoGallery = function(patientId, type, step) {
   switchPhotoType(patientId, type);
 };
 
-
-window.changePatientProfilePhoto = async function(patientId) {
-  const p = patients.find(x => x.id === patientId);
-  if (!p) return;
-  const photos = (p.photos || []).map(photoUrl).filter(Boolean);
-  if (!photos.length) return alert("Add patient photos first, then choose one as profile photo.");
-
-  const modal = document.createElement("div");
-  modal.className = "luxuryModal";
-  modal.innerHTML = `
-    <div class="luxuryBox" style="max-width:720px;">
-      <h2>Choose patient profile photo</h2>
-      <div class="photoThumbs" style="display:grid!important;grid-template-columns:repeat(3,1fr)!important;gap:10px!important;overflow:visible!important;">
-        ${photos.map((u, i) => `<img src="${u}" style="width:100%!important;height:120px!important;object-fit:cover!important;border-radius:14px!important;" onclick="savePatientProfilePhoto('${patientId}', '${u.replace(/'/g, "%27")}')">`).join("")}
-      </div>
-      <button class="secondary" style="width:100%;margin-top:12px;" onclick="this.closest('.luxuryModal').remove()">Cancel</button>
+window.openPhotoZoom = function(url) {
+  document.getElementById("photoZoomOverlay")?.remove();
+  const overlay = document.createElement("div");
+  overlay.className = "zoomOverlay";
+  overlay.id = "photoZoomOverlay";
+  overlay.dataset.scale = "1";
+  overlay.style.setProperty("--zoomScale", "1");
+  overlay.innerHTML = `
+    <div class="zoomToolbar">
+      <button onclick="zoomPhoto(-0.25)">-</button>
+      <button onclick="zoomPhoto(0.25)">+</button>
+      <button onclick="resetPhotoZoom()">Reset</button>
+      <button onclick="closePhotoZoom()">Close</button>
     </div>
-  `;
-  document.body.appendChild(modal);
+    <img src="${url}">`;
+  document.body.appendChild(overlay);
 };
 
-window.savePatientProfilePhoto = async function(patientId, url) {
-  const p = patients.find(x => x.id === patientId);
-  if (!p) return;
-  const data = parseClinicData(p.progress_notes);
-  data.profile_photo = decodeURIComponent(url);
-
-  await api(`patients?id=eq.${patientId}`, {
-    method: "PATCH",
-    body: JSON.stringify({ progress_notes: saveClinicData(data) })
-  });
-
-  document.querySelector(".luxuryModal")?.remove();
-  await refreshPatientKeepingScroll(patientId);
+window.zoomPhoto = function(step) {
+  const overlay = document.getElementById("photoZoomOverlay");
+  if (!overlay) return;
+  const current = Number(overlay.dataset.scale || "1");
+  const next = Math.max(1, Math.min(4, current + step));
+  overlay.dataset.scale = String(next);
+  overlay.style.setProperty("--zoomScale", String(next));
 };
 
-function renderPatientWorkspace(patient) {
-  const data=parseClinicData(patient.progress_notes), money=paymentTotals(data), firstPhoto=data.profile_photo || (patient.photos||[]).map(photoUrl).filter(Boolean)[0] || "", completion=treatmentCompletionPercent(patient);
-  return `<div class="patientWorkspace"><aside class="patientSidePanel"><button class="backPatientsBtn" onclick="showPage('patients')">â¹ Back to Patients</button><div class="patientIdentity"><div class="patientPhotoAvatar" onclick="changePatientProfilePhoto(\'${patient.id}\')">${firstPhoto?`<img src="${firstPhoto}">`:safeText(patientInitials(patient))}<span class="cameraDot">Photo</span></div><div><h2 style="margin:0;color:#d4af37;">${safeText(patient.name||"No name")}</h2><span class="premiumBadge badgeGreen">Active</span><p style="color:#cbd5e1;font-weight:800;margin:10px 0 0;">ID: ${safeText(patient.case_id||patient.id)}</p><p style="color:#cbd5e1;font-weight:800;margin:8px 0 0;">${safeText(patient.phone||"-")}</p><p style="color:#cbd5e1;font-weight:800;margin:8px 0 0;">${safeText(patient.age||"-")} yrs</p></div></div><div class="sideStats"><div class="sideStat"><small>Visits</small><b>${(data.visits||[]).length}</b></div><div class="sideStat"><small>Photos</small><b>${(patient.photos||[]).length}</b></div><div class="sideStat"><small>Remaining</small><b>${money.remaining||0}</b></div></div><div class="kv"><b>Last visit</b><span>${safeText(lastVisitText(data))}</span></div><div class="completionRing" style="--p:${completion}%"><span>${completion}%</span></div><nav class="patientMenu"><button onclick="document.getElementById('overviewPanel')?.scrollIntoView({behavior:'smooth'})">Overview</button><button onclick="document.getElementById('appointmentsPanel')?.scrollIntoView({behavior:'smooth'})">Appointments</button><button class="active" onclick="document.getElementById('teethChartPanel')?.scrollIntoView({behavior:'smooth'})">Teeth Chart</button><button onclick="document.getElementById('photosPanel')?.scrollIntoView({behavior:'smooth'})">Photos <span class="menuBadge">${(patient.photos||[]).length}</span></button><button onclick="document.getElementById('reportsPanel')?.scrollIntoView({behavior:'smooth'})">Documents</button><button onclick="document.getElementById('labPanel')?.scrollIntoView({behavior:'smooth'})">Lab</button><button onclick="document.getElementById('notesPanel')?.scrollIntoView({behavior:'smooth'})">Notes</button></nav></aside><main class="patientMainPanel"><section class="workspaceCard" id="overviewPanel"><div class="workspaceHeader"><h2>Patient Overview</h2><span class="pill">Cloud synced</span></div><div class="tagWrap">${patientRiskBadges(patient)}${renderPatientTags(patient)}</div><div class="kv cleanField"><b>Chief complaint</b><span>${safeText(patient.chief_complaint||"-")}</span></div><div class="kv cleanField"><b>Medical alerts</b><span>${safeText(patient.medical_alerts||"-")}</span></div><div class="kv cleanField"><b>Diagnosis</b><span>${safeText(patient.diagnosis||"-")}</span></div><div class="kv cleanField"><b>Treatment plan</b><span>${safeText(patient.treatment_plan||"-")}</span></div>${medicalAlertBanner(patient)}</section><section class="workspaceCard" id="teethChartPanel"><div class="workspaceHeader"><h2>3D Teeth Chart</h2><span class="pill">Tap tooth â¢ Rotate â¢ Open/Close</span></div>${render3DMouth(patient)}</section><section class="workspaceCard selectedToothPanel">${renderMiniArch(patient)}<div class="selectedInfo" id="selectedToothInfo"><h2>Selected Tooth</h2><div class="infoRow">Tap any tooth in the 3D mouth to select it.</div><div class="actions"><button class="secondary" onclick="setMouthView('iso')">Reset mouth</button></div></div></section><section class="workspaceCard" id="appointmentsPanel"><h2>Appointments</h2><button class="primary" onclick="openAppointmentManager('${patient.id}')">+ Add Appointment</button>${data.appointments.length?data.appointments.map((a,i)=>`<div class="kv ${appointmentStatusColor(a.status)}"><b>${safeText(a.date||"")}</b><span>${safeText(a.note||"-")}</span><br><span class="pill">${safeText((a.status||"pending").toUpperCase())}</span><br><br><button class="secondary" onclick="openAppointmentManager('${patient.id}', ${i})">Edit</button><button class="danger" onclick="deleteAppointment('${patient.id}', ${i})">Delete</button></div>`).join(""):`<div class="kv"><span>No appointments yet</span></div>`}</section><section class="workspaceCard" id="photosPanel"><h2>Photos / X-rays</h2><div class="actions"><button class="secondary" onclick="showBeforeAfter('${patient.id}')">Before / After</button><button class="secondary" onclick="openPhotoComparePro('${patient.id}')">Before/After Morph</button></div><div id="photoGalleryProBox">${renderPhotoGalleryPro(patient, "clinical")}</div></section><section class="workspaceCard" id="notesPanel"><h2>Treatment Progress</h2>${renderTreatmentProgress(patient)}<div class="actions"><button class="secondary" onclick="openWhatsAppReminder('${patient.id}')">WhatsApp Reminder</button><button class="secondary" onclick="openWhatsAppAutomation('${patient.id}')">WhatsApp Pro</button><button class="secondary" onclick="generateSmartNote('${patient.id}')">Smart Note</button></div><h2>Visits History</h2>${renderVisitsSafe(data)}<h2>Patient Timeline</h2><div class="patientCard">${renderTimeline(patient)}</div></section><section class="workspaceCard" id="labPanel"><h2>Lab Tracking</h2><button class="secondary" onclick="addLabWork('${patient.id}')">+ Add Lab Work</button>${renderLabMini(patient.id)}</section><section class="workspaceCard" id="reportsPanel"><h2>Reports Center</h2><div class="reportCenterGrid"><button class="primary" onclick="openReportsCenter('${patient.id}')">Reports Center</button><button class="secondary" onclick="exportPDF('${patient.id}')">PDF Report</button><button class="secondary" onclick="showQR('${patient.id}')">QR</button><button class="secondary whatsappBtn" onclick="openWhatsAppReminder('${patient.id}')">WhatsApp</button>${canEdit()?`<button class="secondary" onclick="editPatient('${patient.id}')">Edit</button>`:""}${canDelete()?`<button class="danger" onclick="deletePatient('${patient.id}')">Delete</button>`:""}</div></section></main></div><div class="bottomClinicNav"><button onclick="showPage('dashboard')">Home</button><button class="active" onclick="showPage('patients')">Patients</button><button onclick="document.getElementById('appointmentsPanel')?.scrollIntoView({behavior:'smooth'})">Appointments</button><button onclick="document.getElementById('reportsPanel')?.scrollIntoView({behavior:'smooth'})">Financial</button><button onclick="document.getElementById('labPanel')?.scrollIntoView({behavior:'smooth'})">Lab</button><button onclick="document.getElementById('overviewPanel')?.scrollIntoView({behavior:'smooth'})">More</button></div>`;
-}
+window.resetPhotoZoom = function() {
+  const overlay = document.getElementById("photoZoomOverlay");
+  if (!overlay) return;
+  overlay.dataset.scale = "1";
+  overlay.style.setProperty("--zoomScale", "1");
+};
+
+window.closePhotoZoom = function() {
+  document.getElementById("photoZoomOverlay")?.remove();
+};
+
 
 function patientDetailsHTML(p) {
-  return renderPatientWorkspace(p);
-
   const data = parseClinicData(p.progress_notes);
   const money = paymentTotals(data);
   const photos = (p.photos || []);
@@ -3090,7 +2813,7 @@ function patientDetailsHTML(p) {
           <div class="tagWrap">${patientRiskBadges(p)}</div>
         </div>
         <div>
-          <div class="patientAvatar">${safeText(patientInitials(p))}</div>
+          <div class="patientAvatar" onclick="changePatientProfilePhoto('${p.id}')">${patientProfilePhoto(p) ? `<img src="${patientProfilePhoto(p)}">` : safeText(patientInitials(p))}</div>
           <div class="completionRing" style="--p:${treatmentCompletionPercent(p)}%">
             <span>${treatmentCompletionPercent(p)}%</span>
           </div>
@@ -3137,36 +2860,11 @@ function patientDetailsHTML(p) {
       ${data.payments.length ? data.payments.map((pay, i) => `<div class="appointment"><b>${safeText(pay.date || "")}</b><p>Total: ${Number(pay.total || 0)} | Paid: ${Number(pay.paid || 0)} | Remaining: ${Number(pay.total || 0) - Number(pay.paid || 0)}</p><button class="danger" onclick="deletePayment('${p.id}', ${i})">Delete</button></div>`).join("") : `<div class="kv"><span>No payments yet</span></div>`}
 
       <h3 class="sectionTitle">Photos / X-rays</h3>
-
-      <div class="actions photoTabs">
-        <button class="secondary" onclick="setPhotoTab('all')">All</button>
-        <button class="secondary" onclick="setPhotoTab('clinical')">Clinical</button>
-        <button class="secondary" onclick="setPhotoTab('xray')">X-rays</button>
-        <button class="secondary" onclick="showBeforeAfter('${p.id}')">Before / After</button><button class="secondary" onclick="openPhotoComparePro('${p.id}')">Before/After Pro</button>
+      <div class="actions" style="margin:10px 0;">
+        <button class="secondary" onclick="showBeforeAfter('${p.id}')">Before / After</button>
+        <button class="secondary" onclick="openPhotoComparePro('${p.id}')">Before/After Pro</button>
       </div>
-
-      <div class="photoGrid">
-        ${
-          photos.length
-            ? photos.map((ph, i) => {
-                const url = photoUrl(ph);
-                const category = ph.category || "Clinical";
-                const isXray = ["x-ray", "xray", "x ray"].includes(String(category).toLowerCase());
-                const group = isXray ? "xray" : "clinical";
-
-                return `
-                  <div class="photoItem photoTabItem ${group}">
-                    <span class="photoTag" onclick="event.stopPropagation();setPhotoCategory('${p.id}', ${i})">
-                      ${safeText(category)}
-                    </span>
-                    <img src="${url}" onclick="viewPhotoGroup('${p.id}', ${i}, '${group}')">
-                    ${canEdit() ? `<button class="deletePhotoBtn" type="button" onclick="event.stopPropagation();deletePhoto('${p.id}', ${i})" aria-label="Delete photo">X</button>` : ""}
-                  </div>
-                `;
-              }).join("")
-            : "<p>No photos</p>"
-        }
-      </div>
+      <div id="photoGalleryProBox">${renderPhotoGalleryPro(p, "clinical")}</div>
 
       <h3 class="sectionTitle">Patient Timeline</h3>
       <div class="patientCard">${renderTimeline(p)}</div>
@@ -3192,7 +2890,6 @@ window.openPatient = function(id) {
     if (!details) return alert("Details page is missing in index.html");
 
     details.innerHTML = patientDetailsHTML(p);
-    document.body.classList.add("detailMode");
     showPage("detail");
     window.scrollTo(0, 0);
   } catch (err) {
@@ -3982,7 +3679,7 @@ window.generateInvoicePro = async function(id) {
     </div>
     <div class="premiumDocBox">
       ${data.payments.length ? data.payments.map(pay => `
-        <p><b>${safeText(pay.date || "")}</b> â Total: ${Number(pay.total || 0)} | Paid: ${Number(pay.paid || 0)}</p>
+        <p><b>${safeText(pay.date || "")}</b> Ã¢ÂÂ Total: ${Number(pay.total || 0)} | Paid: ${Number(pay.paid || 0)}</p>
       `).join("") : "No payments recorded."}
     </div>
   `;
@@ -4212,14 +3909,11 @@ window.changeAppointmentStatus = async function(id, index) {
 window.openPhotoComparePro = function(id) {
   const p = patients.find(x => x.id === id);
   if (!p) return;
-
   const cats = typeof categorizedPhotos === "function" ? categorizedPhotos(p) : { clinical: (p.photos || []).map(x => ({url: photoUrl(x)})), xrays: [] };
   const photos = [...cats.clinical, ...cats.xrays].map(x => x.url).filter(Boolean);
   if (photos.length < 2) return alert("Need at least 2 photos.");
-
   let beforeIndex = 0;
   let afterIndex = 1;
-
   const modal = document.createElement("div");
   modal.className = "luxuryModal";
   modal.innerHTML = `
@@ -4239,14 +3933,11 @@ window.openPhotoComparePro = function(id) {
         <button class="primary" id="baAutoPlay">Auto</button>
         <button class="secondary" onclick="this.closest('.luxuryModal').remove()">Close</button>
       </div>
-    </div>
-  `;
+    </div>`;
   document.body.appendChild(modal);
-
   const slider = modal.querySelector("#baMorphSlider");
   const before = modal.querySelector("#baBeforeImg");
   const after = modal.querySelector("#baAfterImg");
-
   function updateMorph() {
     const v = Number(slider.value) / 100;
     before.style.opacity = String(1 - v);
@@ -4256,48 +3947,38 @@ window.openPhotoComparePro = function(id) {
     before.style.transform = "none";
     after.style.transform = "none";
   }
-
   function updateImages() {
     before.src = photos[beforeIndex];
     after.src = photos[afterIndex];
     updateMorph();
   }
-
   slider.oninput = updateMorph;
   updateMorph();
-
   modal.querySelector("#baPrevBefore").onclick = () => {
     beforeIndex = (beforeIndex - 1 + photos.length) % photos.length;
     if (beforeIndex === afterIndex) beforeIndex = (beforeIndex - 1 + photos.length) % photos.length;
-    slider.value = 0;
-    updateImages();
+    slider.value = 0; updateImages();
   };
-
   modal.querySelector("#baNextAfter").onclick = () => {
     afterIndex = (afterIndex + 1) % photos.length;
     if (afterIndex === beforeIndex) afterIndex = (afterIndex + 1) % photos.length;
-    slider.value = 0;
-    updateImages();
+    slider.value = 0; updateImages();
   };
-
   modal.querySelector("#baAutoPlay").onclick = () => {
     let v = 0;
     const timer = setInterval(() => {
-      v += 2;
-      slider.value = v;
-      updateMorph();
+      v += 2; slider.value = v; updateMorph();
       if (v >= 100) clearInterval(timer);
     }, 35);
   };
 };
 
 window.openPhotoZoom = function(url) {
-  const old = document.getElementById("photoZoomOverlay");
-  if (old) old.remove();
-
+  document.getElementById("photoZoomOverlay")?.remove();
   const overlay = document.createElement("div");
   overlay.className = "zoomOverlay";
   overlay.id = "photoZoomOverlay";
+  overlay.dataset.scale = "1";
   overlay.style.setProperty("--zoomScale", "1");
   overlay.innerHTML = `
     <div class="zoomToolbar">
@@ -4306,29 +3987,8 @@ window.openPhotoZoom = function(url) {
       <button onclick="resetPhotoZoom()">Reset</button>
       <button onclick="closePhotoZoom()">Close</button>
     </div>
-    <img src="${url}" id="zoomedPhoto">
-  `;
+    <img src="${url}">`;
   document.body.appendChild(overlay);
-};
-
-window.zoomPhoto = function(step) {
-  const overlay = document.getElementById("photoZoomOverlay");
-  if (!overlay) return;
-  const current = Number(overlay.dataset.scale || "1");
-  const next = Math.max(1, Math.min(4, current + step));
-  overlay.dataset.scale = String(next);
-  overlay.style.setProperty("--zoomScale", String(next));
-};
-
-window.resetPhotoZoom = function() {
-  const overlay = document.getElementById("photoZoomOverlay");
-  if (!overlay) return;
-  overlay.dataset.scale = "1";
-  overlay.style.setProperty("--zoomScale", "1");
-};
-
-window.closePhotoZoom = function() {
-  document.getElementById("photoZoomOverlay")?.remove();
 };
 
 
@@ -4540,7 +4200,7 @@ function renderPatientTags(patient) {
     <div class="tagWrap">
       ${tags.length ? tags.map(t => `
         <span class="patientTag" onclick="removePatientTag('${patient.id}', '${String(t).replace(/'/g, "\\'")}')">
-          ${safeText(t)} Ã
+          ${safeText(t)} ÃÂ
         </span>
       `).join("") : `<span class="pill">No tags</span>`}
       <button class="secondary" onclick="addPatientTag('${patient.id}')">+ Tag</button>
