@@ -166,6 +166,7 @@ window.openClinicMenu = function() {
 
     <div class="drawerMenu">
       <button class="primaryItem" onclick="closeClinicMenu(); showPage('dashboard')">Dashboard</button>
+      <button onclick="closeClinicMenu(); location.reload()">Refresh</button>
       <button onclick="closeClinicMenu(); showPage('patients')">Patients</button>
       <button onclick="closeClinicMenu(); showPage('settings')">Profile / Branding</button>
       <button onclick="closeClinicMenu(); backupData()">Backup</button>
