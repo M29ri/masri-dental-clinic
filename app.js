@@ -833,7 +833,7 @@ function renderToothChart(p) {
   const lowerLeft = [31,32,33,34,35,36,37,38];
   const lowerRight = [48,47,46,45,44,43,42,41];
   const upper = [...upperRight, ...upperLeft];
-  const lower = [...lowerLeft, ...lowerRight];
+  const lower = [...lowerRight, ...lowerLeft];
 
   const toothButton = (n) => {
     const toothInfo = teeth[n] || "healthy";
