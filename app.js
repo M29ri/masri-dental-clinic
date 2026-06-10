@@ -1858,10 +1858,10 @@ function renderPatients() {
       ${next ? `<div class="kv" style="margin:12px 0;"><b>Next appointment</b><div style="color:#dbe6f3;font-weight:800;">${safeText(next.date || "")}</div></div>` : ""}
 
       <div class="actions">
-        <button class="primary" onclick="openPatient('${p.id}')">Open</button>
-        ${canEdit() ? `<button class="secondary" onclick="editPatient('${p.id}')">Edit</button>` : ""}
-        <button class="secondary" onclick="showQR('${p.id}')">QR</button>
-        <button class="secondary whatsappBtn" onclick="openWhatsAppReminder('${p.id}')">WhatsApp</button>
+        <button class="primary" type="button" data-open-patient="${p.id}">Open</button>
+        ${canEdit() ? `<button class="secondary" type="button" data-edit-patient="${p.id}">Edit</button>` : ""}
+        <button class="secondary" type="button" data-qr-patient="${p.id}">QR</button>
+        <button class="secondary whatsappBtn" type="button" data-wa-patient="${p.id}">WhatsApp</button>
       </div>
     `;
 
@@ -2126,15 +2126,30 @@ function patientDetailsHTML(p) {
 
       <div class="actions">
         ${canEdit() ? `<button class="primary" onclick="editPatient('${p.id}')">Edit</button>` : ""}
-        <button class="secondary" onclick="showQR('${p.id}')">QR</button>
-        <button class="secondary whatsappBtn" onclick="openWhatsAppReminder('${p.id}')">WhatsApp</button>
+        <button class="secondary" type="button" data-qr-patient="${p.id}">QR</button>
+        <button class="secondary whatsappBtn" type="button" data-wa-patient="${p.id}">WhatsApp</button>
         <button class="secondary" onclick="exportPDF('${p.id}')">PDF</button>
         ${canDelete() ? `<button class="danger" onclick="deletePatient('${p.id}')">Delete</button>` : ""}
       </div>
     </div>`;
 }
 
-window.openPatient = function(id) { const p = patients.find(x => x.id === id); if (!p) return alert("Patient not found or you do not have access."); $("details").innerHTML = patientDetailsHTML(p); showPage("detail"); };
+window.openPatient = function(id) {
+  try {
+    const p = patients.find(x => String(x.id) === String(id));
+    if (!p) return alert("Patient not found or you do not have access.");
+
+    const details = $("details");
+    if (!details) return alert("Details page is missing in index.html");
+
+    details.innerHTML = patientDetailsHTML(p);
+    showPage("detail");
+    window.scrollTo(0, 0);
+  } catch (err) {
+    console.error("Open patient failed", err);
+    alert("Open patient failed: " + err.message);
+  }
+};
 window.showQR = function(id) {
   const p = patients.find(x => x.id === id);
   if (!p) return alert("Patient not found");
@@ -3585,6 +3600,40 @@ window.exportPDF = async function(id) {
 </div></body></html>`);
   win.document.close();
 };
+
+
+document.addEventListener("click", function(e) {
+  const openBtn = e.target.closest("[data-open-patient]");
+  if (openBtn) {
+    e.preventDefault();
+    e.stopPropagation();
+    window.openPatient(openBtn.dataset.openPatient);
+    return;
+  }
+
+  const editBtn = e.target.closest("[data-edit-patient]");
+  if (editBtn) {
+    e.preventDefault();
+    e.stopPropagation();
+    window.editPatient(editBtn.dataset.editPatient);
+    return;
+  }
+
+  const qrBtn = e.target.closest("[data-qr-patient]");
+  if (qrBtn) {
+    e.preventDefault();
+    e.stopPropagation();
+    window.showQR(qrBtn.dataset.qrPatient);
+    return;
+  }
+
+  const waBtn = e.target.closest("[data-wa-patient]");
+  if (waBtn) {
+    e.preventDefault();
+    e.stopPropagation();
+    window.openWhatsAppReminder(waBtn.dataset.waPatient);
+  }
+});
 
 $("patientForm")?.addEventListener("submit", async e => { e.preventDefault(); if (!canEdit()) return alert("You don't have permission to save patients"); $("saveBtn").disabled = true; $("saveBtn").textContent = "Saving..."; try { const id = $("rowId").value; const oldPatient = id ? patients.find(p => p.id === id) : null; const data = getFormData(oldPatient); let saved; if (id) { saved = await api(`patients?id=eq.${id}`, { method: "PATCH", headers: { Prefer: "return=representation" }, body: JSON.stringify(data) }); saved = saved[0]; } else { saved = await api("patients", { method: "POST", headers: { Prefer: "return=representation" }, body: JSON.stringify(data) }); saved = saved[0]; } if (pendingFiles.length) { $("saveBtn").textContent = "Uploading photos..."; const uploaded = await uploadPhotos(saved.id); const allPhotos = [...(saved.photos || []), ...uploaded]; await api(`patients?id=eq.${saved.id}`, { method: "PATCH", body: JSON.stringify({ photos: allPhotos }) }); } pendingFiles = []; $("patientForm").reset(); fillForm(); await loadPatients(); showPage("patients"); } catch (err) { alert("Save failed: " + err.message); } finally { $("saveBtn").disabled = false; $("saveBtn").textContent = "Save Patient"; } });
 $("photos")?.addEventListener("change", e => { pendingFiles = [...e.target.files]; $("preview").innerHTML = pendingFiles.map(file => `<img class="thumb" src="${URL.createObjectURL(file)}">`).join(""); });
