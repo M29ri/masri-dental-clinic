@@ -2401,3 +2401,21 @@ button[onclick*="showLab"]{
   .ba-box{padding:22px !important;}
   .ba-x{top:14px !important;right:14px !important;width:44px !important;height:44px !important;}
 }
+
+/* --- Added feature styles: languages, patterns, receipts, signatures --- */
+html[dir="rtl"] body { direction: rtl; }
+html[dir="rtl"] .header-right, html[dir="rtl"] .actions-bar, html[dir="rtl"] .quick-actions { flex-direction: row-reverse; }
+.wide-box { max-width: 760px !important; }
+.pattern-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin-top:14px; }
+.pattern-card { border:1px solid var(--border); background:var(--bg-elevated); color:var(--text); border-radius:18px; padding:12px; cursor:pointer; text-transform:capitalize; font-weight:700; display:flex; gap:10px; align-items:center; }
+.pattern-card.active, .pattern-card:hover { border-color:var(--accent); color:var(--accent); }
+.pdf-pattern-preview { width:56px; height:40px; border-radius:12px; border:1px solid var(--border); background:#f4f6f8; display:block; }
+.pdf-pattern-preview.waves { background:radial-gradient(circle at 10% 20%, rgba(212,175,55,.30), transparent 26%), radial-gradient(circle at 90% 5%, rgba(212,175,55,.20), transparent 28%), #f4f6f8; }
+.pdf-pattern-preview.grid { background-color:#f4f6f8; background-image:linear-gradient(rgba(212,175,55,.20) 1px,transparent 1px),linear-gradient(90deg,rgba(212,175,55,.20) 1px,transparent 1px); background-size:12px 12px; }
+.pdf-pattern-preview.dots { background-color:#f4f6f8; background-image:radial-gradient(rgba(212,175,55,.35) 1.5px,transparent 1.5px); background-size:10px 10px; }
+.doctor-info-card { background:linear-gradient(135deg, rgba(212,175,55,.12), rgba(255,255,255,.04)); border:1px solid var(--border); border-radius:22px; padding:20px; margin:12px 0; }
+.doctor-info-card h3 { margin:0 0 6px; color:var(--accent); }
+.signature-display { min-height:78px; border:1px dashed var(--border); border-radius:16px; padding:12px; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,.03); margin:12px 0; }
+.signature-img { max-width:220px; max-height:80px; object-fit:contain; background:white; border-radius:10px; padding:6px; }
+.signature-line { width:220px; border-top:2px solid currentColor; margin-top:42px; opacity:.7; }
+input[type="color"] { cursor:pointer; background:var(--bg-elevated); border:1px solid var(--border); }

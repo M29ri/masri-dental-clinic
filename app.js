@@ -23,6 +23,56 @@ function safeText(value = "") {
     .replace(/'/g, "&#039;");
 }
 
+
+// --- Doctor extras, language, patterns, custom theme ---
+const I18N = {
+  en: { dashboard:"Dashboard", patients:"Patients", addPatient:"Add Patient", scanQR:"Scan QR", totalPatients:"Total Patients", todaysAppts:"Today's Appts", unpaidBalance:"Unpaid Balance", totalVisits:"Total Visits", totalRevenue:"Total Revenue", paidToday:"Paid Today", clinicOverview:"Clinic Overview", appointmentCalendar:"Appointment Calendar", today:"Today", upcoming:"Upcoming", search:"Search name, phone, ID, diagnosis..." },
+  ar: { dashboard:"لوحة التحكم", patients:"المرضى", addPatient:"إضافة مريض", scanQR:"مسح QR", totalPatients:"إجمالي المرضى", todaysAppts:"مواعيد اليوم", unpaidBalance:"المتبقي غير المدفوع", totalVisits:"إجمالي الزيارات", totalRevenue:"إجمالي الإيراد", paidToday:"مدفوع اليوم", clinicOverview:"نظرة عامة", appointmentCalendar:"تقويم المواعيد", today:"اليوم", upcoming:"القادم", search:"ابحث بالاسم أو الهاتف أو الكود أو التشخيص..." }
+};
+function getLang(){ return localStorage.getItem("clinicLanguage") || "en"; }
+function t(key){ return (I18N[getLang()] && I18N[getLang()][key]) || I18N.en[key] || key; }
+function doctorExtras(){
+  try { return JSON.parse(localStorage.getItem("clinicDoctorExtras-" + (currentUser?.id || "guest")) || "{}"); }
+  catch { return {}; }
+}
+function saveDoctorExtras(extras){ localStorage.setItem("clinicDoctorExtras-" + (currentUser?.id || "guest"), JSON.stringify(extras || {})); }
+function splitList(v){ return String(v || "").split(/[\n,]+/).map(x => x.trim()).filter(Boolean); }
+function pdfPatternStyle(pattern = "classic") {
+  const accent = doctorExtras().accent || "#d4af37";
+  const safeAccent = String(accent).replace(/[^#a-zA-Z0-9(),.%\s-]/g, "");
+  if (pattern === "waves") return `background: radial-gradient(circle at 10% 20%, ${safeAccent}22, transparent 22%), radial-gradient(circle at 90% 5%, ${safeAccent}18, transparent 24%), #f4f6f8;`;
+  if (pattern === "grid") return `background-color:#f4f6f8;background-image:linear-gradient(${safeAccent}16 1px,transparent 1px),linear-gradient(90deg,${safeAccent}16 1px,transparent 1px);background-size:24px 24px;`;
+  if (pattern === "dots") return `background-color:#f4f6f8;background-image:radial-gradient(${safeAccent}33 1.4px,transparent 1.4px);background-size:18px 18px;`;
+  return `background:#f4f6f8;`;
+}
+function signatureImgHTML(){
+  const sig = doctorExtras().signature || "";
+  return sig ? `<img class="signature-img" src="${sig}" alt="Doctor signature">` : `<div class="signature-line"></div>`;
+}
+function setUILanguage(lang){
+  localStorage.setItem("clinicLanguage", lang === "ar" ? "ar" : "en");
+  applyLanguage();
+  renderDashboard();
+  renderPatients();
+}
+function applyLanguage(){
+  const lang = getLang();
+  document.documentElement.lang = lang;
+  document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+  const map = [["dashboard","dashboard"],["patients","patients"],["form","addPatient"],["scan","scanQR"]];
+  map.forEach(([page,key]) => { const el = document.querySelector(`[data-page="${page}"]`); if (el) el.textContent = t(key); });
+  if ($("search")) $("search").placeholder = t("search");
+}
+function applyCustomAccent(){
+  const extra = doctorExtras();
+  if (extra.accent) document.documentElement.style.setProperty("--accent", extra.accent);
+  if (extra.accentLight) document.documentElement.style.setProperty("--accent-light", extra.accentLight);
+  if (extra.accentDark) document.documentElement.style.setProperty("--accent-dark", extra.accentDark);
+}
+function allPatientPhones(p, data = parseClinicData(p.progress_notes)){ return [p.phone, ...(data.extra_phones || [])].filter(Boolean); }
+function allPatientWebsites(data){ return (data.websites || []).filter(Boolean); }
+
+
 async function api(path, options = {}) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
     ...options,
@@ -154,6 +204,9 @@ window.openClinicMenu = function() {
       <button onclick="closeClinicMenu();backupData()">Backup</button>
       <button onclick="closeClinicMenu();restoreBackup()">Restore</button>
       <button onclick="closeClinicMenu();openThemePicker()">Theme</button>
+      <button onclick="closeClinicMenu();openLanguagePicker()">Language</button>
+      <button onclick="closeClinicMenu();openPdfPatternPicker()">PDF Pattern</button>
+      <button onclick="closeClinicMenu();openDoctorInfoCard()">Dental Info Card</button>
       <button onclick="closeClinicMenu();openDoctorProfile()">Profile</button>
       ${currentUser?.role === "admin" ? `<button onclick="closeClinicMenu();manageUsers()">Manage Users</button>` : ""}
       <button class="danger-item" onclick="logout()">Logout</button>
@@ -170,6 +223,7 @@ window.closeClinicMenu = function() {
 
 // --- Theme System ---
 window.openThemePicker = function() {
+  const extras = doctorExtras();
   const modal = document.createElement("div");
   modal.className = "luxury-modal";
   modal.innerHTML = `
@@ -185,10 +239,91 @@ window.openThemePicker = function() {
         <button style="background:#22c55e" onclick="setClinicTheme('green')">Green</button>
         <button style="background:#f97316" onclick="setClinicTheme('orange')">Orange</button>
       </div>
+      <div class="field" style="margin-top:14px;">
+        <label>Custom color hue circle</label>
+        <input id="customAccentPicker" type="color" value="${safeText(extras.accent || '#d4af37')}" style="height:54px;width:100%;border-radius:16px;padding:6px;">
+      </div>
+      <button class="btn-primary" style="width:100%;margin-top:10px" onclick="saveCustomAccent()">Apply Custom Color</button>
       <button class="btn-secondary" style="width:100%;margin-top:10px" onclick="this.closest('.luxury-modal').remove()">Close</button>
     </div>
   `;
   document.body.appendChild(modal);
+};
+
+window.saveCustomAccent = function() {
+  const color = document.getElementById("customAccentPicker")?.value || "#d4af37";
+  const extras = doctorExtras();
+  extras.accent = color;
+  extras.accentLight = color;
+  extras.accentDark = color;
+  saveDoctorExtras(extras);
+  applyCustomAccent();
+  document.querySelector(".luxury-modal")?.remove();
+};
+
+window.openLanguagePicker = function() {
+  const modal = document.createElement("div");
+  modal.className = "luxury-modal";
+  modal.innerHTML = `<div class="luxury-box"><h2>Language / اللغة</h2><div class="actions-bar"><button class="btn-primary" onclick="setUILanguage('en');this.closest('.luxury-modal').remove()">English</button><button class="btn-primary" onclick="setUILanguage('ar');this.closest('.luxury-modal').remove()">العربية</button></div><button class="btn-secondary" style="width:100%;margin-top:12px" onclick="this.closest('.luxury-modal').remove()">Close</button></div>`;
+  document.body.appendChild(modal);
+};
+
+window.openPdfPatternPicker = function() {
+  const extras = doctorExtras();
+  const modal = document.createElement("div");
+  modal.className = "luxury-modal";
+  modal.innerHTML = `<div class="luxury-box"><h2>PDF Pattern</h2><p class="muted">This pattern is saved for this doctor account and used on reports and receipts.</p><div class="pattern-grid">${["classic","waves","grid","dots"].map(x=>`<button class="pattern-card ${extras.pattern===x?'active':''}" onclick="setPdfPattern('${x}')"><span class="pdf-pattern-preview ${x}"></span>${x}</button>`).join("")}</div><button class="btn-secondary" style="width:100%;margin-top:12px" onclick="this.closest('.luxury-modal').remove()">Close</button></div>`;
+  document.body.appendChild(modal);
+};
+
+window.setPdfPattern = function(pattern) {
+  const extras = doctorExtras();
+  extras.pattern = pattern;
+  saveDoctorExtras(extras);
+  document.querySelector(".luxury-modal")?.remove();
+};
+
+window.openDoctorInfoCard = function() {
+  const extras = doctorExtras();
+  const modal = document.createElement("div");
+  modal.className = "luxury-modal";
+  modal.innerHTML = `
+    <div class="luxury-box wide-box">
+      <h2>Dental Information Card</h2>
+      <div class="doctor-info-card">
+        <h3>${safeText(currentUser?.full_name || currentUser?.username || "Doctor")}</h3>
+        <p>${safeText(extras.specialty || "General Dentist")}</p>
+        <p><b>License:</b> ${safeText(extras.license || "-")}</p>
+        <p><b>Phones:</b> ${safeText((extras.phones || []).join(" / ") || "-")}</p>
+        <p><b>Websites:</b> ${safeText((extras.websites || []).join(" / ") || "-")}</p>
+        <p><b>Address:</b> ${safeText(extras.address || "-")}</p>
+        <p>${safeText(extras.bio || "")}</p>
+        <div class="signature-display">${signatureImgHTML()}</div>
+      </div>
+      <div class="actions-bar"><button class="btn-primary" onclick="editDoctorInfoCard()">Edit Card</button><button class="btn-secondary" onclick="this.closest('.luxury-modal').remove()">Close</button></div>
+    </div>`;
+  document.body.appendChild(modal);
+};
+
+window.editDoctorInfoCard = async function() {
+  const extras = doctorExtras();
+  const specialty = await luxuryPrompt("Dental specialty", "e.g. Endodontist", extras.specialty || "General Dentist"); if (specialty === null) return;
+  const license = await luxuryPrompt("License number", "Professional license", extras.license || ""); if (license === null) return;
+  const phones = await luxuryPrompt("Doctor phones", "Separate with commas", (extras.phones || []).join(", ")); if (phones === null) return;
+  const websites = await luxuryPrompt("Websites / social links", "Separate with commas", (extras.websites || []).join(", ")); if (websites === null) return;
+  const address = await luxuryPrompt("Clinic address", "Address", extras.address || ""); if (address === null) return;
+  const bio = await luxuryPrompt("Short dental bio", "Experience / services", extras.bio || ""); if (bio === null) return;
+  Object.assign(extras, { specialty, license, phones: splitList(phones), websites: splitList(websites), address, bio });
+  saveDoctorExtras(extras);
+  document.querySelector(".luxury-modal")?.remove();
+  openDoctorInfoCard();
+};
+
+window.uploadDoctorSignature = function(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => { const extras = doctorExtras(); extras.signature = reader.result; saveDoctorExtras(extras); alert("Signature saved."); };
+  reader.readAsDataURL(file);
 };
 
 window.setClinicTheme = function(theme) {
@@ -203,6 +338,8 @@ window.setClinicTheme = function(theme) {
 function applySavedTheme() {
   const theme = localStorage.getItem("clinicTheme") || "gold";
   setClinicTheme(theme);
+  applyCustomAccent();
+  applyLanguage();
 }
 
 // --- Header & User Bar ---
@@ -289,24 +426,27 @@ function showPage(id) {
 
 // --- Data Parsing ---
 function parseClinicData(raw) {
-  if (!raw) return { visits: [], appointments: [], payments: [], teeth: {} };
+  const base = { visits: [], appointments: [], payments: [], teeth: {}, extra_phones: [], websites: [] };
+  if (!raw) return base;
   try {
     const data = JSON.parse(raw);
-    if (Array.isArray(data)) return { visits: data, appointments: [], payments: [], teeth: {} };
-    return { visits: data.visits || [], appointments: data.appointments || [], payments: data.payments || [], teeth: data.teeth || {} };
+    if (Array.isArray(data)) return { ...base, visits: data };
+    return { ...base, ...data, visits: data.visits || [], appointments: data.appointments || [], payments: data.payments || [], teeth: data.teeth || {}, extra_phones: data.extra_phones || [], websites: data.websites || [] };
   } catch {
-    return { visits: [{ date: "Old note", note: raw }], appointments: [], payments: [], teeth: {} };
+    return { ...base, visits: [{ date: "Old note", note: raw }] };
   }
 }
 
 function saveClinicData(data) {
-  return JSON.stringify({ visits: data.visits || [], appointments: data.appointments || [], payments: data.payments || [], teeth: data.teeth || {} });
+  return JSON.stringify({ ...data, visits: data.visits || [], appointments: data.appointments || [], payments: data.payments || [], teeth: data.teeth || {}, extra_phones: data.extra_phones || [], websites: data.websites || [] });
 }
 
 function paymentTotals(data) {
   const total = data.payments.reduce((s, x) => s + Number(x.total || 0), 0);
+  const discount = data.payments.reduce((s, x) => s + (Number(x.total || 0) * Number(x.discount || 0) / 100), 0);
+  const net = Math.max(0, total - discount);
   const paid = data.payments.reduce((s, x) => s + Number(x.paid || 0), 0);
-  return { total, paid, remaining: total - paid };
+  return { total, discount, net, paid, remaining: net - paid };
 }
 
 function photoUrl(photo) {
@@ -482,19 +622,20 @@ function renderDashboard() {
       if (!isNaN(d) && d.getFullYear() === year && d.getMonth() === month) {
         const key = d.getDate();
         if (!apptMap[key]) apptMap[key] = [];
-        apptMap[key].push({ patient: p.name || "Patient", id: p.id });
+        apptMap[key].push({ patient: p.name || "Patient", id: p.id, date: a.date || "", note: a.note || "" });
       }
     });
   });
 
+  window.currentCalendarMap = apptMap;
   dash.innerHTML = `
     <div class="hero-grid">
-      <div class="stat-card"><span class="stat-label">Total Patients</span><strong class="stat-value">${patients.length}</strong></div>
-      <div class="stat-card"><span class="stat-label">Today's Appts</span><strong class="stat-value">${todayAppointments.length}</strong></div>
-      <div class="stat-card"><span class="stat-label">Unpaid Balance</span><strong class="stat-value unpaid">${unpaid}</strong></div>
-      <div class="stat-card"><span class="stat-label">Total Visits</span><strong class="stat-value">${totalVisits}</strong></div>
-      <div class="stat-card"><span class="stat-label">Total Revenue</span><strong class="stat-value gold">${totalRevenue}</strong></div>
-      <div class="stat-card"><span class="stat-label">Paid Today</span><strong class="stat-value gold">${paidToday}</strong></div>
+      <div class="stat-card"><span class="stat-label">${t('totalPatients')}</span><strong class="stat-value">${patients.length}</strong></div>
+      <div class="stat-card"><span class="stat-label">${t('todaysAppts')}</span><strong class="stat-value">${todayAppointments.length}</strong></div>
+      <div class="stat-card"><span class="stat-label">${t('unpaidBalance')}</span><strong class="stat-value unpaid">${unpaid}</strong></div>
+      <div class="stat-card"><span class="stat-label">${t('totalVisits')}</span><strong class="stat-value">${totalVisits}</strong></div>
+      <div class="stat-card"><span class="stat-label">${t('totalRevenue')}</span><strong class="stat-value gold">${totalRevenue}</strong></div>
+      <div class="stat-card"><span class="stat-label">${t('paidToday')}</span><strong class="stat-value gold">${paidToday}</strong></div>
     </div>
 
     <div class="quick-actions">
@@ -505,7 +646,7 @@ function renderDashboard() {
     </div>
 
     <div class="panel">
-      <h2>Clinic Overview</h2>
+      <h2>${t('clinicOverview')}</h2>
       <span class="pill">${missingPlan} without treatment plan</span>
       <span class="pill">${todayAppointments.length} today</span>
       <span class="pill danger">${overdueAppointments.length} overdue</span>
@@ -532,19 +673,19 @@ function renderDashboard() {
     </div>` : ""}
 
     <div class="panel">
-      <h2>Appointment Calendar</h2>
+      <h2>${t('appointmentCalendar')}</h2>
       <div class="calendar-grid">
         ${Array.from({length: days}, (_, i) => {
           const day = i + 1;
           const list = apptMap[day] || [];
-          return `<button class="calendar-cell ${list.length ? "has-appt" : ""}" onclick="${list[0] ? `openPatient('${list[0].id}')` : ""}">${day}${list.length ? `<small>${list.length} appt</small>` : ""}</button>`;
+          return `<button class="calendar-cell ${list.length ? "has-appt" : ""}" onclick="${list.length ? `openCalendarDay(${day})` : ""}">${day}${list.length ? `<small>${list.length} cases</small>` : ""}</button>`;
         }).join("")}
       </div>
     </div>
 
     ${todayAppointments.length ? `
     <div class="panel">
-      <h2>Today</h2>
+      <h2>${t('today')}</h2>
       ${todayAppointments.map(a => `
         <div class="appointment-row">
           <div><b>${safeText(a.date)}</b><p class="muted">${safeText(a.patient)} - ${safeText(a.note)}</p></div>
@@ -555,7 +696,7 @@ function renderDashboard() {
 
     ${upcoming.length ? `
     <div class="panel">
-      <h2>Upcoming</h2>
+      <h2>${t('upcoming')}</h2>
       ${upcoming.map(a => `
         <div class="appointment-row">
           <div><b>${safeText(a.date)}</b><p class="muted">${safeText(a.patient)} - ${safeText(a.note)}</p></div>
@@ -577,6 +718,16 @@ function renderDashboard() {
   `;
 }
 
+
+window.openCalendarDay = function(day) {
+  const items = (window.currentCalendarMap && window.currentCalendarMap[day]) || [];
+  if (!items.length) return;
+  const modal = document.createElement("div");
+  modal.className = "luxury-modal";
+  modal.innerHTML = `<div class="luxury-box"><h2>Cases on day ${day}</h2>${items.map(x=>`<div class="appointment-row"><div><b>${safeText(x.patient)}</b><p class="muted">${safeText(x.date)} ${x.note ? '- ' + safeText(x.note) : ''}</p></div><button class="btn-secondary" onclick="this.closest('.luxury-modal').remove();openPatient('${x.id}')">Open</button></div>`).join("")}<button class="btn-secondary" style="width:100%;margin-top:12px" onclick="this.closest('.luxury-modal').remove()">Close</button></div>`;
+  document.body.appendChild(modal);
+};
+
 // --- Patient List ---
 function renderPatients() {
   const q = ($("search")?.value || "").toLowerCase();
@@ -595,6 +746,8 @@ function renderPatients() {
     .filter(p =>
       (p.name || "").toLowerCase().includes(q) ||
       (p.phone || "").includes(q) ||
+      (parseClinicData(p.progress_notes).extra_phones || []).join(" ").toLowerCase().includes(q) ||
+      (parseClinicData(p.progress_notes).websites || []).join(" ").toLowerCase().includes(q) ||
       (p.case_id || "").toLowerCase().includes(q) ||
       (p.diagnosis || "").toLowerCase().includes(q) ||
       (p.chief_complaint || "").toLowerCase().includes(q)
@@ -619,7 +772,7 @@ function renderPatients() {
             <h3>${safeText(p.name || "No name")}</h3>
             <div class="patient-meta">
               <span class="pill">ID: ${safeText(p.case_id || p.id)}</span>
-              <span class="pill">${safeText(p.phone || "No phone")}</span>
+              <span class="pill">${safeText(allPatientPhones(p, data).join(" / ") || "No phone")}</span>
               ${p.age ? `<span class="pill">${p.age} yrs</span>` : ""}
             </div>
           </div>
@@ -646,6 +799,8 @@ function getFormData(oldPatient = null) {
   const oldData = parseClinicData(oldPatient?.progress_notes);
   const newNote = $("progressNotes")?.value.trim();
   if (newNote) oldData.visits.unshift({ date: new Date().toLocaleString(), note: newNote, treatment: $("treatmentPlan")?.value || "" });
+  oldData.extra_phones = splitList($("extraPhones")?.value || "");
+  oldData.websites = splitList($("websites")?.value || "");
   return {
     owner_id: oldPatient?.owner_id || currentUser.id,
     case_id: $("caseId").value || oldPatient?.case_id || makeId(),
@@ -667,6 +822,9 @@ function fillForm(p = null) {
   $("caseId").value = p?.case_id || "";
   $("name").value = p?.name || "";
   $("phone").value = p?.phone || "";
+  const parsedData = parseClinicData(p?.progress_notes);
+  if ($("extraPhones")) $("extraPhones").value = (parsedData.extra_phones || []).join(", ");
+  if ($("websites")) $("websites").value = (parsedData.websites || []).join(", ");
   $("age").value = p?.age || "";
   $("gender").value = p?.gender || "";
   $("chiefComplaint").value = p?.chief_complaint || "";
@@ -1085,7 +1243,7 @@ function patientDetailsHTML(p) {
 
       <div class="tag-wrap">
         <span class="pill">ID: ${safeText(p.case_id || "-")}</span>
-        <span class="pill">${safeText(p.phone || "No phone")}</span>
+        <span class="pill">${safeText(allPatientPhones(p, data).join(" / ") || "No phone")}</span>
         <span class="pill">${safeText(p.age || "-")} yrs</span>
         <span class="pill">${safeText(p.gender || "-")}</span>
       </div>
@@ -1151,8 +1309,8 @@ function patientDetailsHTML(p) {
       ${data.payments.length ? data.payments.map((pay, i) => `
         <div class="kv">
           <b>${safeText(pay.date || "")}</b>
-          <span>Total: ${Number(pay.total || 0)} | Paid: ${Number(pay.paid || 0)} | Remaining: ${Number(pay.total || 0) - Number(pay.paid || 0)}</span>
-          <button class="btn-danger" style="margin-top:8px;font-size:12px;padding:8px 14px;" onclick="deletePayment('${p.id}', ${i})">Delete</button>
+          <span>Procedure: ${safeText(pay.procedure || "-")} | Total: ${Number(pay.total || 0)} | Discount: ${Number(pay.discount || 0)}% | Paid: ${Number(pay.paid || 0)} | Remaining: ${Math.max(0, Number(pay.total || 0) - (Number(pay.total || 0) * Number(pay.discount || 0) / 100) - Number(pay.paid || 0))}</span>
+          <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;"><button class="btn-secondary" style="font-size:12px;padding:8px 14px;" onclick="exportReceipt('${p.id}', ${i})">Receipt</button><button class="btn-danger" style="font-size:12px;padding:8px 14px;" onclick="deletePayment('${p.id}', ${i})">Delete</button></div>
         </div>
       `).join("") : `<div class="kv"><span class="muted">No payments yet</span></div>`}
 
@@ -1284,11 +1442,15 @@ window.addPayment = async function(id) {
   const p = patients.find(x => x.id === id);
   if (!p) return alert("Patient not found.");
   const data = parseClinicData(p.progress_notes);
+  const procedure = await luxuryPrompt("Procedure", "e.g. RCT upper molar");
+  if (procedure === null) return;
   const total = await luxuryPrompt("Total treatment cost", "Enter total amount");
   if (total === null || total === "") return;
+  const discount = await luxuryPrompt("Percentage discount", "0-100", "0");
+  if (discount === null) return;
   const paid = await luxuryPrompt("Paid amount", "Enter paid amount", "0");
   if (paid === null) return;
-  data.payments.unshift({ date: new Date().toLocaleString(), total: Number(total || 0), paid: Number(paid || 0) });
+  data.payments.unshift({ date: new Date().toLocaleString(), procedure, total: Number(total || 0), discount: Math.max(0, Math.min(100, Number(discount || 0))), paid: Number(paid || 0) });
   await api(`patients?id=eq.${id}`, { method: "PATCH", body: JSON.stringify({ progress_notes: saveClinicData(data) }) });
   await refreshPatientKeepingScroll(id);
 };
@@ -1310,7 +1472,7 @@ window.addInstallmentPlan = async function(id) {
   if (!total) return;
   const first = await luxuryPrompt("First payment", "e.g. 2000", "0");
   const data = parseClinicData(p.progress_notes);
-  data.payments.unshift({ date: new Date().toLocaleString(), total: Number(total || 0), paid: Number(first || 0), note: "Installment plan" });
+  data.payments.unshift({ date: new Date().toLocaleString(), procedure: "Installment plan", total: Number(total || 0), discount: 0, paid: Number(first || 0), note: "Installment plan" });
   await api(`patients?id=eq.${id}`, { method: "PATCH", body: JSON.stringify({ progress_notes: saveClinicData(data) }) });
   await refreshPatientKeepingScroll(id);
 };
@@ -1455,7 +1617,7 @@ function openPremiumDocument(title, bodyHtml) {
   const logo = currentUser?.clinic_logo || "";
   modal.innerHTML = `
     <div style="position:fixed;top:14px;right:14px;display:flex;gap:10px;z-index:1001;">
-      <button onclick="document.getElementById('premiumDocModal').remove()" style="padding:12px 18px;border:none;border-radius:14px;background:#1f2937;color:white;font-weight:700;font-family:inherit;cursor:pointer;">Close</button>
+      <button onclick="document.getElementById('premiumDocModal').remove()" style="padding:12px 18px;border:none;border-radius:14px;background:#1f2937;color:white;font-weight:700;font-family:inherit;cursor:pointer;">Close PDF</button>
       <button onclick="window.print()" style="padding:12px 18px;border:none;border-radius:14px;background:linear-gradient(135deg,#e8c84a,#b8941f);color:#0a0a0a;font-weight:700;font-family:inherit;cursor:pointer;">Print / PDF</button>
     </div>
     <div style="max-width:800px;margin:0 auto;background:#f7f8fb;color:#111827;border-radius:24px;padding:28px;box-shadow:0 28px 80px rgba(0,0,0,0.55);font-family:Arial,sans-serif;">
@@ -1756,6 +1918,8 @@ window.openDoctorProfile = async function() {
       <div class="kv"><b>Name</b><span>${safeText(currentUser.full_name || currentUser.username || "-")}</span></div>
       <div class="kv"><b>Username</b><span>${safeText(currentUser.username || "-")}</span></div>
       <div class="kv"><b>Role</b><span>${safeText((currentUser.role || "doctor").toUpperCase())}</span></div>
+      <div class="signature-display">${signatureImgHTML()}</div>
+      <div class="field"><label>Signature display</label><input type="file" accept="image/*" onchange="uploadDoctorSignature(this.files[0])"></div>
       <div class="actions-bar" style="margin-top:16px;">
         <button class="btn-primary" onclick="closeThisModal(this);setTimeout(()=>editProfile(),200)">Edit Profile</button>
         <button class="btn-secondary" onclick="closeThisModal(this);setTimeout(()=>changeMyPassword(),200)">Change Password</button>
@@ -1833,6 +1997,24 @@ window.deleteUser = async function(id) {
   document.querySelector(".luxury-modal")?.remove();
 };
 
+
+window.exportReceipt = function(id, index) {
+  const p = patients.find(x => x.id === id);
+  if (!p) return;
+  const data = parseClinicData(p.progress_notes);
+  const pay = (data.payments || [])[index];
+  if (!pay) return alert("Receipt not found.");
+  const extras = doctorExtras();
+  const clinicName = currentUser?.clinic_name || "Masri Dental Clinic";
+  const logo = currentUser?.clinic_logo || "";
+  const discountValue = Number(pay.total || 0) * Number(pay.discount || 0) / 100;
+  const net = Math.max(0, Number(pay.total || 0) - discountValue);
+  const remaining = Math.max(0, net - Number(pay.paid || 0));
+  const win = window.open("", "_blank");
+  win.document.write(`<html><head><title>Receipt - ${safeText(p.name)}</title><style>body{margin:0;font-family:Arial,sans-serif;color:#111827;${pdfPatternStyle(extras.pattern)}}.receipt{max-width:760px;margin:auto;padding:28px}.top{background:#111827;color:white;border-radius:20px;padding:22px;margin-bottom:16px}.top h1{margin:0}.logo{width:58px;height:58px;object-fit:contain;background:white;border-radius:14px;padding:6px;margin-bottom:8px}.box{background:white;border:1px solid #e5e7eb;border-radius:16px;padding:18px;margin-bottom:12px}.row{display:flex;justify-content:space-between;border-bottom:1px solid #e5e7eb;padding:10px 0}.row:last-child{border-bottom:0}.total{font-size:20px;font-weight:bold}.actions{position:sticky;top:0;background:white;padding:10px;display:flex;gap:8px;justify-content:flex-end}.actions button{padding:10px 14px;border:0;border-radius:12px;font-weight:bold;cursor:pointer}.print{background:#d4af37}.close{background:#111827;color:white}.signature-img{max-width:180px;max-height:70px}.signature-line{width:180px;border-top:2px solid #111827;margin-top:46px}@media print{.actions{display:none}.receipt{padding:0}}</style></head><body><div class="actions"><button class="print" onclick="window.print()">Print / PDF</button><button class="close" onclick="window.close()">Close PDF</button></div><div class="receipt"><div class="top">${logo?`<img class="logo" src="${logo}">`:""}<h1>${safeText(clinicName)}</h1><p>Payment Receipt</p></div><div class="box"><div class="row"><b>Patient</b><span>${safeText(p.name||"-")}</span></div><div class="row"><b>Case ID</b><span>${safeText(p.case_id||p.id)}</span></div><div class="row"><b>Procedure</b><span>${safeText(pay.procedure||pay.note||"Procedure")}</span></div><div class="row"><b>Date</b><span>${safeText(pay.date||"")}</span></div></div><div class="box"><div class="row"><b>Total</b><span>${Number(pay.total||0)}</span></div><div class="row"><b>Discount</b><span>${Number(pay.discount||0)}% (${discountValue})</span></div><div class="row"><b>Net</b><span>${net}</span></div><div class="row total"><b>Paid</b><span>${Number(pay.paid||0)}</span></div><div class="row"><b>Remaining</b><span>${remaining}</span></div></div><div class="box"><b>Doctor signature</b><div>${signatureImgHTML()}</div></div></div></body></html>`);
+  win.document.close();
+};
+
 // --- PDF Export ---
 window.exportPDF = async function(id) {
   const p = patients.find(x => x.id === id);
@@ -1843,7 +2025,7 @@ window.exportPDF = async function(id) {
   const logo = currentUser?.clinic_logo || "";
   const win = window.open("", "_blank");
   win.document.write(`<html><head><title>${safeText(p.name)} - Dental Report</title>
-    <style>body{margin:0;padding:0;font-family:Arial,sans-serif;background:#f4f6f8;color:#111827}
+    <style>body{margin:0;padding:0;font-family:Arial,sans-serif;color:#111827;${pdfPatternStyle(doctorExtras().pattern)}}
     .report{max-width:800px;margin:auto;padding:28px}
     .header{background:linear-gradient(135deg,#070b10,#111827);color:white;border-radius:20px;padding:24px;margin-bottom:20px}
     .header h1{margin:0;font-size:28px}.header p{margin:8px 0 0;color:#d4af37;font-weight:700}
@@ -1857,15 +2039,16 @@ window.exportPDF = async function(id) {
     .summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
     .moneyBox{background:#111827;color:white;border-radius:14px;padding:14px;text-align:center}
     .moneyBox b{color:#d4af37;display:block;margin-bottom:4px;font-size:11px}
-    .footer{text-align:center;color:#6b7280;margin-top:20px;font-size:12px}
-    @media print{body{background:white}.report{padding:0}.section,.header{break-inside:avoid}}
-    </style></head><body><div class="report">
+    .footer{text-align:center;color:#6b7280;margin-top:20px;font-size:12px}.actions{position:sticky;top:0;background:white;padding:10px;display:flex;gap:8px;justify-content:flex-end}.actions button{padding:10px 14px;border:0;border-radius:12px;font-weight:bold;cursor:pointer}.print{background:#d4af37}.close{background:#111827;color:white}.signature-img{max-width:180px;max-height:70px}.signature-line{width:180px;border-top:2px solid #111827;margin-top:46px}
+    @media print{.actions{display:none}body{background:white}.report{padding:0}.section,.header{break-inside:avoid}}
+    </style></head><body><div class="actions"><button class="print" onclick="window.print()">Print / PDF</button><button class="close" onclick="window.close()">Close PDF</button></div><div class="report">
     <div class="header">${logo?`<img class="logo" src="${logo}">`:""}<h1>${safeText(clinicName)}</h1><p>Patient Report</p></div>
     <div class="section"><h2>Patient Information</h2>
     <div class="grid"><div class="item"><span class="label">Name</span><span class="value">${safeText(p.name||"-")}</span></div>
     <div class="item"><span class="label">ID</span><span class="value">${safeText(p.case_id||p.id)}</span></div>
-    <div class="item"><span class="label">Phone</span><span class="value">${safeText(p.phone||"-")}</span></div>
-    <div class="item"><span class="label">Age/Gender</span><span class="value">${safeText(p.age||"-")} / ${safeText(p.gender||"-")}</span></div></div></div>
+    <div class="item"><span class="label">Phones</span><span class="value">${safeText(allPatientPhones(p, data).join(" / ") || "-")}</span></div>
+    <div class="item"><span class="label">Age/Gender</span><span class="value">${safeText(p.age||"-")} / ${safeText(p.gender||"-")}</span></div>
+    <div class="item"><span class="label">Websites</span><span class="value">${safeText(allPatientWebsites(data).join(" / ") || "-")}</span></div></div></div>
     <div class="section"><h2>Clinical</h2>
     <div class="item" style="margin-bottom:8px"><span class="label">Chief Complaint</span><span class="value">${safeText(p.chief_complaint||"-")}</span></div>
     <div class="item" style="margin-bottom:8px"><span class="label">Medical Alerts</span><span class="value">${safeText(p.medical_alerts||"-")}</span></div>
@@ -1873,10 +2056,12 @@ window.exportPDF = async function(id) {
     <div class="item"><span class="label">Treatment Plan</span><span class="value">${safeText(p.treatment_plan||"-")}</span></div></div>
     <div class="section"><h2>Financial Summary</h2><div class="summary">
     <div class="moneyBox"><b>Total</b>${money.total}</div>
+    <div class="moneyBox"><b>Discount</b>${money.discount}</div>
     <div class="moneyBox"><b>Paid</b>${money.paid}</div>
     <div class="moneyBox"><b>Remaining</b>${money.remaining}</div></div></div>
     <div class="section"><h2>Visits (${(data.visits||[]).length})</h2>
     ${(data.visits||[]).map(v=>`<div class="visit"><b>${safeText(v.date||"")}</b> - ${safeText(v.treatment||"Visit")}<br>${safeText(v.note||"-")}</div>`).join("")||"<p>No visits recorded.</p>"}</div>
+    <div class="section"><h2>Doctor Information</h2><div class="item"><span class="label">Doctor</span><span class="value">${safeText(currentUser?.full_name || currentUser?.username || "Doctor")}</span></div><div class="item"><span class="label">Specialty</span><span class="value">${safeText(doctorExtras().specialty || "General Dentist")}</span></div><div class="item"><span class="label">Signature</span><span class="value">${signatureImgHTML()}</span></div></div>
     <div class="footer">Generated on ${new Date().toLocaleString()}</div>
     </div></body></html>`);
   win.document.close();
@@ -2032,6 +2217,7 @@ window.addEventListener("load", async () => {
       showLoginScreen();
       return;
     }
+    applyCustomAccent();
     applyUserBar();
     enhanceHeader();
     await loadPatients();
