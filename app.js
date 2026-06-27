@@ -23,39 +23,6 @@ function safeText(value = "") {
     .replace(/'/g, "&#039;");
 }
 
-function displayValue(value, fallback = "Not added yet") {
-  const text = String(value ?? "").trim();
-  return text ? safeText(text) : `<span class="empty-value">${safeText(fallback)}</span>`;
-}
-
-function formatMoney(value) {
-  const num = Number(value || 0);
-  try {
-    return new Intl.NumberFormat(getLang() === "ar" ? "ar-EG" : "en-EG", { maximumFractionDigits: 2 }).format(num) + " EGP";
-  } catch {
-    return `${num.toFixed(num % 1 ? 2 : 0)} EGP`;
-  }
-}
-
-function formatDateTime(value) {
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return safeText(value || "");
-  return new Intl.DateTimeFormat(getLang() === "ar" ? "ar-EG" : "en-GB", {
-    year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit"
-  }).format(d);
-}
-
-function modalShell(title, body, options = {}) {
-  return `
-    <div class="luxury-box ${options.wide ? "wide-box" : ""}">
-      <div class="luxury-modal-header">
-        <h2>${safeText(title)}</h2>
-        <button class="modal-header-close" type="button" onclick="this.closest('.luxury-modal').remove()" aria-label="Close">×</button>
-      </div>
-      ${body}
-    </div>`;
-}
-
 
 // --- Doctor extras, language, patterns, custom theme ---
 const I18N = {
@@ -295,20 +262,9 @@ window.saveCustomAccent = function() {
 };
 
 window.openLanguagePicker = function() {
-  const lang = getLang();
   const modal = document.createElement("div");
   modal.className = "luxury-modal";
-  modal.innerHTML = modalShell("Language / اللغة", `
-    <p class="modal-subtitle">Choose the app direction and main labels. PDF reports will follow the selected language direction where supported.</p>
-    <div class="language-grid">
-      <button class="language-card ${lang === 'en' ? 'active' : ''}" onclick="setUILanguage('en');this.closest('.luxury-modal').remove()">
-        <span>English</span><small>Left to right</small>
-      </button>
-      <button class="language-card ${lang === 'ar' ? 'active' : ''}" onclick="setUILanguage('ar');this.closest('.luxury-modal').remove()" dir="rtl">
-        <span>العربية</span><small>من اليمين لليسار</small>
-      </button>
-    </div>
-  `);
+  modal.innerHTML = `<div class="luxury-box"><h2>Language / اللغة</h2><div class="actions-bar"><button class="btn-primary" onclick="setUILanguage('en');this.closest('.luxury-modal').remove()">English</button><button class="btn-primary" onclick="setUILanguage('ar');this.closest('.luxury-modal').remove()">العربية</button></div><button class="btn-secondary" style="width:100%;margin-top:12px" onclick="this.closest('.luxury-modal').remove()">Close</button></div>`;
   document.body.appendChild(modal);
 };
 
@@ -316,12 +272,7 @@ window.openPdfPatternPicker = function() {
   const extras = doctorExtras();
   const modal = document.createElement("div");
   modal.className = "luxury-modal";
-  modal.innerHTML = modalShell("PDF Pattern", `
-    <p class="modal-subtitle">Saved per doctor and used automatically on patient reports and receipts.</p>
-    <div class="pattern-grid">
-      ${["classic","waves","grid","dots"].map(x=>`<button class="pattern-card ${extras.pattern===x?'active':''}" onclick="setPdfPattern('${x}')"><span class="pdf-pattern-preview ${x}"></span><span>${x}</span></button>`).join("")}
-    </div>
-  `);
+  modal.innerHTML = `<div class="luxury-box"><h2>PDF Pattern</h2><p class="muted">This pattern is saved for this doctor account and used on reports and receipts.</p><div class="pattern-grid">${["classic","waves","grid","dots"].map(x=>`<button class="pattern-card ${extras.pattern===x?'active':''}" onclick="setPdfPattern('${x}')"><span class="pdf-pattern-preview ${x}"></span>${x}</button>`).join("")}</div><button class="btn-secondary" style="width:100%;margin-top:12px" onclick="this.closest('.luxury-modal').remove()">Close</button></div>`;
   document.body.appendChild(modal);
 };
 
@@ -334,30 +285,23 @@ window.setPdfPattern = function(pattern) {
 
 window.openDoctorInfoCard = function() {
   const extras = doctorExtras();
-  const phoneList = (extras.phones || []).length ? (extras.phones || []).map(x => `<span class="info-chip">${safeText(x)}</span>`).join("") : `<span class="empty-value">No phone numbers added</span>`;
-  const websiteList = (extras.websites || []).length ? (extras.websites || []).map(x => `<span class="info-chip">${safeText(x)}</span>`).join("") : `<span class="empty-value">No websites added</span>`;
   const modal = document.createElement("div");
   modal.className = "luxury-modal";
-  modal.innerHTML = modalShell("Dental Information Card", `
-    <div class="doctor-info-card premium-doctor-card" dir="ltr">
-      <div class="doctor-card-top">
-        <div class="doctor-avatar">${safeText((currentUser?.full_name || currentUser?.username || "D").trim().charAt(0).toUpperCase())}</div>
-        <div>
-          <h3>${safeText(currentUser?.full_name || currentUser?.username || "Doctor")}</h3>
-          <p>${safeText(extras.specialty || "General Dentist")}</p>
-        </div>
+  modal.innerHTML = `
+    <div class="luxury-box wide-box">
+      <h2>Dental Information Card</h2>
+      <div class="doctor-info-card">
+        <h3>${safeText(currentUser?.full_name || currentUser?.username || "Doctor")}</h3>
+        <p>${safeText(extras.specialty || "General Dentist")}</p>
+        <p><b>License:</b> ${safeText(extras.license || "-")}</p>
+        <p><b>Phones:</b> ${safeText((extras.phones || []).join(" / ") || "-")}</p>
+        <p><b>Websites:</b> ${safeText((extras.websites || []).join(" / ") || "-")}</p>
+        <p><b>Address:</b> ${safeText(extras.address || "-")}</p>
+        <p>${safeText(extras.bio || "")}</p>
+        <div class="signature-display">${signatureImgHTML()}</div>
       </div>
-      <div class="doctor-info-grid">
-        <div class="doctor-info-row"><b>License</b><span>${displayValue(extras.license)}</span></div>
-        <div class="doctor-info-row"><b>Address</b><span>${displayValue(extras.address)}</span></div>
-        <div class="doctor-info-row full"><b>Phones</b><span class="chip-list">${phoneList}</span></div>
-        <div class="doctor-info-row full"><b>Websites</b><span class="chip-list">${websiteList}</span></div>
-        ${extras.bio ? `<div class="doctor-info-row full"><b>Bio</b><span>${safeText(extras.bio)}</span></div>` : ""}
-      </div>
-      <div class="signature-display">${signatureImgHTML()}<small>${extras.signature ? "Saved signature" : "Signature not uploaded yet"}</small></div>
-    </div>
-    <div class="actions-bar modal-actions"><button class="btn-primary" onclick="editDoctorInfoCard()">Edit Card</button></div>
-  `, { wide: true });
+      <div class="actions-bar"><button class="btn-primary" onclick="editDoctorInfoCard()">Edit Card</button><button class="btn-secondary" onclick="this.closest('.luxury-modal').remove()">Close</button></div>
+    </div>`;
   document.body.appendChild(modal);
 };
 
@@ -688,10 +632,10 @@ function renderDashboard() {
     <div class="hero-grid">
       <div class="stat-card"><span class="stat-label">${t('totalPatients')}</span><strong class="stat-value">${patients.length}</strong></div>
       <div class="stat-card"><span class="stat-label">${t('todaysAppts')}</span><strong class="stat-value">${todayAppointments.length}</strong></div>
-      <div class="stat-card"><span class="stat-label">${t('unpaidBalance')}</span><strong class="stat-value unpaid">${formatMoney(unpaid)}</strong></div>
+      <div class="stat-card"><span class="stat-label">${t('unpaidBalance')}</span><strong class="stat-value unpaid">${unpaid}</strong></div>
       <div class="stat-card"><span class="stat-label">${t('totalVisits')}</span><strong class="stat-value">${totalVisits}</strong></div>
-      <div class="stat-card"><span class="stat-label">${t('totalRevenue')}</span><strong class="stat-value gold">${formatMoney(totalRevenue)}</strong></div>
-      <div class="stat-card"><span class="stat-label">${t('paidToday')}</span><strong class="stat-value gold">${formatMoney(paidToday)}</strong></div>
+      <div class="stat-card"><span class="stat-label">${t('totalRevenue')}</span><strong class="stat-value gold">${totalRevenue}</strong></div>
+      <div class="stat-card"><span class="stat-label">${t('paidToday')}</span><strong class="stat-value gold">${paidToday}</strong></div>
     </div>
 
     <div class="quick-actions">
@@ -766,7 +710,7 @@ function renderDashboard() {
       <h2>Unpaid Priority</h2>
       ${unpaidPatients.map(x => `
         <div class="appointment-row">
-          <div><b>${safeText(x.patient)}</b><p class="muted">Remaining: ${formatMoney(x.amount)}</p></div>
+          <div><b>${safeText(x.patient)}</b><p class="muted">Remaining: ${x.amount}</p></div>
           <button class="btn-secondary" onclick="openPatient('${x.id}')">Open</button>
         </div>
       `).join("")}
@@ -780,7 +724,7 @@ window.openCalendarDay = function(day) {
   if (!items.length) return;
   const modal = document.createElement("div");
   modal.className = "luxury-modal";
-  modal.innerHTML = modalShell(`Cases on day ${day}`, `${items.map(x=>`<div class="appointment-row"><div><b>${safeText(x.patient)}</b><p class="muted">${formatDateTime(x.date)} ${x.note ? '- ' + safeText(x.note) : ''}</p></div><button class="btn-secondary" onclick="this.closest('.luxury-modal').remove();openPatient('${x.id}')">Open</button></div>`).join("")}`);
+  modal.innerHTML = `<div class="luxury-box"><h2>Cases on day ${day}</h2>${items.map(x=>`<div class="appointment-row"><div><b>${safeText(x.patient)}</b><p class="muted">${safeText(x.date)} ${x.note ? '- ' + safeText(x.note) : ''}</p></div><button class="btn-secondary" onclick="this.closest('.luxury-modal').remove();openPatient('${x.id}')">Open</button></div>`).join("")}<button class="btn-secondary" style="width:100%;margin-top:12px" onclick="this.closest('.luxury-modal').remove()">Close</button></div>`;
   document.body.appendChild(modal);
 };
 
@@ -1353,9 +1297,9 @@ function patientDetailsHTML(p) {
 
       <h3 style="color:var(--accent);margin-top:24px;">Payments</h3>
       <div class="finance-grid">
-        <div class="finance-card"><small>Total</small><strong>${formatMoney(money.total)}</strong></div>
-        <div class="finance-card"><small>Paid</small><strong>${formatMoney(money.paid)}</strong></div>
-        <div class="finance-card"><small>Remaining</small><strong style="color:var(--danger)">${formatMoney(money.remaining)}</strong></div>
+        <div class="finance-card"><small>Total</small><strong>${money.total}</strong></div>
+        <div class="finance-card"><small>Paid</small><strong>${money.paid}</strong></div>
+        <div class="finance-card"><small>Remaining</small><strong style="color:var(--danger)">${money.remaining}</strong></div>
         <div class="finance-card"><small>Collection</small><strong>${money.total ? Math.round((money.paid / money.total) * 100) : 0}%</strong></div>
       </div>
       <div class="actions-bar">
@@ -1646,7 +1590,7 @@ window.showCaseSummary = async function(id) {
     `Treatment plan: ${p.treatment_plan || "-"}`,
     `Visits: ${(data.visits || []).length}`,
     `Photos: ${(p.photos || []).length}`,
-    `Financial: Total ${formatMoney(money.total)}, Paid ${formatMoney(money.paid)}, Remaining ${formatMoney(money.remaining)}`,
+    `Financial: Total ${money.total}, Paid ${money.paid}, Remaining ${money.remaining}`,
     `Last visit: ${(data.visits || [])[0]?.date || "none"}`
   ].join("\n");
   const modal = document.createElement("div");
@@ -2067,7 +2011,7 @@ window.exportReceipt = function(id, index) {
   const net = Math.max(0, Number(pay.total || 0) - discountValue);
   const remaining = Math.max(0, net - Number(pay.paid || 0));
   const win = window.open("", "_blank");
-  win.document.write(`<html><head><title>Receipt - ${safeText(p.name)}</title><style>body{margin:0;font-family:Arial,sans-serif;color:#111827;${pdfPatternStyle(extras.pattern)}}.receipt{max-width:760px;margin:auto;padding:28px}.top{background:#111827;color:white;border-radius:20px;padding:22px;margin-bottom:16px}.top h1{margin:0}.logo{width:58px;height:58px;object-fit:contain;background:white;border-radius:14px;padding:6px;margin-bottom:8px}.box{background:white;border:1px solid #e5e7eb;border-radius:16px;padding:18px;margin-bottom:12px}.row{display:flex;justify-content:space-between;border-bottom:1px solid #e5e7eb;padding:10px 0}.row:last-child{border-bottom:0}.total{font-size:20px;font-weight:bold}.actions{position:sticky;top:0;z-index:5;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);padding:12px 18px;display:flex;gap:10px;justify-content:flex-end;box-shadow:0 8px 24px rgba(17,24,39,.08)}.actions button{padding:12px 16px;border:0;border-radius:14px;font-weight:bold;cursor:pointer;box-shadow:0 6px 18px rgba(17,24,39,.12)}.print{background:#d4af37}.close{background:#111827;color:white}.signature-img{max-width:180px;max-height:70px}.signature-line{width:180px;border-top:2px solid #111827;margin-top:46px}@media print{.actions{display:none}.receipt{padding:0}}</style></head><body><div class="actions"><button class="print" onclick="window.print()">Print / PDF</button><button class="close" onclick="window.close()">Close PDF</button></div><div class="receipt"><div class="top">${logo?`<img class="logo" src="${logo}">`:""}<h1>${safeText(clinicName)}</h1><p>Payment Receipt</p></div><div class="box"><div class="row"><b>Patient</b><span>${safeText(p.name||"-")}</span></div><div class="row"><b>Case ID</b><span>${safeText(p.case_id||p.id)}</span></div><div class="row"><b>Procedure</b><span>${safeText(pay.procedure||pay.note||"Procedure")}</span></div><div class="row"><b>Date</b><span>${safeText(pay.date||"")}</span></div></div><div class="box"><div class="row"><b>Total</b><span>${formatMoney(pay.total)}</span></div><div class="row"><b>Discount</b><span>${Number(pay.discount||0)}% (${formatMoney(discountValue)})</span></div><div class="row"><b>Net</b><span>${formatMoney(net)}</span></div><div class="row total"><b>Paid</b><span>${formatMoney(pay.paid)}</span></div><div class="row"><b>Remaining</b><span>${formatMoney(remaining)}</span></div></div><div class="box"><b>Doctor signature</b><div>${signatureImgHTML()}</div></div></div></body></html>`);
+  win.document.write(`<html><head><title>Receipt - ${safeText(p.name)}</title><style>body{margin:0;font-family:Arial,sans-serif;color:#111827;${pdfPatternStyle(extras.pattern)}}.receipt{max-width:760px;margin:auto;padding:28px}.top{background:#111827;color:white;border-radius:20px;padding:22px;margin-bottom:16px}.top h1{margin:0}.logo{width:58px;height:58px;object-fit:contain;background:white;border-radius:14px;padding:6px;margin-bottom:8px}.box{background:white;border:1px solid #e5e7eb;border-radius:16px;padding:18px;margin-bottom:12px}.row{display:flex;justify-content:space-between;border-bottom:1px solid #e5e7eb;padding:10px 0}.row:last-child{border-bottom:0}.total{font-size:20px;font-weight:bold}.actions{position:sticky;top:0;background:white;padding:10px;display:flex;gap:8px;justify-content:flex-end}.actions button{padding:10px 14px;border:0;border-radius:12px;font-weight:bold;cursor:pointer}.print{background:#d4af37}.close{background:#111827;color:white}.signature-img{max-width:180px;max-height:70px}.signature-line{width:180px;border-top:2px solid #111827;margin-top:46px}@media print{.actions{display:none}.receipt{padding:0}}</style></head><body><div class="actions"><button class="print" onclick="window.print()">Print / PDF</button><button class="close" onclick="window.close()">Close PDF</button></div><div class="receipt"><div class="top">${logo?`<img class="logo" src="${logo}">`:""}<h1>${safeText(clinicName)}</h1><p>Payment Receipt</p></div><div class="box"><div class="row"><b>Patient</b><span>${safeText(p.name||"-")}</span></div><div class="row"><b>Case ID</b><span>${safeText(p.case_id||p.id)}</span></div><div class="row"><b>Procedure</b><span>${safeText(pay.procedure||pay.note||"Procedure")}</span></div><div class="row"><b>Date</b><span>${safeText(pay.date||"")}</span></div></div><div class="box"><div class="row"><b>Total</b><span>${Number(pay.total||0)}</span></div><div class="row"><b>Discount</b><span>${Number(pay.discount||0)}% (${discountValue})</span></div><div class="row"><b>Net</b><span>${net}</span></div><div class="row total"><b>Paid</b><span>${Number(pay.paid||0)}</span></div><div class="row"><b>Remaining</b><span>${remaining}</span></div></div><div class="box"><b>Doctor signature</b><div>${signatureImgHTML()}</div></div></div></body></html>`);
   win.document.close();
 };
 
@@ -2095,7 +2039,7 @@ window.exportPDF = async function(id) {
     .summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
     .moneyBox{background:#111827;color:white;border-radius:14px;padding:14px;text-align:center}
     .moneyBox b{color:#d4af37;display:block;margin-bottom:4px;font-size:11px}
-    .footer{text-align:center;color:#6b7280;margin-top:20px;font-size:12px}.actions{position:sticky;top:0;z-index:5;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);padding:12px 18px;display:flex;gap:10px;justify-content:flex-end;box-shadow:0 8px 24px rgba(17,24,39,.08)}.actions button{padding:12px 16px;border:0;border-radius:14px;font-weight:bold;cursor:pointer;box-shadow:0 6px 18px rgba(17,24,39,.12)}.print{background:#d4af37}.close{background:#111827;color:white}.signature-img{max-width:180px;max-height:70px}.signature-line{width:180px;border-top:2px solid #111827;margin-top:46px}
+    .footer{text-align:center;color:#6b7280;margin-top:20px;font-size:12px}.actions{position:sticky;top:0;background:white;padding:10px;display:flex;gap:8px;justify-content:flex-end}.actions button{padding:10px 14px;border:0;border-radius:12px;font-weight:bold;cursor:pointer}.print{background:#d4af37}.close{background:#111827;color:white}.signature-img{max-width:180px;max-height:70px}.signature-line{width:180px;border-top:2px solid #111827;margin-top:46px}
     @media print{.actions{display:none}body{background:white}.report{padding:0}.section,.header{break-inside:avoid}}
     </style></head><body><div class="actions"><button class="print" onclick="window.print()">Print / PDF</button><button class="close" onclick="window.close()">Close PDF</button></div><div class="report">
     <div class="header">${logo?`<img class="logo" src="${logo}">`:""}<h1>${safeText(clinicName)}</h1><p>Patient Report</p></div>
@@ -2111,12 +2055,12 @@ window.exportPDF = async function(id) {
     <div class="item" style="margin-bottom:8px"><span class="label">Diagnosis</span><span class="value">${safeText(p.diagnosis||"-")}</span></div>
     <div class="item"><span class="label">Treatment Plan</span><span class="value">${safeText(p.treatment_plan||"-")}</span></div></div>
     <div class="section"><h2>Financial Summary</h2><div class="summary">
-    <div class="moneyBox"><b>Total</b>${formatMoney(money.total)}</div>
-    <div class="moneyBox"><b>Discount</b>${formatMoney(money.discount)}</div>
-    <div class="moneyBox"><b>Paid</b>${formatMoney(money.paid)}</div>
-    <div class="moneyBox"><b>Remaining</b>${formatMoney(money.remaining)}</div></div></div>
+    <div class="moneyBox"><b>Total</b>${money.total}</div>
+    <div class="moneyBox"><b>Discount</b>${money.discount}</div>
+    <div class="moneyBox"><b>Paid</b>${money.paid}</div>
+    <div class="moneyBox"><b>Remaining</b>${money.remaining}</div></div></div>
     <div class="section"><h2>Visits (${(data.visits||[]).length})</h2>
-    ${(data.visits||[]).map(v=>`<div class="visit"><b>${formatDateTime(v.date)}</b> - ${safeText(v.treatment||"Visit")}<br>${safeText(v.note||"-")}</div>`).join("")||"<p>No visits recorded.</p>"}</div>
+    ${(data.visits||[]).map(v=>`<div class="visit"><b>${safeText(v.date||"")}</b> - ${safeText(v.treatment||"Visit")}<br>${safeText(v.note||"-")}</div>`).join("")||"<p>No visits recorded.</p>"}</div>
     <div class="section"><h2>Doctor Information</h2><div class="item"><span class="label">Doctor</span><span class="value">${safeText(currentUser?.full_name || currentUser?.username || "Doctor")}</span></div><div class="item"><span class="label">Specialty</span><span class="value">${safeText(doctorExtras().specialty || "General Dentist")}</span></div><div class="item"><span class="label">Signature</span><span class="value">${signatureImgHTML()}</span></div></div>
     <div class="footer">Generated on ${new Date().toLocaleString()}</div>
     </div></body></html>`);
@@ -2282,3 +2226,271 @@ window.addEventListener("load", async () => {
     document.body.innerHTML = `<div style="padding:40px;color:#ef4444;font-family:'DM Sans',sans-serif;"><h2>Error</h2><p>${safeText(err.message)}</p></div>`;
   }
 });
+
+/* =========================================================
+   Premium polish upgrade: simpler settings, working colors,
+   and hand-drawn signatures
+   ========================================================= */
+function removeThemeClasses(){
+  ["gold","pink","red","blue","cyan","purple","green","orange"].forEach(t => document.body.classList.remove(`theme-${t}`));
+}
+function colorMix(hex, amount){
+  const clean = String(hex || "#d4af37").replace("#", "");
+  const n = parseInt(clean.length === 3 ? clean.split("").map(c => c + c).join("") : clean, 16);
+  let r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+  const target = amount >= 0 ? 255 : 0;
+  const p = Math.abs(amount);
+  r = Math.round(r + (target - r) * p); g = Math.round(g + (target - g) * p); b = Math.round(b + (target - b) * p);
+  return `#${[r,g,b].map(x => x.toString(16).padStart(2,"0")).join("")}`;
+}
+function applyAccentVars(accent){
+  const color = accent || doctorExtras().accent || "#d4af37";
+  const light = colorMix(color, .22);
+  const dark = colorMix(color, -.28);
+  [document.documentElement, document.body].forEach(el => {
+    if (!el) return;
+    el.style.setProperty("--accent", color);
+    el.style.setProperty("--accent-light", light);
+    el.style.setProperty("--accent-dark", dark);
+  });
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.setAttribute("content", color);
+}
+applyCustomAccent = function(){
+  const extras = doctorExtras();
+  if (extras.accent) applyAccentVars(extras.accent);
+};
+window.setClinicTheme = function(theme){
+  const themes = ["gold","pink","red","blue","cyan","purple","green","orange"];
+  removeThemeClasses();
+  document.documentElement.style.removeProperty("--accent");
+  document.documentElement.style.removeProperty("--accent-light");
+  document.documentElement.style.removeProperty("--accent-dark");
+  document.body.style.removeProperty("--accent");
+  document.body.style.removeProperty("--accent-light");
+  document.body.style.removeProperty("--accent-dark");
+  if (theme === "custom") {
+    localStorage.setItem("clinicTheme", "custom");
+    applyCustomAccent();
+  } else {
+    const clean = themes.includes(theme) ? theme : "gold";
+    document.body.classList.add(`theme-${clean}`);
+    localStorage.setItem("clinicTheme", clean);
+  }
+  document.querySelector(".luxury-modal")?.remove();
+};
+applySavedTheme = function(){
+  const theme = localStorage.getItem("clinicTheme") || "gold";
+  setClinicTheme(theme);
+  applyLanguage();
+};
+window.saveCustomAccent = function(){
+  const color = document.getElementById("customAccentPicker")?.value || "#d4af37";
+  const extras = doctorExtras();
+  extras.accent = color;
+  extras.accentLight = colorMix(color, .22);
+  extras.accentDark = colorMix(color, -.28);
+  saveDoctorExtras(extras);
+  setClinicTheme("custom");
+  toast("Custom color saved");
+};
+function toast(message){
+  document.querySelector(".app-toast")?.remove();
+  const el = document.createElement("div");
+  el.className = "app-toast";
+  el.textContent = message;
+  document.body.appendChild(el);
+  setTimeout(() => el.classList.add("show"), 20);
+  setTimeout(() => el.remove(), 2300);
+}
+function premiumModal(title, bodyHtml, footerHtml = ""){
+  const modal = document.createElement("div");
+  modal.className = "luxury-modal clean-modal";
+  modal.innerHTML = `
+    <div class="luxury-box clean-box">
+      <div class="clean-modal-head">
+        <h2>${safeText(title)}</h2>
+        <button class="modal-x" type="button" onclick="this.closest('.luxury-modal').remove()">×</button>
+      </div>
+      <div class="clean-modal-body">${bodyHtml}</div>
+      ${footerHtml ? `<div class="clean-modal-foot">${footerHtml}</div>` : ""}
+    </div>`;
+  document.body.appendChild(modal);
+  return modal;
+}
+window.openThemePicker = function(){
+  const extras = doctorExtras();
+  const current = extras.accent || "#d4af37";
+  premiumModal("Theme colors", `
+    <p class="muted">Choose a simple preset or pick any custom clinic color. The color now updates buttons, headers, cards, PDFs, and remains after refresh.</p>
+    <div class="simple-color-grid">
+      ${[
+        ["gold","#d4af37","Gold"],["green","#22c55e","Green"],["blue","#3b82f6","Blue"],["cyan","#06b6d4","Cyan"],
+        ["purple","#8b5cf6","Purple"],["pink","#ff4fa3","Pink"],["red","#ef4444","Red"],["orange","#f97316","Orange"]
+      ].map(([key,color,label]) => `<button class="simple-color" type="button" onclick="setClinicTheme('${key}')"><span style="background:${color}"></span>${label}</button>`).join("")}
+    </div>
+    <div class="simple-setting-card">
+      <label for="customAccentPicker">Custom clinic color</label>
+      <div class="color-row"><input id="customAccentPicker" type="color" value="${safeText(current)}"><button class="btn-primary" type="button" onclick="saveCustomAccent()">Apply</button></div>
+    </div>
+  `);
+};
+window.openLanguagePicker = function(){
+  premiumModal("Language", `
+    <p class="muted">Choose the app language. The app keeps the layout simple and readable on mobile.</p>
+    <div class="choice-list">
+      <button class="choice-card" type="button" onclick="setUILanguage('en');this.closest('.luxury-modal').remove();toast('Language set to English')"><b>English</b><span>Left-to-right interface</span></button>
+      <button class="choice-card" type="button" onclick="setUILanguage('ar');this.closest('.luxury-modal').remove();toast('تم تغيير اللغة')"><b>العربية</b><span>واجهة عربية من اليمين لليسار</span></button>
+    </div>
+  `);
+};
+window.openPdfPatternPicker = function(){
+  const extras = doctorExtras();
+  premiumModal("PDF style", `
+    <p class="muted">Choose a clean report background for this doctor account.</p>
+    <div class="pattern-grid premium-patterns">${["classic","waves","grid","dots"].map(x=>`<button class="pattern-card ${extras.pattern===x?'active':''}" onclick="setPdfPattern('${x}');toast('PDF style saved')"><span class="pdf-pattern-preview ${x}"></span><b>${x}</b></button>`).join("")}</div>
+  `);
+};
+function signatureImgHTML(){
+  const sig = doctorExtras().signature || "";
+  return sig ? `<img class="signature-img" src="${sig}" alt="Doctor signature">` : `<button class="signature-empty" type="button" onclick="openSignaturePad({type:'doctor'})">Tap to add signature</button>`;
+}
+function getPatientSignature(p){
+  return parseClinicData(p?.progress_notes).patientSignature || "";
+}
+function patientSignatureHTML(p){
+  const sig = getPatientSignature(p);
+  return sig ? `<img class="signature-img" src="${sig}" alt="Patient signature">` : `<button class="signature-empty" type="button" onclick="openSignaturePad({type:'patient', patientId:'${p.id}'})">Tap to add patient signature</button>`;
+}
+window.openDoctorInfoCard = function(){
+  const extras = doctorExtras();
+  const name = currentUser?.full_name || currentUser?.username || "Doctor";
+  premiumModal("Dental information card", `
+    <div class="doctor-card-clean">
+      <div class="doctor-card-top"><div class="doctor-avatar-clean">${safeText(String(name).slice(0,1).toUpperCase())}</div><div><h3>${safeText(name)}</h3><p>${safeText(extras.specialty || "General Dentist")}</p></div></div>
+      <div class="info-list-clean">
+        <div><span>License</span><b>${safeText(extras.license || "Not added")}</b></div>
+        <div><span>Phones</span><b>${safeText((extras.phones || []).join(" / ") || "Not added")}</b></div>
+        <div><span>Websites</span><b>${safeText((extras.websites || []).join(" / ") || "Not added")}</b></div>
+        <div><span>Address</span><b>${safeText(extras.address || "Not added")}</b></div>
+      </div>
+      ${extras.bio ? `<p class="doctor-bio-clean">${safeText(extras.bio)}</p>` : ""}
+      <div class="signature-display">${signatureImgHTML()}</div>
+    </div>
+  `, `<button class="btn-secondary" onclick="editDoctorInfoCard()">Edit info</button><button class="btn-primary" onclick="openSignaturePad({type:'doctor'})">Draw signature</button>`);
+};
+window.openSignaturePad = function(options = {}){
+  const type = options.type || "doctor";
+  const patientId = options.patientId || "";
+  const title = type === "patient" ? "Draw patient signature" : "Draw doctor signature";
+  const modal = premiumModal(title, `
+    <p class="muted">Use your finger, Apple Pencil, or mouse. Press Save when it looks right.</p>
+    <div class="signature-pad-wrap"><canvas id="signatureCanvas" width="760" height="300"></canvas></div>
+  `, `<button class="btn-secondary" id="sigClear" type="button">Clear</button><button class="btn-primary" id="sigSave" type="button">Save signature</button>`);
+  const canvas = modal.querySelector("#signatureCanvas");
+  const ctx = canvas.getContext("2d");
+  function sizeCanvas(){
+    const rect = canvas.getBoundingClientRect();
+    const ratio = Math.max(window.devicePixelRatio || 1, 1);
+    const old = canvas.toDataURL();
+    canvas.width = Math.max(320, Math.floor(rect.width * ratio));
+    canvas.height = Math.floor(220 * ratio);
+    ctx.setTransform(ratio,0,0,ratio,0,0);
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.lineWidth = 3;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.strokeStyle = "#111827";
+  }
+  sizeCanvas();
+  let drawing = false, hasInk = false;
+  function pos(e){
+    const rect = canvas.getBoundingClientRect();
+    const p = e.touches?.[0] || e.changedTouches?.[0] || e;
+    return { x: p.clientX - rect.left, y: p.clientY - rect.top };
+  }
+  function start(e){ e.preventDefault(); drawing = true; const p = pos(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); }
+  function move(e){ if (!drawing) return; e.preventDefault(); const p = pos(e); ctx.lineTo(p.x,p.y); ctx.stroke(); hasInk = true; }
+  function end(e){ if (!drawing) return; e.preventDefault(); drawing = false; }
+  ["mousedown","touchstart"].forEach(ev => canvas.addEventListener(ev,start,{passive:false}));
+  ["mousemove","touchmove"].forEach(ev => canvas.addEventListener(ev,move,{passive:false}));
+  ["mouseup","mouseleave","touchend","touchcancel"].forEach(ev => canvas.addEventListener(ev,end,{passive:false}));
+  modal.querySelector("#sigClear").onclick = () => { ctx.fillStyle = "#ffffff"; ctx.fillRect(0,0,canvas.width,canvas.height); ctx.strokeStyle = "#111827"; hasInk = false; };
+  modal.querySelector("#sigSave").onclick = async () => {
+    if (!hasInk && !(await luxuryConfirm("Save blank signature?", "No drawing was detected."))) return;
+    const dataUrl = canvas.toDataURL("image/png");
+    if (type === "patient" && patientId) {
+      const p = patients.find(x => x.id === patientId);
+      if (p) {
+        const data = parseClinicData(p.progress_notes);
+        data.patientSignature = dataUrl;
+        try { await api(`patients?id=eq.${patientId}`, { method:"PATCH", body: JSON.stringify({ progress_notes: saveClinicData(data) }) }); }
+        catch { p.progress_notes = saveClinicData(data); }
+        await refreshPatientKeepingScroll(patientId);
+      }
+    } else {
+      const extras = doctorExtras();
+      extras.signature = dataUrl;
+      saveDoctorExtras(extras);
+      document.querySelectorAll(".signature-display").forEach(el => el.innerHTML = signatureImgHTML());
+    }
+    modal.remove();
+    toast("Signature saved");
+  };
+};
+window.openSettingsPage = function(){ showPage("settings"); };
+function ensureSettingsPage(){
+  let page = document.getElementById("settings");
+  if (!page) {
+    page = document.createElement("section");
+    page.id = "settings";
+    page.className = "page";
+    document.querySelector("main.app")?.appendChild(page);
+  }
+  renderSettingsPage();
+  return page;
+}
+function renderSettingsPage(){
+  const page = document.getElementById("settings");
+  if (!page) return;
+  const extras = doctorExtras();
+  page.innerHTML = `
+    <div class="card settings-page-clean">
+      <div class="settings-title-row"><div><h2>Settings</h2><p class="muted">Simple controls for the clinic look, doctor card, PDF, and signature.</p></div></div>
+      <div class="settings-grid-clean">
+        <button class="settings-tile" onclick="openThemePicker()"><b>Theme color</b><span>Change preset or custom color</span><em style="background:${safeText(extras.accent || '#d4af37')}"></em></button>
+        <button class="settings-tile" onclick="openLanguagePicker()"><b>Language</b><span>English / Arabic</span></button>
+        <button class="settings-tile" onclick="openPdfPatternPicker()"><b>PDF style</b><span>Reports and receipts</span></button>
+        <button class="settings-tile" onclick="openDoctorInfoCard()"><b>Doctor card</b><span>Specialty, phones, website</span></button>
+        <button class="settings-tile" onclick="openSignaturePad({type:'doctor'})"><b>Draw signature</b><span>Used on PDFs and receipts</span></button>
+        <button class="settings-tile" onclick="backupData()"><b>Backup</b><span>Export clinic data</span></button>
+      </div>
+      <div class="signature-display settings-signature-preview">${signatureImgHTML()}</div>
+    </div>`;
+}
+const oldShowPage = showPage;
+showPage = function(id){
+  if (id === "settings") ensureSettingsPage();
+  oldShowPage(id);
+};
+const oldOpenClinicMenu = window.openClinicMenu;
+window.openClinicMenu = function(){
+  oldOpenClinicMenu();
+  const settingsBtn = document.querySelector('#sideDrawer button[onclick*="showPage(\'settings\')"]');
+  if (settingsBtn) settingsBtn.innerHTML = "Settings <small>theme, signature, PDF</small>";
+};
+
+/* Add patient signature controls to patient detail after each render */
+const oldRenderPatientDetail = renderPatientDetail;
+renderPatientDetail = function(p){
+  let html = oldRenderPatientDetail(p);
+  const signatureBlock = `
+    <h3 style="color:var(--accent);margin-top:24px;">Signatures</h3>
+    <div class="signature-section-grid">
+      <div class="signature-mini"><b>Patient signature</b><div class="signature-display">${patientSignatureHTML(p)}</div><button class="btn-secondary" onclick="openSignaturePad({type:'patient', patientId:'${p.id}'})">Draw patient signature</button></div>
+      <div class="signature-mini"><b>Doctor signature</b><div class="signature-display">${signatureImgHTML()}</div><button class="btn-secondary" onclick="openSignaturePad({type:'doctor'})">Draw doctor signature</button></div>
+    </div>`;
+  html = html.replace(`<h3 style="color:var(--accent);margin-top:24px;">Patient Timeline</h3>`, `${signatureBlock}<h3 style="color:var(--accent);margin-top:24px;">Patient Timeline</h3>`);
+  return html;
+};
