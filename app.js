@@ -2943,3 +2943,131 @@ window.addEventListener("load", async () => {
     return out;
   };
 })();
+
+
+/* === PREMIUM MANAGEMENT UPGRADE: calendar, structured plans, docs, lab, finance, reminders, roles === */
+(function(){
+  const esc = (v='') => String(v ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+  const todayISO = () => new Date().toISOString().slice(0,10);
+  const moneyFmt = v => `${Number(v||0).toLocaleString()} EGP`;
+  function getData(p){ const d=parseClinicData(p?.progress_notes); d.treatmentItems=d.treatmentItems||[]; d.prescriptions=d.prescriptions||[]; d.consents=d.consents||[]; d.labWorks=d.labWorks||[]; d.reminders=d.reminders||[]; d.tasks=d.tasks||[]; return d; }
+  async function saveData(id, data){ await api(`patients?id=eq.${id}`, {method:'PATCH', body:JSON.stringify({progress_notes:saveClinicData(data)})}); await refreshPatientKeepingScroll(id); }
+  function findP(id){ return patients.find(x=>String(x.id)===String(id)); }
+  function modal(title, body, opts=''){
+    document.getElementById('premiumFeatureModal')?.remove();
+    const div=document.createElement('div'); div.id='premiumFeatureModal'; div.className='luxury-modal';
+    div.innerHTML=`<div class="luxury-box premium-modal-big" ${opts}><div style="display:flex;justify-content:space-between;gap:12px;align-items:start"><div><h2 style="margin-bottom:4px">${esc(title)}</h2></div><button class="drawer-close-btn" onclick="document.getElementById('premiumFeatureModal')?.remove()">×</button></div>${body}</div>`;
+    div.addEventListener('click',e=>{ if(e.target===div) div.remove(); });
+    document.body.appendChild(div); return div;
+  }
+  function field(id,label,type='text',val='',extra='') { return `<div class="field"><label for="${id}">${esc(label)}</label><${type==='textarea'?'textarea':'input'} id="${id}" ${type!=='textarea'?`type="${type}" value="${esc(val)}"`:''} ${extra}>${type==='textarea'?esc(val):''}${type==='textarea'?'</textarea>':''}</div>`; }
+  function selectField(id,label,options,val='') { return `<div class="field"><label>${esc(label)}</label><select id="${id}">${options.map(o=>`<option ${String(o)===String(val)?'selected':''}>${esc(o)}</option>`).join('')}</select></div>`; }
+
+  // Dashboard premium shortcuts
+  function injectPremiumDashboard(){
+    const dash=document.getElementById('dashboardContent'); if(!dash || document.getElementById('premiumDashboardTools')) return;
+    const box=document.createElement('div'); box.id='premiumDashboardTools'; box.className='panel';
+    box.innerHTML=`<h2>Premium Clinic Tools</h2><p class="muted">Calendar, finance reports, reminders, roles, and clinical documents.</p><div class="premium-tools-grid">
+      <button class="premium-tool-btn" onclick="openPremiumCalendar()">Appointment calendar<small>Daily, weekly, monthly view and status tracking</small></button>
+      <button class="premium-tool-btn" onclick="openFinancialReports()">Financial reports<small>Daily/monthly income, unpaid balances, doctor revenue</small></button>
+      <button class="premium-tool-btn" onclick="openReminderCenter()">Reminders<small>Follow-up, unpaid, lab due, birthday, recall WhatsApp messages</small></button>
+      <button class="premium-tool-btn" onclick="openRolePermissions()">Roles & permissions<small>Admin, doctor, assistant, receptionist, accountant</small></button>
+    </div>`;
+    dash.prepend(box);
+  }
+  setInterval(injectPremiumDashboard, 1200);
+
+  // Clean menu should include Calendar and Reports but not duplicate setting internals
+  const oldMenu = window.openClinicMenu;
+  window.openClinicMenu = function(){
+    document.getElementById('drawerOverlay')?.remove(); document.getElementById('sideDrawer')?.remove();
+    const overlay=document.createElement('div'); overlay.className='drawer-overlay'; overlay.id='drawerOverlay'; overlay.onclick=closeClinicMenu;
+    const drawer=document.createElement('aside'); drawer.className='side-drawer'; drawer.id='sideDrawer';
+    drawer.innerHTML=`<div class="drawer-head"><h2>Menu</h2><button class="drawer-close-btn" onclick="closeClinicMenu()">×</button></div>
+      <div class="drawer-user"><div>${esc(currentUser?.full_name||currentUser?.username||'Admin')}</div><small>${esc((currentUser?.role||'admin').toUpperCase())}</small></div>
+      <div class="drawer-menu">
+        <button onclick="closeClinicMenu();showPage('form')">Add Patient</button>
+        <button onclick="closeClinicMenu();showPage('scan')">Scan QR</button>
+        <button class="primary-item" onclick="closeClinicMenu();openPremiumCalendar()">Calendar</button>
+        <button onclick="closeClinicMenu();openFinancialReports()">Reports</button>
+        <button onclick="closeClinicMenu();showPage('settings')">Settings</button>
+        <button onclick="closeClinicMenu();openDoctorProfile()">Profile</button>
+        ${currentUser?.role==='admin'?`<button onclick="closeClinicMenu();openRolePermissions()">Manage Users</button>`:''}
+        <button class="danger-item" onclick="logout()">Logout</button>
+      </div>`;
+    document.body.append(overlay,drawer);
+  };
+  setTimeout(()=>{ const b=document.getElementById('menuBtn'); if(b) b.onclick=window.openClinicMenu; },500);
+
+  // Patient profile enhancement
+  const originalPatientDetailsHTML = patientDetailsHTML;
+  patientDetailsHTML = function(p){
+    const data=getData(p), money=paymentTotals(data);
+    const next=(data.appointments||[]).filter(a=>a.date && new Date(a.date)>=new Date(Date.now()-86400000)).sort((a,b)=>new Date(a.date)-new Date(b.date))[0];
+    const lastVisit=(data.visits||[])[0];
+    const alertTxt = (p.medical_alerts||'').trim();
+    const summary=`<div class="premium-section"><h3>Patient Command Center</h3><div class="premium-summary-grid">
+      <div class="premium-summary-card"><small>Last visit</small><strong>${esc(lastVisit?.date||'No visits')}</strong></div>
+      <div class="premium-summary-card"><small>Next appointment</small><strong>${esc(next?.date||'Not scheduled')}</strong></div>
+      <div class="premium-summary-card"><small>Remaining</small><strong>${moneyFmt(money.remaining)}</strong></div>
+      <div class="premium-summary-card"><small>Treatment stage</small><strong>${treatmentCompletionPercent(p)}%</strong></div>
+      <div class="premium-summary-card"><small>Medical alerts</small><strong>${esc(alertTxt||'None')}</strong></div>
+      <div class="premium-summary-card"><small>Quick actions</small><div class="premium-pill-grid"><button class="btn-secondary" onclick="generatePrescriptionPro('${p.id}')">Rx</button><button class="btn-secondary" onclick="generateSmartConsentPro('${p.id}')">Consent</button><button class="btn-secondary" onclick="openReminderCenter('${p.id}')">Reminder</button></div></div>
+    </div></div>`;
+    const plans=renderStructuredPlan(p); const docs=renderPatientDocs(p); const labs=renderPremiumLab(p);
+    let html=originalPatientDetailsHTML(p);
+    html=html.replace('<h3 style="color:var(--accent);margin-top:20px;">Treatment Progress</h3>', summary+'<h3 style="color:var(--accent);margin-top:20px;">Treatment Progress</h3>');
+    html=html.replace('<h3 style="color:var(--accent);margin-top:24px;">Payments</h3>', plans+'<h3 style="color:var(--accent);margin-top:24px;">Payments</h3>');
+    html=html.replace('<h3 style="color:var(--accent);margin-top:24px;">Lab Tracking</h3>', docs+labs+'<h3 style="color:var(--accent);margin-top:24px;">Lab Tracking</h3>');
+    return html;
+  };
+
+  function renderStructuredPlan(p){ const data=getData(p); const items=data.treatmentItems||[]; return `<div class="premium-section"><h3>Structured Treatment Plan</h3><div class="actions-bar"><button class="btn-primary" onclick="addStructuredTreatment('${p.id}')">+ Treatment item</button><button class="btn-secondary" onclick="printTreatmentPlan('${p.id}')">Print plan</button></div>${items.length?items.map((it,i)=>`<div class="premium-list-row"><div><b>Tooth ${esc(it.tooth||'-')} · ${esc(it.procedure||'Procedure')}</b><span>${esc(it.status||'Planned')} · ${moneyFmt(it.price)} · Paid ${moneyFmt(it.paid)} · Discount ${Number(it.discount||0)}%</span><br><span>${esc(it.notes||'')}</span></div><div class="premium-pill-grid"><button class="btn-secondary" onclick="editStructuredTreatment('${p.id}',${i})">Edit</button><button class="btn-danger" onclick="deleteStructuredTreatment('${p.id}',${i})">Delete</button></div></div>`).join(''):`<p class="muted">No structured treatment items yet.</p>`}</div>`; }
+
+  window.addStructuredTreatment=async id=> editStructuredTreatment(id,-1);
+  window.editStructuredTreatment=async function(id,index){ const p=findP(id), data=getData(p), old=index>=0?data.treatmentItems[index]:{}; modal('Treatment item',`<div class="premium-form-grid">${field('ptTooth','Tooth number','text',old.tooth||'')}${field('ptProc','Procedure','text',old.procedure||'')}${field('ptPrice','Price','number',old.price||'')}${field('ptPaid','Paid','number',old.paid||'')}${field('ptDisc','Discount %','number',old.discount||0)}${selectField('ptStatus','Status',['Planned','Started','Completed','Paused','Cancelled'],old.status||'Planned')}<div class="field full"><label>Notes</label><textarea id="ptNotes">${esc(old.notes||'')}</textarea></div></div><button class="btn-primary" style="width:100%;margin-top:12px" onclick="saveStructuredTreatment('${id}',${index})">Save treatment item</button>`); };
+  window.saveStructuredTreatment=async function(id,index){ const p=findP(id), data=getData(p); const item={tooth:ptTooth.value,procedure:ptProc.value,price:+ptPrice.value||0,paid:+ptPaid.value||0,discount:+ptDisc.value||0,status:ptStatus.value,notes:ptNotes.value,updated:new Date().toLocaleString()}; if(index>=0)data.treatmentItems[index]=item; else data.treatmentItems.unshift(item); document.getElementById('premiumFeatureModal')?.remove(); await saveData(id,data); };
+  window.deleteStructuredTreatment=async function(id,index){ if(!confirm('Delete treatment item?'))return; const p=findP(id),data=getData(p); data.treatmentItems.splice(index,1); await saveData(id,data); };
+
+  // Calendar
+  window.openPremiumCalendar=function(){ const now=new Date(); const y=now.getFullYear(), m=now.getMonth(); const first=new Date(y,m,1), days=new Date(y,m+1,0).getDate(); const start=first.getDay(); const appts=[]; patients.forEach(p=>{ const d=getData(p); (d.appointments||[]).forEach((a,i)=>appts.push({...a,pid:p.id,pname:p.name,index:i,day:a.date?new Date(a.date).getDate():0,status:a.status||'scheduled'})); }); let cells=''; for(let i=0;i<start;i++) cells+='<div></div>'; for(let d=1;d<=days;d++){ const list=appts.filter(a=>a.date&&new Date(a.date).getMonth()===m&&a.day===d); cells+=`<div class="premium-calendar-day"><b>${d}</b>${list.map(a=>`<button class="premium-appt-chip" onclick="openPatient('${a.pid}');document.getElementById('premiumFeatureModal')?.remove()">${esc(a.pname)} · ${esc(a.status)}</button>`).join('')}</div>`;} modal('Appointment Calendar',`<div class="actions-bar"><button class="btn-primary" onclick="quickScheduleAppointment()">+ Schedule appointment</button><button class="btn-secondary" onclick="printCalendar()">Print</button></div><div class="premium-calendar-grid"><b>Sun</b><b>Mon</b><b>Tue</b><b>Wed</b><b>Thu</b><b>Fri</b><b>Sat</b>${cells}</div>`); };
+  window.quickScheduleAppointment=function(){ const opts=patients.map(p=>`<option value="${p.id}">${esc(p.name||'No name')}</option>`).join(''); modal('Schedule appointment',`<div class="premium-form-grid"><div class="field"><label>Patient</label><select id="calPatient">${opts}</select></div>${field('calDate','Date and time','datetime-local')}${selectField('calStatus','Status',['Confirmed','Waiting','Done','Cancelled','No-show'],'Confirmed')}<div class="field full"><label>Note</label><textarea id="calNote"></textarea></div></div><button class="btn-primary" style="width:100%;margin-top:12px" onclick="saveQuickAppointment()">Save appointment</button>`); };
+  window.saveQuickAppointment=async function(){ const id=calPatient.value,p=findP(id),data=getData(p); data.appointments.unshift({date:calDate.value,note:calNote.value,status:calStatus.value}); await saveData(id,data); document.getElementById('premiumFeatureModal')?.remove(); openPremiumCalendar(); };
+  window.printCalendar=()=>window.print();
+
+  // Documents: prescription and consent storage
+  function renderPatientDocs(p){ const d=getData(p); return `<div class="premium-section"><h3>Clinical Documents</h3><div class="actions-bar"><button class="btn-primary" onclick="generatePrescriptionPro('${p.id}')">+ Prescription</button><button class="btn-secondary" onclick="generateSmartConsentPro('${p.id}')">+ Consent</button></div>${[...(d.prescriptions||[]).map((x,i)=>({...x,type:'Prescription',i})),...(d.consents||[]).map((x,i)=>({...x,type:'Consent',i}))].map(x=>`<div class="premium-list-row"><div><b>${esc(x.type)} · ${esc(x.title||x.kind||'Document')}</b><span>${esc(x.date||'')}</span></div><button class="btn-secondary" onclick="openStoredDocument('${p.id}','${x.type}',${x.i})">Open</button></div>`).join('')||'<p class="muted">No prescription or consent documents yet.</p>'}</div>`; }
+  const oldRx=window.generatePrescriptionPro;
+  window.generatePrescriptionPro=async function(id){ const p=findP(id); modal('Prescription builder',`<div class="premium-form-grid">${field('rxMed','Medicine','text','Amoxicillin 500mg')}${field('rxDose','Dose','text','1 capsule')}${field('rxFreq','Frequency','text','Every 8 hours')}${field('rxDur','Duration','text','5 days')}<div class="field full"><label>Notes</label><textarea id="rxNotes">After meals. Avoid if allergic.</textarea></div></div><button class="btn-primary" style="width:100%;margin-top:12px" onclick="savePrescriptionDoc('${id}')">Save & Open PDF</button>`); };
+  window.savePrescriptionDoc=async function(id){ const p=findP(id),data=getData(p); const doc={date:new Date().toLocaleString(),title:rxMed.value,med:rxMed.value,dose:rxDose.value,freq:rxFreq.value,dur:rxDur.value,notes:rxNotes.value}; data.prescriptions.unshift(doc); document.getElementById('premiumFeatureModal')?.remove(); await api(`patients?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({progress_notes:saveClinicData(data)})}); openStoredDocument(id,'Prescription',0); await loadPatients(); openPatient(id); };
+  const oldConsent=window.generateSmartConsentPro;
+  window.generateSmartConsentPro=async function(id){ modal('Consent form',`<div class="premium-form-grid">${selectField('consType','Treatment',['Extraction','Root canal','Implant','Whitening','Surgery','Orthodontics','General treatment'],'General treatment')}<div class="field full"><label>Details</label><textarea id="consText">I understand the proposed treatment, benefits, alternatives, and possible risks. I agree to proceed.</textarea></div></div><button class="btn-primary" style="width:100%;margin-top:12px" onclick="saveConsentDoc('${id}')">Save & Open PDF</button>`); };
+  window.saveConsentDoc=async function(id){ const p=findP(id),data=getData(p); const doc={date:new Date().toLocaleString(),kind:consType.value,text:consText.value,signature:doctorExtras().signature||''}; data.consents.unshift(doc); document.getElementById('premiumFeatureModal')?.remove(); await api(`patients?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({progress_notes:saveClinicData(data)})}); openStoredDocument(id,'Consent',0); await loadPatients(); openPatient(id); };
+  window.openStoredDocument=function(id,type,index){ const p=findP(id),data=getData(p); const doc=type==='Prescription'?data.prescriptions[index]:data.consents[index]; if(!doc)return; const html=`<div style="font-family:Arial;padding:28px;max-width:760px;margin:auto"><h1>${esc(currentUser?.clinic_name||'Masri Dental Clinic')}</h1><h2>${esc(type)}</h2><p><b>Patient:</b> ${esc(p.name||'')}</p><p><b>Date:</b> ${esc(doc.date||'')}</p><hr>${type==='Prescription'?`<p><b>Medicine:</b> ${esc(doc.med)}</p><p><b>Dose:</b> ${esc(doc.dose)}</p><p><b>Frequency:</b> ${esc(doc.freq)}</p><p><b>Duration:</b> ${esc(doc.dur)}</p><p>${esc(doc.notes)}</p>`:`<p><b>Treatment:</b> ${esc(doc.kind)}</p><p>${esc(doc.text)}</p>`}<br><p>Doctor signature</p>${signatureImgHTML?signatureImgHTML():''}<script>setTimeout(()=>window.print(),300)<\/script></div>`; const w=window.open('','_blank'); w.document.write(html); w.document.close(); };
+
+  // Lab tracking in patient data
+  function renderPremiumLab(p){ const d=getData(p), labs=d.labWorks||[]; return `<div class="premium-section"><h3>Lab Work Tracking</h3><div class="actions-bar"><button class="btn-primary" onclick="addPremiumLab('${p.id}')">+ Lab case</button></div>${labs.length?labs.map((l,i)=>`<div class="premium-list-row"><div><b>${esc(l.type||'Lab work')} · Tooth ${esc(l.tooth||'-')}</b><span>${esc(l.lab||'No lab')} · Due ${esc(l.due||'-')} · Shade ${esc(l.shade||'-')} · ${esc(l.status||'Sent')}</span></div><div class="premium-pill-grid"><button class="btn-secondary" onclick="editPremiumLab('${p.id}',${i})">Edit</button><button class="btn-danger" onclick="deletePremiumLab('${p.id}',${i})">Delete</button></div></div>`).join(''):'<p class="muted">No lab work yet.</p>'}</div>`; }
+  window.addPremiumLab=id=>editPremiumLab(id,-1);
+  window.editPremiumLab=function(id,index){ const d=getData(findP(id)), old=index>=0?d.labWorks[index]:{}; modal('Lab case',`<div class="premium-form-grid">${field('labName','Lab name','text',old.lab||'')}${field('labType','Case type','text',old.type||'Crown')}${field('labTooth','Tooth','text',old.tooth||'')}${field('labShade','Shade','text',old.shade||'')}${field('labDue','Due date','date',old.due||'')}${selectField('labStatus','Status',['Sent','In lab','Received','Fitted'],old.status||'Sent')}<div class="field full"><label>Notes</label><textarea id="labNotes">${esc(old.notes||'')}</textarea></div></div><button class="btn-primary" style="width:100%;margin-top:12px" onclick="savePremiumLab('${id}',${index})">Save lab case</button>`); };
+  window.savePremiumLab=async function(id,index){ const d=getData(findP(id)); const item={lab:labName.value,type:labType.value,tooth:labTooth.value,shade:labShade.value,due:labDue.value,status:labStatus.value,notes:labNotes.value}; if(index>=0)d.labWorks[index]=item; else d.labWorks.unshift(item); document.getElementById('premiumFeatureModal')?.remove(); await saveData(id,d); };
+  window.deletePremiumLab=async function(id,index){ const d=getData(findP(id)); d.labWorks.splice(index,1); await saveData(id,d); };
+
+  // Finance reports
+  window.openFinancialReports=function(){ let total=0,paid=0,unpaid=0,todayPaid=0; const today=new Date().toDateString(); const rows=[]; patients.forEach(p=>{ const d=getData(p); (d.payments||[]).forEach(pay=>{ const net=(+pay.total||0)-((+pay.total||0)*(+pay.discount||0)/100); total+=net; paid+=+pay.paid||0; const rem=Math.max(0,net-(+pay.paid||0)); unpaid+=rem; if(pay.date && new Date(pay.date).toDateString()===today) todayPaid+=+pay.paid||0; rows.push({patient:p.name,procedure:pay.procedure||'-',date:pay.date,total:net,paid:+pay.paid||0,remaining:rem}); }); }); modal('Financial Reports',`<div class="premium-summary-grid"><div class="premium-summary-card"><small>Total revenue</small><strong class="premium-kpi">${moneyFmt(total)}</strong></div><div class="premium-summary-card"><small>Paid</small><strong>${moneyFmt(paid)}</strong></div><div class="premium-summary-card"><small>Unpaid</small><strong>${moneyFmt(unpaid)}</strong></div><div class="premium-summary-card"><small>Paid today</small><strong>${moneyFmt(todayPaid)}</strong></div></div><div class="actions-bar"><button class="btn-primary" onclick="exportFinanceCSV()">Export CSV</button><button class="btn-secondary" onclick="window.print()">Print report</button></div>${rows.slice(0,60).map(r=>`<div class="premium-list-row"><div><b>${esc(r.patient)} · ${esc(r.procedure)}</b><span>${esc(r.date||'')} · Total ${moneyFmt(r.total)} · Paid ${moneyFmt(r.paid)} · Remaining ${moneyFmt(r.remaining)}</span></div></div>`).join('')||'<p class="muted">No payments yet.</p>'}`); window.__financeRows=rows; };
+  window.exportFinanceCSV=function(){ const rows=window.__financeRows||[]; const csv='Patient,Procedure,Date,Total,Paid,Remaining\n'+rows.map(r=>[r.patient,r.procedure,r.date,r.total,r.paid,r.remaining].map(x=>'"'+String(x??'').replace(/"/g,'""')+'"').join(',')).join('\n'); const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download='clinic-finance-report.csv'; a.click(); };
+
+  // Reminder center
+  window.openReminderCenter=function(patientId=''){ const patientOptions=patients.map(p=>`<option value="${p.id}" ${String(p.id)===String(patientId)?'selected':''}>${esc(p.name||'No name')}</option>`).join(''); modal('Reminder Center',`<div class="premium-form-grid"><div class="field"><label>Patient</label><select id="remPatient">${patientOptions}</select></div>${selectField('remType','Reminder type',['Upcoming appointment','Unpaid balance','Follow-up visit','Lab due date','Birthday message','6-month recall'],'Follow-up visit')}<div class="field full"><label>Message</label><textarea id="remMsg">Hello, this is a reminder from Masri Dental Clinic.</textarea></div></div><div class="actions-bar"><button class="btn-primary" onclick="sendPremiumReminder()">Open WhatsApp</button><button class="btn-secondary" onclick="saveReminderOnly()">Save reminder</button></div>`); };
+  window.sendPremiumReminder=function(){ const p=findP(remPatient.value); const phone=(allPatientPhones(p,getData(p))[0]||'').replace(/\D/g,''); const msg=encodeURIComponent(remMsg.value); if(!phone)return alert('No phone number for this patient.'); window.open(`https://wa.me/${phone}?text=${msg}`,'_blank'); };
+  window.saveReminderOnly=async function(){ const p=findP(remPatient.value),d=getData(p); d.reminders.unshift({date:new Date().toLocaleString(),type:remType.value,msg:remMsg.value}); await saveData(p.id,d); document.getElementById('premiumFeatureModal')?.remove(); };
+
+  // Roles and permissions
+  window.openRolePermissions=function(){ const roles=['Admin','Doctor','Assistant','Receptionist','Accountant']; const perms={Admin:'Full access, users, delete, finance',Doctor:'Clinical records, treatment, photos, prescriptions',Assistant:'Photos, notes, appointments, lab tracking',Receptionist:'Patients, appointments, reminders',Accountant:'Payments, receipts, financial reports'}; modal('Roles & Permissions',`<p class="muted">Use these roles when creating or managing clinic users.</p>${roles.map(r=>`<div class="premium-list-row"><div><b>${r}</b><span>${perms[r]}</span></div><span class="premium-status">${r===currentUser?.role?'Current':''}</span></div>`).join('')}<button class="btn-primary" style="width:100%;margin-top:12px" onclick="manageUsers()">Open user manager</button>`); };
+
+  // Print treatment plan
+  window.printTreatmentPlan=function(id){ const p=findP(id),d=getData(p); const rows=(d.treatmentItems||[]).map(it=>`<tr><td>${esc(it.tooth)}</td><td>${esc(it.procedure)}</td><td>${esc(it.status)}</td><td>${moneyFmt(it.price)}</td><td>${moneyFmt(it.paid)}</td></tr>`).join(''); const w=window.open('','_blank'); w.document.write(`<html><head><title>Treatment Plan</title><style>body{font-family:Arial;padding:28px}table{width:100%;border-collapse:collapse}td,th{border:1px solid #ddd;padding:10px}</style></head><body><h1>Treatment Plan</h1><p><b>Patient:</b> ${esc(p.name)}</p><table><tr><th>Tooth</th><th>Procedure</th><th>Status</th><th>Price</th><th>Paid</th></tr>${rows}</table><script>setTimeout(()=>print(),300)<\/script></body></html>`); w.document.close(); };
+
+  // Better settings: add premium tools if page exists
+  const oldShowPage=window.showPage;
+  window.showPage=function(id){ const out=oldShowPage?oldShowPage(id):undefined; if(id==='settings') setTimeout(()=>{ const page=document.getElementById('settings'); if(page && !document.getElementById('premiumSettingsTools')){ const block=document.createElement('div'); block.id='premiumSettingsTools'; block.className='card'; block.innerHTML=`<h2>Clinic Management</h2><div class="premium-tools-grid"><button class="premium-tool-btn" onclick="openPremiumCalendar()">Calendar<small>Appointments and statuses</small></button><button class="premium-tool-btn" onclick="openFinancialReports()">Financial reports<small>Revenue and unpaid balances</small></button><button class="premium-tool-btn" onclick="openReminderCenter()">Reminders<small>WhatsApp templates</small></button><button class="premium-tool-btn" onclick="openRolePermissions()">Roles<small>Permissions by staff type</small></button></div>`; page.appendChild(block); } },120); return out; };
+})();
