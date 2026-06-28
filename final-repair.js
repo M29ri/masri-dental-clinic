@@ -94,14 +94,14 @@
   function renderPhotos(patient, tab='clinical'){
     window.__repairPhotoTab=tab;
     const all=photosOf(patient); const clinical=all.filter(x=>x.category==='clinical'); const xray=all.filter(x=>x.category==='xray'); const list=tab==='xray'?xray:clinical;
-    return `<div class="repair-photo-tabs">
-      <button type="button" class="${tab==='clinical'?'active':''}" data-patient-id="${esc(patient.id)}" data-photo-tab="clinical">${esc(tr('clinical'))} <small>${clinical.length}</small></button>
-      <button type="button" class="${tab==='xray'?'active':''}" data-patient-id="${esc(patient.id)}" data-photo-tab="xray">${esc(tr('xray'))} <small>${xray.length}</small></button>
-      <button type="button" data-ba-open="${esc(patient.id)}">${esc(tr('beforeAfter'))}</button>
+    return `<div class="repair-photo-tabs" data-photo-controls="1">
+      <button type="button" class="${tab==='clinical'?'active':''}" data-patient-id="${esc(patient.id)}" data-photo-tab="clinical" onclick="return window.repairSetPhotoTab('${esc(patient.id)}','clinical',event)">${esc(tr('clinical'))} <small>${clinical.length}</small></button>
+      <button type="button" class="${tab==='xray'?'active':''}" data-patient-id="${esc(patient.id)}" data-photo-tab="xray" onclick="return window.repairSetPhotoTab('${esc(patient.id)}','xray',event)">${esc(tr('xray'))} <small>${xray.length}</small></button>
+      <button type="button" data-ba-open="${esc(patient.id)}" onclick="return window.repairOpenBeforeAfter('${esc(patient.id)}',event)">${esc(tr('beforeAfter'))}</button>
     </div>
-    <div class="repair-photo-grid">${list.length ? list.map((ph,displayIndex)=>`<div class="repair-photo-card">
-        <button type="button" class="repair-photo-image" data-patient-id="${esc(patient.id)}" data-photo-view="${displayIndex}"><img src="${esc(ph.url)}" alt=""><span>${esc(ph.category==='xray'?tr('xray'):tr('clinical'))} · ${esc(ph.stage==='before'?tr('before'):ph.stage==='after'?tr('after'):tr('general'))}</span></button>
-        <button type="button" class="repair-photo-dots" aria-label="Photo options" data-patient-id="${esc(patient.id)}" data-photo-menu="${ph.index}">⋯</button>
+    <div class="repair-photo-grid" data-photo-grid="1">${list.length ? list.map((ph,displayIndex)=>`<div class="repair-photo-card">
+        <button type="button" class="repair-photo-image" data-patient-id="${esc(patient.id)}" data-photo-view="${displayIndex}" onclick="return window.repairOpenPhoto('${esc(patient.id)}',${displayIndex},event)"><img src="${esc(ph.url)}" alt=""><span>${esc(ph.category==='xray'?tr('xray'):tr('clinical'))} · ${esc(ph.stage==='before'?tr('before'):ph.stage==='after'?tr('after'):tr('general'))}</span></button>
+        <button type="button" class="repair-photo-dots" aria-label="Photo options" data-patient-id="${esc(patient.id)}" data-photo-menu="${ph.index}" onclick="return window.repairOpenPhotoMenu('${esc(patient.id)}',${ph.index},event)">⋯</button>
       </div>`).join('') : `<div class="repair-photo-empty">${esc(tab==='xray'?tr('noXray'):tr('noClinical'))}</div>`}</div>`;
   }
   window.renderPhotoSection = function(p,type){ return renderPhotos(p,type); };
@@ -170,4 +170,48 @@
   const mo=new MutationObserver(()=>{ bindMenuBtn(); wrapDetails(); const d=$('sideDrawer'); if(d && !d.dataset.finalRepair){ d.remove(); openMenu(); } });
   try{ mo.observe(document.documentElement,{childList:true,subtree:true}); }catch{}
   setInterval(boot, 800);
+
+  /* Robust mobile photo controls: iPhone Safari sometimes selects text instead of firing click.
+     These public functions and capture listeners make the photo tabs, 3-dot menu, and before/after work reliably. */
+  window.repairSetPhotoTab = function(pid, tab, ev){
+    try{ if(ev){ev.preventDefault(); ev.stopPropagation();} }catch(e){}
+    const p=findPatient(pid); const box=$('repairPhotoZone');
+    if(p && box) box.innerHTML=renderPhotos(p, tab);
+    return false;
+  };
+  window.repairOpenPhotoMenu = function(pid, index, ev){
+    try{ if(ev){ev.preventDefault(); ev.stopPropagation();} }catch(e){}
+    openPhotoSheet(pid, Number(index));
+    return false;
+  };
+  window.repairOpenPhoto = function(pid, index, ev){
+    try{ if(ev){ev.preventDefault(); ev.stopPropagation();} }catch(e){}
+    openPhotoViewer(pid, Number(index));
+    return false;
+  };
+  window.repairOpenBeforeAfter = function(pid, ev){
+    try{ if(ev){ev.preventDefault(); ev.stopPropagation();} }catch(e){}
+    openBeforeAfter(pid);
+    return false;
+  };
+
+  let lastRepairTap=0;
+  function repairHandleDirectTap(ev){
+    const now=Date.now();
+    if(now-lastRepairTap<180) return;
+    const t=ev.target && (ev.target.closest('[data-photo-menu]') || ev.target.closest('[data-photo-tab]') || ev.target.closest('[data-ba-open]') || ev.target.closest('[data-photo-view]') || ev.target.closest('[data-set-photo]') || ev.target.closest('[data-ba-pick]'));
+    if(!t) return;
+    lastRepairTap=now;
+    ev.preventDefault(); ev.stopPropagation();
+    if(t.dataset.photoMenu!=null) return openPhotoSheet(t.dataset.patientId, Number(t.dataset.photoMenu));
+    if(t.dataset.photoTab) { const p=findPatient(t.dataset.patientId); const box=$('repairPhotoZone'); if(p&&box) box.innerHTML=renderPhotos(p,t.dataset.photoTab); return; }
+    if(t.dataset.baOpen) return openBeforeAfter(t.dataset.baOpen);
+    if(t.dataset.photoView!=null) return openPhotoViewer(t.dataset.patientId, Number(t.dataset.photoView));
+    if(t.dataset.setPhoto) return setPhotoMeta(t.dataset.patientId, Number(t.dataset.index), t.dataset.field, t.dataset.value);
+    if(t.dataset.baPick) return pickBA(t.dataset.baPick, Number(t.dataset.index));
+  }
+  document.addEventListener('touchend', repairHandleDirectTap, true);
+  document.addEventListener('pointerup', repairHandleDirectTap, true);
+  document.addEventListener('click', repairHandleDirectTap, true);
+
 })();
