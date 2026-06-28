@@ -2494,3 +2494,112 @@ renderPatientDetail = function(p){
   html = html.replace(`<h3 style="color:var(--accent);margin-top:24px;">Patient Timeline</h3>`, `${signatureBlock}<h3 style="color:var(--accent);margin-top:24px;">Patient Timeline</h3>`);
   return html;
 };
+
+/* =========================================================
+   Compact menu + language repair + simpler settings layout
+   ========================================================= */
+(function(){
+  const extraLanguages = {
+    fr:{name:"Français",native:"Français",dir:"ltr", dashboard:"Tableau", patients:"Patients", addPatient:"Ajouter", scanQR:"Scanner QR", search:"Rechercher nom, téléphone, ID, diagnostic...", settings:"Paramètres", theme:"Couleur", language:"Langue", pdf:"PDF", doctorCard:"Carte médecin", signature:"Signature", backup:"Sauvegarde", restore:"Restaurer"},
+    es:{name:"Spanish",native:"Español",dir:"ltr", dashboard:"Panel", patients:"Pacientes", addPatient:"Añadir", scanQR:"Escanear QR", search:"Buscar nombre, teléfono, ID, diagnóstico...", settings:"Ajustes", theme:"Color", language:"Idioma", pdf:"PDF", doctorCard:"Tarjeta doctor", signature:"Firma", backup:"Copia", restore:"Restaurar"},
+    de:{name:"German",native:"Deutsch",dir:"ltr", dashboard:"Dashboard", patients:"Patienten", addPatient:"Hinzufügen", scanQR:"QR scannen", search:"Name, Telefon, ID, Diagnose suchen...", settings:"Einstellungen", theme:"Farbe", language:"Sprache", pdf:"PDF", doctorCard:"Arztkarte", signature:"Unterschrift", backup:"Backup", restore:"Wiederherstellen"},
+    it:{name:"Italian",native:"Italiano",dir:"ltr", dashboard:"Cruscotto", patients:"Pazienti", addPatient:"Aggiungi", scanQR:"Scansiona QR", search:"Cerca nome, telefono, ID, diagnosi...", settings:"Impostazioni", theme:"Colore", language:"Lingua", pdf:"PDF", doctorCard:"Scheda medico", signature:"Firma", backup:"Backup", restore:"Ripristina"},
+    pt:{name:"Portuguese",native:"Português",dir:"ltr", dashboard:"Painel", patients:"Pacientes", addPatient:"Adicionar", scanQR:"Ler QR", search:"Pesquisar nome, telefone, ID, diagnóstico...", settings:"Configurações", theme:"Cor", language:"Idioma", pdf:"PDF", doctorCard:"Cartão do médico", signature:"Assinatura", backup:"Backup", restore:"Restaurar"},
+    tr:{name:"Turkish",native:"Türkçe",dir:"ltr", dashboard:"Panel", patients:"Hastalar", addPatient:"Hasta ekle", scanQR:"QR tara", search:"Ad, telefon, ID, teşhis ara...", settings:"Ayarlar", theme:"Renk", language:"Dil", pdf:"PDF", doctorCard:"Doktor kartı", signature:"İmza", backup:"Yedek", restore:"Geri yükle"},
+    ru:{name:"Russian",native:"Русский",dir:"ltr", dashboard:"Панель", patients:"Пациенты", addPatient:"Добавить", scanQR:"QR скан", search:"Поиск по имени, телефону, ID, диагнозу...", settings:"Настройки", theme:"Цвет", language:"Язык", pdf:"PDF", doctorCard:"Карта врача", signature:"Подпись", backup:"Резерв", restore:"Восстановить"},
+    hi:{name:"Hindi",native:"हिन्दी",dir:"ltr", dashboard:"डैशबोर्ड", patients:"मरीज़", addPatient:"मरीज़ जोड़ें", scanQR:"QR स्कैन", search:"नाम, फोन, ID, निदान खोजें...", settings:"सेटिंग्स", theme:"रंग", language:"भाषा", pdf:"PDF", doctorCard:"डॉक्टर कार्ड", signature:"हस्ताक्षर", backup:"बैकअप", restore:"रीस्टोर"},
+    ur:{name:"Urdu",native:"اردو",dir:"rtl", dashboard:"ڈیش بورڈ", patients:"مریض", addPatient:"مریض شامل", scanQR:"QR اسکین", search:"نام، فون، ID، تشخیص تلاش کریں...", settings:"ترتیبات", theme:"رنگ", language:"زبان", pdf:"PDF", doctorCard:"ڈاکٹر کارڈ", signature:"دستخط", backup:"بیک اپ", restore:"بحال"},
+    zh:{name:"Chinese",native:"中文",dir:"ltr", dashboard:"仪表板", patients:"患者", addPatient:"添加患者", scanQR:"扫描 QR", search:"搜索姓名、电话、ID、诊断...", settings:"设置", theme:"颜色", language:"语言", pdf:"PDF", doctorCard:"医生卡", signature:"签名", backup:"备份", restore:"恢复"}
+  };
+  Object.keys(extraLanguages).forEach(k => { I18N[k] = Object.assign({}, I18N.en, extraLanguages[k]); });
+  I18N.en = Object.assign({name:"English",native:"English",dir:"ltr",settings:"Settings",theme:"Theme color",language:"Language",pdf:"PDF style",doctorCard:"Doctor card",signature:"Signature",backup:"Backup",restore:"Restore"}, I18N.en);
+  I18N.ar = Object.assign({name:"Arabic",native:"العربية",dir:"rtl",settings:"الإعدادات",theme:"لون التطبيق",language:"اللغة",pdf:"شكل PDF",doctorCard:"بطاقة الطبيب",signature:"التوقيع",backup:"نسخة احتياطية",restore:"استرجاع"}, I18N.ar);
+
+  window.setUILanguage = function(lang){
+    const clean = I18N[lang] ? lang : "en";
+    localStorage.setItem("clinicLanguage", clean);
+    applyLanguage();
+    try { renderDashboard(); renderPatients(); renderSettingsPage(); } catch(e) {}
+  };
+
+  window.applyLanguage = function(){
+    const lang = getLang();
+    const pack = I18N[lang] || I18N.en;
+    document.documentElement.lang = lang;
+    document.documentElement.dir = pack.dir || (lang === "ar" ? "rtl" : "ltr");
+    [["dashboard","dashboard"],["patients","patients"],["form","addPatient"],["scan","scanQR"]].forEach(([page,key]) => {
+      const el = document.querySelector(`[data-page="${page}"]`);
+      if (el) el.textContent = t(key);
+    });
+    if ($("search")) $("search").placeholder = t("search");
+  };
+
+  window.openClinicMenu = function(){
+    closeClinicMenu();
+    const overlay = document.createElement("div");
+    overlay.className = "drawer-overlay";
+    overlay.id = "drawerOverlay";
+    overlay.onclick = closeClinicMenu;
+    const drawer = document.createElement("aside");
+    drawer.className = "side-drawer compact-drawer";
+    drawer.id = "sideDrawer";
+    drawer.innerHTML = `
+      <div class="drawer-head">
+        <button class="drawer-close-btn" onclick="closeClinicMenu()" aria-label="Close">×</button>
+        <h2>Menu</h2>
+      </div>
+      <div class="drawer-user">
+        <div>${safeText(currentUser?.full_name || currentUser?.username || "Doctor")}</div>
+        <small>${safeText((currentUser?.role || "doctor").toUpperCase())}</small>
+      </div>
+      <div class="drawer-menu compact-menu-grid">
+        <button class="primary-item" onclick="closeClinicMenu();showPage('dashboard')">${t("dashboard")}</button>
+        <button onclick="closeClinicMenu();showPage('patients')">${t("patients")}</button>
+        <button onclick="closeClinicMenu();showPage('form')">${t("addPatient")}</button>
+        <button onclick="closeClinicMenu();showPage('scan')">${t("scanQR")}</button>
+        <button onclick="closeClinicMenu();showPage('settings')">${t("settings")}</button>
+        <button onclick="closeClinicMenu();openDoctorProfile()">Profile</button>
+        ${currentUser?.role === "admin" ? `<button onclick="closeClinicMenu();manageUsers()">Manage Users</button>` : ""}
+        <button class="danger-item" onclick="logout()">Logout</button>
+      </div>`;
+    document.body.appendChild(overlay);
+    document.body.appendChild(drawer);
+  };
+
+  window.openLanguagePicker = function(){
+    const current = getLang();
+    const order = ["en","ar","fr","es","de","it","pt","tr","ru","hi","ur","zh"];
+    premiumModal("Language", `
+      <p class="muted">Choose the interface language. English and Arabic are fully supported, and extra languages are available for easier navigation.</p>
+      <div class="language-grid-clean">
+        ${order.map(code => {
+          const p = I18N[code] || I18N.en;
+          return `<button class="choice-card language-choice ${current===code?'active':''}" dir="${p.dir || 'ltr'}" type="button" onclick="setUILanguage('${code}');this.closest('.luxury-modal').remove();toast('${safeText(p.native)} selected')"><b>${safeText(p.native)}</b><span>${safeText(p.name || code.toUpperCase())}</span></button>`;
+        }).join("")}
+      </div>
+    `);
+  };
+
+  window.renderSettingsPage = function(){
+    const page = document.getElementById("settings");
+    if (!page) return;
+    const extras = doctorExtras();
+    page.innerHTML = `
+      <div class="card settings-page-clean compact-settings">
+        <div class="settings-title-row"><div><h2>${t("settings")}</h2><p class="muted">Fast clinic controls in one place. The menu stays simple; advanced tools are here.</p></div></div>
+        <div class="settings-grid-clean settings-grid-compact">
+          <button class="settings-tile" onclick="openThemePicker()"><b>${t("theme")}</b><span>Preset or custom color</span><em style="background:${safeText(extras.accent || '#d4af37')}"></em></button>
+          <button class="settings-tile" onclick="openLanguagePicker()"><b>${t("language")}</b><span>${safeText((I18N[getLang()]||I18N.en).native)}</span></button>
+          <button class="settings-tile" onclick="openPdfPatternPicker()"><b>${t("pdf")}</b><span>Reports and receipts</span></button>
+          <button class="settings-tile" onclick="openDoctorInfoCard()"><b>${t("doctorCard")}</b><span>Specialty, phones, website</span></button>
+          <button class="settings-tile" onclick="openSignaturePad({type:'doctor'})"><b>${t("signature")}</b><span>Draw once, use everywhere</span></button>
+          <button class="settings-tile" onclick="backupData()"><b>${t("backup")}</b><span>Export clinic data</span></button>
+          <button class="settings-tile" onclick="restoreBackup()"><b>${t("restore")}</b><span>Import previous backup</span></button>
+          <button class="settings-tile" onclick="location.reload()"><b>Refresh</b><span>Reload latest data</span></button>
+        </div>
+        <div class="signature-display settings-signature-preview compact-signature-preview">${signatureImgHTML()}</div>
+      </div>`;
+  };
+
+  try { applyLanguage(); } catch(e) {}
+})();

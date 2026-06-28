@@ -2459,3 +2459,41 @@ input[type="color"] { cursor:pointer; background:var(--bg-elevated); border:1px 
 .app-toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);opacity:0;background:var(--bg-elevated);color:var(--text);border:1px solid var(--border);border-radius:999px;padding:12px 18px;z-index:4000;box-shadow:var(--shadow-card);font-weight:800;transition:.2s ease;}.app-toast.show{opacity:1;transform:translate(-50%,0);}
 .side-drawer .drawer-menu button small{display:block;color:var(--text-secondary);font-size:11px;margin-top:2px;font-weight:500;}
 @media(max-width:680px){.clean-modal{padding:10px !important;align-items:flex-start !important;padding-top:calc(env(safe-area-inset-top) + 12px) !important;}.clean-box{width:100% !important;border-radius:24px !important;}.clean-modal-head{padding:16px;}.clean-modal-body{padding:16px 16px 6px;}.clean-modal-foot{padding:14px 16px 16px;grid-template-columns:1fr;}.simple-color-grid,.settings-grid-clean,.info-list-clean,.signature-section-grid{grid-template-columns:1fr;}.modal-x{width:44px !important;height:44px !important;flex-basis:44px;font-size:24px !important;}.actions-bar{grid-template-columns:1fr !important;}.color-row{grid-template-columns:72px 1fr;}#signatureCanvas{height:210px;}.app{padding:14px;}.top-header{position:relative;top:0;}.brand-text h1{font-size:28px;}.doctor-card{display:none;}}
+
+/* Final compact UX fixes */
+.clean-modal, .clean-modal .clean-box{direction:ltr !important;}
+.clean-modal-head{min-height:64px;}
+.clean-modal-head h2{flex:1;min-width:0;overflow:visible;text-align:start;padding-inline-end:10px;}
+.modal-x{position:static !important;flex:0 0 46px;}
+.language-grid-clean{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:14px;}
+.language-choice{min-height:74px;align-content:center;}
+.language-choice.active{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 18%, transparent);}
+.compact-menu-grid{grid-template-columns:1fr 1fr;gap:10px;}
+.compact-menu-grid button{min-height:54px;text-align:center;padding:0 10px;}
+.compact-menu-grid .primary-item,.compact-menu-grid .danger-item{grid-column:1 / -1;}
+.compact-drawer{max-width:min(420px,78vw);}
+.settings-grid-compact{grid-template-columns:repeat(2,minmax(0,1fr)) !important;}
+.settings-grid-compact .settings-tile{min-height:96px;padding:14px;border-radius:18px;}
+.compact-signature-preview{margin-top:10px;min-height:92px;}
+.patient-card .actions-bar{grid-template-columns:repeat(2,minmax(0,1fr)) !important;}
+.patient-card .actions-bar button:first-child{grid-column:auto !important;}
+.details-actions .btn-primary,.action-grid .btn-primary,.patient-actions .btn-primary{grid-column:auto !important;}
+html[dir="rtl"] .patient-card-header, html[dir="rtl"] .patient-meta, html[dir="rtl"] .settings-title-row{direction:rtl;}
+html[dir="rtl"] .clean-modal .muted, html[dir="rtl"] .clean-modal-body{text-align:start;}
+@media(max-width:680px){
+  .settings-grid-clean,.settings-grid-compact{grid-template-columns:repeat(2,minmax(0,1fr)) !important;gap:10px !important;}
+  .settings-grid-compact .settings-tile{min-height:90px;padding:12px;}
+  .settings-tile b{font-size:15px !important;line-height:1.15;}
+  .settings-tile span{font-size:11px !important;line-height:1.25;}
+  .settings-tile em{width:24px;height:24px;right:10px;bottom:10px;}
+  .language-grid-clean{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
+  .choice-card{padding:13px !important;border-radius:16px !important;}
+  .choice-card b{font-size:16px !important;}.choice-card span{font-size:12px;}
+  .patient-card .actions-bar{grid-template-columns:repeat(2,minmax(0,1fr)) !important;}
+  .patient-card .actions-bar button{min-height:48px;}
+  .compact-drawer{max-width:82vw;padding:18px;}
+}
+@media(max-width:390px){
+  .settings-grid-clean,.settings-grid-compact,.language-grid-clean{grid-template-columns:1fr 1fr !important;}
+  .compact-menu-grid{grid-template-columns:1fr;}
+}
