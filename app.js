@@ -2483,3 +2483,275 @@ window.addEventListener("load", async () => {
   setTimeout(function(){ takeOverMenuButton(); window.applyLanguage(); }, 0);
   setTimeout(takeOverMenuButton, 500);
 })();
+
+/* === FINAL SOURCE-LEVEL REPAIR: premium language/theme + simple before/after === */
+(function(){
+  function byId(id){ return document.getElementById(id); }
+  function esc(v){ return (typeof safeText === 'function') ? safeText(v) : String(v ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m])); }
+  function patientById(id){ return (Array.isArray(window.patients) ? window.patients : patients).find(p => String(p.id) === String(id)); }
+  function urlOf(photo){ return typeof photo === 'string' ? photo : (photo?.url || photo?.path || ''); }
+  function rtl(code){ return ['ar','he','ur','fa','ps','ku','sd','ug','yi'].includes(code); }
+  function toast(msg){
+    let el = byId('cleanToast');
+    if(!el){ el = document.createElement('div'); el.id='cleanToast'; el.className='clean-toast'; document.body.appendChild(el); }
+    el.textContent = msg; el.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(()=>el.classList.remove('show'),1700);
+  }
+
+  const BASE = {
+    en:{native:'English', dir:'ltr', language:'Language', chooseLanguage:'Language', languageHelp:'Choose the language for the app interface.', menu:'Menu', dashboard:'Dashboard', patients:'Patients', addPatient:'Add Patient', scanQR:'Scan QR', settings:'Settings', profile:'Profile', manageUsers:'Manage Users', logout:'Logout', search:'Search by name, phone, ID, or diagnosis...', photos:'Photos / X-rays', clinical:'Clinical', xray:'X-ray', beforeAfter:'Before / After', general:'General', before:'Before', after:'After', photoOptions:'Photo options', markAs:'Mark as', viewPhoto:'View photo', theme:'Theme color', themeHelp:'Choose a premium preset or pick any custom color.', customColor:'Custom color', applyCustom:'Apply custom color', presets:'Premium presets', pdf:'PDF style', doctorCard:'Doctor card', signature:'Draw signature', backup:'Backup', restore:'Restore', tools:'Clinic tools and preferences in one simple place.', noBA:'Mark one photo as Before and one photo as After from the 3-dot menu.', noPhotos:'No photos in this section yet.', baHint:'The Before and After photos are selected from the 3-dot menu. Move the bar for a soft blurry transition.'},
+    ar:{native:'العربية', dir:'rtl', language:'اللغة', chooseLanguage:'اللغة', languageHelp:'اختر لغة واجهة التطبيق.', menu:'القائمة', dashboard:'لوحة التحكم', patients:'المرضى', addPatient:'إضافة مريض', scanQR:'مسح QR', settings:'الإعدادات', profile:'الملف الشخصي', manageUsers:'إدارة المستخدمين', logout:'تسجيل الخروج', search:'ابحث بالاسم أو الهاتف أو الكود أو التشخيص...', photos:'الصور / الأشعة', clinical:'سريري', xray:'أشعة', beforeAfter:'قبل / بعد', general:'عام', before:'قبل', after:'بعد', photoOptions:'خيارات الصورة', markAs:'تحديد كـ', viewPhoto:'عرض الصورة', theme:'لون التطبيق', themeHelp:'اختر لوناً جاهزاً أو لوناً مخصصاً.', customColor:'لون مخصص', applyCustom:'تطبيق اللون', presets:'ألوان مميزة', pdf:'شكل PDF', doctorCard:'بطاقة الطبيب', signature:'رسم التوقيع', backup:'نسخة احتياطية', restore:'استرجاع', tools:'أدوات العيادة والإعدادات في مكان واحد.', noBA:'حدد صورة قبل وصورة بعد من قائمة الثلاث نقاط.', noPhotos:'لا توجد صور في هذا القسم.', baHint:'صور قبل وبعد يتم اختيارها من قائمة الثلاث نقاط. حرّك الشريط لانتقال ضبابي ناعم.'},
+    fr:{native:'Français', dir:'ltr', language:'Langue', chooseLanguage:'Langue', languageHelp:'Choisissez la langue de l’interface.', menu:'Menu', dashboard:'Tableau', patients:'Patients', addPatient:'Ajouter patient', scanQR:'Scanner QR', settings:'Réglages', profile:'Profil', manageUsers:'Utilisateurs', logout:'Déconnexion', search:'Rechercher nom, téléphone, ID ou diagnostic...', photos:'Photos / Radios', clinical:'Clinique', xray:'Radio', beforeAfter:'Avant / Après', general:'Général', before:'Avant', after:'Après', photoOptions:'Options photo', markAs:'Marquer comme', viewPhoto:'Voir photo', theme:'Couleur', themeHelp:'Choisissez un préréglage premium ou une couleur personnalisée.', customColor:'Couleur personnalisée', applyCustom:'Appliquer', presets:'Préréglages', pdf:'Style PDF', doctorCard:'Carte médecin', signature:'Signature', backup:'Sauvegarde', restore:'Restaurer', tools:'Outils et préférences de la clinique.', noBA:'Marquez une photo Avant et une photo Après avec le menu à 3 points.', noPhotos:'Aucune photo dans cette section.', baHint:'Les photos Avant/Après viennent du menu à 3 points. Déplacez la barre pour une transition douce.'},
+    es:{native:'Español', dir:'ltr', language:'Idioma', chooseLanguage:'Idioma', languageHelp:'Elige el idioma de la interfaz.', menu:'Menú', dashboard:'Panel', patients:'Pacientes', addPatient:'Añadir paciente', scanQR:'Escanear QR', settings:'Ajustes', profile:'Perfil', manageUsers:'Usuarios', logout:'Salir', search:'Buscar nombre, teléfono, ID o diagnóstico...', photos:'Fotos / Rayos X', clinical:'Clínica', xray:'Rayos X', beforeAfter:'Antes / Después', general:'General', before:'Antes', after:'Después', photoOptions:'Opciones de foto', markAs:'Marcar como', viewPhoto:'Ver foto', theme:'Color', themeHelp:'Elige un color premium o personalizado.', customColor:'Color personalizado', applyCustom:'Aplicar color', presets:'Colores premium', pdf:'Estilo PDF', doctorCard:'Tarjeta doctor', signature:'Firma', backup:'Copia', restore:'Restaurar', tools:'Herramientas y preferencias de la clínica.', noBA:'Marca una foto como Antes y otra como Después desde los 3 puntos.', noPhotos:'No hay fotos en esta sección.', baHint:'Las fotos Antes/Después se eligen desde los 3 puntos. Mueve la barra para una transición suave.'},
+    de:{native:'Deutsch', dir:'ltr', language:'Sprache', chooseLanguage:'Sprache', languageHelp:'Wählen Sie die Sprache der App.', menu:'Menü', dashboard:'Dashboard', patients:'Patienten', addPatient:'Patient hinzufügen', scanQR:'QR scannen', settings:'Einstellungen', profile:'Profil', manageUsers:'Benutzer', logout:'Abmelden', search:'Name, Telefon, ID oder Diagnose suchen...', photos:'Fotos / Röntgen', clinical:'Klinisch', xray:'Röntgen', beforeAfter:'Vorher / Nachher', general:'Allgemein', before:'Vorher', after:'Nachher', photoOptions:'Fotooptionen', markAs:'Markieren als', viewPhoto:'Foto anzeigen', theme:'Farbe', themeHelp:'Wählen Sie ein Premium-Preset oder eine eigene Farbe.', customColor:'Eigene Farbe', applyCustom:'Farbe anwenden', presets:'Premium Farben', pdf:'PDF-Stil', doctorCard:'Arztkarte', signature:'Unterschrift', backup:'Backup', restore:'Wiederherstellen', tools:'Klinik-Tools und Einstellungen.', noBA:'Markieren Sie ein Foto als Vorher und eins als Nachher im 3-Punkte-Menü.', noPhotos:'Keine Fotos in diesem Bereich.', baHint:'Vorher/Nachher-Fotos kommen aus dem 3-Punkte-Menü. Bewegen Sie den Regler für weichen Übergang.'},
+    it:{native:'Italiano', dir:'ltr', language:'Lingua', chooseLanguage:'Lingua', languageHelp:'Scegli la lingua dell’interfaccia.', menu:'Menu', dashboard:'Cruscotto', patients:'Pazienti', addPatient:'Aggiungi paziente', scanQR:'Scansiona QR', settings:'Impostazioni', profile:'Profilo', manageUsers:'Utenti', logout:'Esci', search:'Cerca nome, telefono, ID o diagnosi...', photos:'Foto / Radiografie', clinical:'Clinica', xray:'Radiografia', beforeAfter:'Prima / Dopo', general:'Generale', before:'Prima', after:'Dopo', photoOptions:'Opzioni foto', markAs:'Segna come', viewPhoto:'Vedi foto', theme:'Colore', themeHelp:'Scegli un preset premium o un colore personalizzato.', customColor:'Colore personalizzato', applyCustom:'Applica colore', presets:'Preset premium', pdf:'PDF stile', doctorCard:'Scheda medico', signature:'Firma', backup:'Backup', restore:'Ripristina', tools:'Strumenti e preferenze della clinica.', noBA:'Segna una foto come Prima e una come Dopo dal menu a 3 punti.', noPhotos:'Nessuna foto in questa sezione.', baHint:'Le foto Prima/Dopo vengono scelte dal menu a 3 punti. Muovi la barra per una transizione morbida.'},
+    pt:{native:'Português', dir:'ltr', language:'Idioma', chooseLanguage:'Idioma', languageHelp:'Escolha o idioma da interface.', menu:'Menu', dashboard:'Painel', patients:'Pacientes', addPatient:'Adicionar paciente', scanQR:'Ler QR', settings:'Configurações', profile:'Perfil', manageUsers:'Usuários', logout:'Sair', search:'Pesquisar nome, telefone, ID ou diagnóstico...', photos:'Fotos / Raios X', clinical:'Clínica', xray:'Raio X', beforeAfter:'Antes / Depois', general:'Geral', before:'Antes', after:'Depois', photoOptions:'Opções da foto', markAs:'Marcar como', viewPhoto:'Ver foto', theme:'Cor', themeHelp:'Escolha um preset premium ou cor personalizada.', customColor:'Cor personalizada', applyCustom:'Aplicar cor', presets:'Cores premium', pdf:'Estilo PDF', doctorCard:'Cartão médico', signature:'Assinatura', backup:'Backup', restore:'Restaurar', tools:'Ferramentas e preferências da clínica.', noBA:'Marque uma foto como Antes e outra como Depois no menu de 3 pontos.', noPhotos:'Nenhuma foto nesta seção.', baHint:'As fotos Antes/Depois são escolhidas no menu de 3 pontos. Mova a barra para uma transição suave.'},
+    ru:{native:'Русский', dir:'ltr', language:'Язык', chooseLanguage:'Язык', languageHelp:'Выберите язык интерфейса.', menu:'Меню', dashboard:'Панель', patients:'Пациенты', addPatient:'Добавить пациента', scanQR:'QR скан', settings:'Настройки', profile:'Профиль', manageUsers:'Пользователи', logout:'Выйти', search:'Поиск имени, телефона, ID или диагноза...', photos:'Фото / Рентген', clinical:'Клинические', xray:'Рентген', beforeAfter:'До / После', general:'Общие', before:'До', after:'После', photoOptions:'Параметры фото', markAs:'Отметить как', viewPhoto:'Открыть фото', theme:'Цвет', themeHelp:'Выберите премиум цвет или свой цвет.', customColor:'Свой цвет', applyCustom:'Применить', presets:'Премиум цвета', pdf:'Стиль PDF', doctorCard:'Карта врача', signature:'Подпись', backup:'Резерв', restore:'Восстановить', tools:'Инструменты и настройки клиники.', noBA:'Отметьте одно фото как До, а другое как После в меню с 3 точками.', noPhotos:'В этом разделе нет фото.', baHint:'Фото До/После выбираются из меню с 3 точками. Двигайте ползунок для мягкого перехода.'},
+    tr:{native:'Türkçe', dir:'ltr', language:'Dil', chooseLanguage:'Dil', languageHelp:'Uygulama arayüz dilini seçin.', menu:'Menü', dashboard:'Panel', patients:'Hastalar', addPatient:'Hasta ekle', scanQR:'QR tara', settings:'Ayarlar', profile:'Profil', manageUsers:'Kullanıcılar', logout:'Çıkış', search:'Ad, telefon, ID veya teşhis ara...', photos:'Fotoğraflar / Röntgen', clinical:'Klinik', xray:'Röntgen', beforeAfter:'Önce / Sonra', general:'Genel', before:'Önce', after:'Sonra', photoOptions:'Foto seçenekleri', markAs:'Olarak işaretle', viewPhoto:'Fotoğrafı aç', theme:'Renk', themeHelp:'Premium hazır renk veya özel renk seçin.', customColor:'Özel renk', applyCustom:'Rengi uygula', presets:'Premium renkler', pdf:'PDF stili', doctorCard:'Doktor kartı', signature:'İmza', backup:'Yedek', restore:'Geri yükle', tools:'Klinik araçları ve ayarları.', noBA:'3 nokta menüsünden bir fotoğrafı Önce, birini Sonra olarak işaretleyin.', noPhotos:'Bu bölümde fotoğraf yok.', baHint:'Önce/Sonra fotoğrafları 3 nokta menüsünden seçilir. Yumuşak geçiş için çubuğu hareket ettirin.'},
+    zh:{native:'中文', dir:'ltr', language:'语言', chooseLanguage:'语言', languageHelp:'选择应用界面语言。', menu:'菜单', dashboard:'仪表板', patients:'患者', addPatient:'添加患者', scanQR:'扫描 QR', settings:'设置', profile:'资料', manageUsers:'用户', logout:'退出', search:'搜索姓名、电话、ID 或诊断...', photos:'照片 / X光', clinical:'临床', xray:'X光', beforeAfter:'前 / 后', general:'普通', before:'前', after:'后', photoOptions:'照片选项', markAs:'标记为', viewPhoto:'查看照片', theme:'主题色', themeHelp:'选择高级预设或自定义颜色。', customColor:'自定义颜色', applyCustom:'应用颜色', presets:'高级预设', pdf:'PDF 样式', doctorCard:'医生卡', signature:'签名', backup:'备份', restore:'恢复', tools:'诊所工具和偏好设置。', noBA:'请从三点菜单标记一张前照和一张后照。', noPhotos:'此部分没有照片。', baHint:'前后照片来自三点菜单。移动滑杆实现柔和过渡。'},
+    ja:{native:'日本語', dir:'ltr', language:'言語', chooseLanguage:'言語', languageHelp:'アプリの表示言語を選択します。', menu:'メニュー', dashboard:'ダッシュボード', patients:'患者', addPatient:'患者を追加', scanQR:'QRスキャン', settings:'設定', profile:'プロフィール', manageUsers:'ユーザー管理', logout:'ログアウト', search:'名前、電話、ID、診断を検索...', photos:'写真 / X線', clinical:'臨床', xray:'X線', beforeAfter:'前 / 後', general:'一般', before:'前', after:'後', photoOptions:'写真オプション', markAs:'分類', viewPhoto:'写真を見る', theme:'テーマ色', themeHelp:'プレミアム色またはカスタム色を選択します。', customColor:'カスタム色', applyCustom:'適用', presets:'プレミアム色', pdf:'PDFスタイル', doctorCard:'医師カード', signature:'署名', backup:'バックアップ', restore:'復元', tools:'クリニックのツールと設定。', noBA:'3点メニューで前と後の写真を指定してください。', noPhotos:'このセクションに写真はありません。', baHint:'前後写真は3点メニューから選択されます。バーを動かして柔らかく比較します。'},
+    ko:{native:'한국어', dir:'ltr', language:'언어', chooseLanguage:'언어', languageHelp:'앱 인터페이스 언어를 선택하세요.', menu:'메뉴', dashboard:'대시보드', patients:'환자', addPatient:'환자 추가', scanQR:'QR 스캔', settings:'설정', profile:'프로필', manageUsers:'사용자 관리', logout:'로그아웃', search:'이름, 전화, ID, 진단 검색...', photos:'사진 / X-ray', clinical:'임상', xray:'X-ray', beforeAfter:'전 / 후', general:'일반', before:'전', after:'후', photoOptions:'사진 옵션', markAs:'표시', viewPhoto:'사진 보기', theme:'테마 색상', themeHelp:'프리미엄 색상 또는 사용자 색상을 선택하세요.', customColor:'사용자 색상', applyCustom:'적용', presets:'프리미엄 색상', pdf:'PDF 스타일', doctorCard:'의사 카드', signature:'서명', backup:'백업', restore:'복원', tools:'클리닉 도구 및 설정.', noBA:'3점 메뉴에서 전/후 사진을 표시하세요.', noPhotos:'이 섹션에 사진이 없습니다.', baHint:'전/후 사진은 3점 메뉴에서 선택됩니다. 바를 움직여 부드럽게 비교하세요.'},
+    hi:{native:'हिन्दी', dir:'ltr', language:'भाषा', chooseLanguage:'भाषा', languageHelp:'ऐप इंटरफ़ेस की भाषा चुनें।', menu:'मेनू', dashboard:'डैशबोर्ड', patients:'मरीज़', addPatient:'मरीज़ जोड़ें', scanQR:'QR स्कैन', settings:'सेटिंग्स', profile:'प्रोफ़ाइल', manageUsers:'यूज़र', logout:'लॉग आउट', search:'नाम, फोन, ID या निदान खोजें...', photos:'फोटो / एक्स-रे', clinical:'क्लिनिकल', xray:'एक्स-रे', beforeAfter:'पहले / बाद', general:'सामान्य', before:'पहले', after:'बाद', photoOptions:'फोटो विकल्प', markAs:'चिह्नित करें', viewPhoto:'फोटो देखें', theme:'रंग', themeHelp:'प्रीमियम रंग या कस्टम रंग चुनें।', customColor:'कस्टम रंग', applyCustom:'रंग लागू करें', presets:'प्रीमियम रंग', pdf:'PDF शैली', doctorCard:'डॉक्टर कार्ड', signature:'हस्ताक्षर', backup:'बैकअप', restore:'रीस्टोर', tools:'क्लिनिक टूल और सेटिंग्स।', noBA:'3-dot मेनू से एक फोटो Before और एक After चिह्नित करें।', noPhotos:'इस सेक्शन में कोई फोटो नहीं है।', baHint:'Before/After फोटो 3-dot मेनू से चुने जाते हैं। सॉफ्ट ट्रांज़िशन के लिए बार चलाएं।'},
+    ur:{native:'اردو', dir:'rtl', language:'زبان', chooseLanguage:'زبان', languageHelp:'ایپ انٹرفیس کی زبان منتخب کریں۔', menu:'مینو', dashboard:'ڈیش بورڈ', patients:'مریض', addPatient:'مریض شامل کریں', scanQR:'QR اسکین', settings:'ترتیبات', profile:'پروفائل', manageUsers:'صارفین', logout:'لاگ آؤٹ', search:'نام، فون، ID یا تشخیص تلاش کریں...', photos:'تصاویر / ایکس رے', clinical:'کلینیکل', xray:'ایکس رے', beforeAfter:'پہلے / بعد', general:'عام', before:'پہلے', after:'بعد', photoOptions:'تصویر کے اختیارات', markAs:'نشان لگائیں', viewPhoto:'تصویر دیکھیں', theme:'رنگ', themeHelp:'پریمیم یا کسٹم رنگ منتخب کریں۔', customColor:'کسٹم رنگ', applyCustom:'رنگ لگائیں', presets:'پریمیم رنگ', pdf:'PDF انداز', doctorCard:'ڈاکٹر کارڈ', signature:'دستخط', backup:'بیک اپ', restore:'بحال', tools:'کلینک ٹولز اور سیٹنگز۔', noBA:'تین نقطوں والے مینو سے ایک تصویر پہلے اور ایک بعد کے طور پر نشان لگائیں۔', noPhotos:'اس حصے میں کوئی تصویر نہیں۔', baHint:'پہلے/بعد کی تصاویر تین نقطوں والے مینو سے منتخب ہوتی ہیں۔ نرم منتقلی کے لیے بار حرکت دیں۔'},
+    fa:{native:'فارسی', dir:'rtl', language:'زبان', chooseLanguage:'زبان', languageHelp:'زبان رابط برنامه را انتخاب کنید.', menu:'منو', dashboard:'داشبورد', patients:'بیماران', addPatient:'افزودن بیمار', scanQR:'اسکن QR', settings:'تنظیمات', profile:'پروفایل', manageUsers:'کاربران', logout:'خروج', search:'جستجو بر اساس نام، تلفن، ID یا تشخیص...', photos:'عکس‌ها / رادیوگرافی', clinical:'کلینیکی', xray:'رادیوگرافی', beforeAfter:'قبل / بعد', general:'عمومی', before:'قبل', after:'بعد', photoOptions:'گزینه‌های عکس', markAs:'علامت‌گذاری به عنوان', viewPhoto:'نمایش عکس', theme:'رنگ', themeHelp:'یک رنگ آماده یا رنگ دلخواه انتخاب کنید.', customColor:'رنگ دلخواه', applyCustom:'اعمال رنگ', presets:'رنگ‌های ویژه', pdf:'سبک PDF', doctorCard:'کارت پزشک', signature:'امضا', backup:'پشتیبان', restore:'بازیابی', tools:'ابزارها و تنظیمات کلینیک.', noBA:'از منوی سه نقطه یک عکس قبل و یک عکس بعد تعیین کنید.', noPhotos:'عکسی در این بخش نیست.', baHint:'عکس‌های قبل/بعد از منوی سه نقطه انتخاب می‌شوند. برای انتقال نرم نوار را حرکت دهید.'}
+  };
+  const IOS_LANGS = [
+    ['af','Afrikaans'],['am','አማርኛ'],['az','Azərbaycanca'],['bg','Български'],['bn','বাংলা'],['bs','Bosanski'],['ca','Català'],['cs','Čeština'],['cy','Cymraeg'],['da','Dansk'],['el','Ελληνικά'],['et','Eesti'],['eu','Euskara'],['fi','Suomi'],['fil','Filipino'],['ga','Gaeilge'],['gl','Galego'],['gu','ગુજરાતી'],['he','עברית'],['hr','Hrvatski'],['hu','Magyar'],['id','Bahasa Indonesia'],['is','Íslenska'],['kn','ಕನ್ನಡ'],['kk','Қазақша'],['km','ភាសាខ្មែរ'],['lo','ລາວ'],['lt','Lietuvių'],['lv','Latviešu'],['mk','Македонски'],['ml','മലയാളം'],['mn','Монгол'],['mr','मराठी'],['ms','Bahasa Melayu'],['my','မြန်မာ'],['nb','Norsk Bokmål'],['ne','नेपाली'],['nl','Nederlands'],['pa','ਪੰਜਾਬੀ'],['pl','Polski'],['ro','Română'],['sk','Slovenčina'],['sl','Slovenščina'],['sq','Shqip'],['sr','Српски'],['sv','Svenska'],['sw','Kiswahili'],['ta','தமிழ்'],['te','తెలుగు'],['th','ไทย'],['uk','Українська'],['vi','Tiếng Việt'],['zu','Zulu']
+  ];
+  IOS_LANGS.forEach(([code,native]) => { if(!BASE[code]) BASE[code] = Object.assign({}, BASE.en, {native, dir:rtl(code)?'rtl':'ltr'}); });
+  function lang(){ return localStorage.getItem('clinicLanguage') || 'en'; }
+  function tr2(key){ const pack = BASE[lang()] || BASE.en; return pack[key] || BASE.en[key] || key; }
+  window.t = tr2;
+
+  const PHRASES = {
+    'Dashboard':'dashboard','Patients':'patients','Add Patient':'addPatient','Scan QR':'scanQR','Settings':'settings','Profile':'profile','Manage Users':'manageUsers','Logout':'logout','Menu':'menu','Photos / X-rays':'photos','Photos / X-rays':'photos','Clinical':'clinical','X-ray':'xray','X-rays':'xray','Before / After':'beforeAfter','General':'general','Before':'before','After':'after','Photo options':'photoOptions','Mark as':'markAs','View photo':'viewPhoto','Theme color':'theme','PDF style':'pdf','Doctor card':'doctorCard','Draw signature':'signature','Backup':'backup','Restore':'restore','Language':'language'
+  };
+  function translateStaticText(root){
+    if(lang()==='en') return;
+    const walker = document.createTreeWalker(root || document.body, NodeFilter.SHOW_TEXT, {
+      acceptNode(node){
+        if(!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+        const p = node.parentElement;
+        if(!p || ['SCRIPT','STYLE','TEXTAREA','INPUT'].includes(p.tagName)) return NodeFilter.FILTER_REJECT;
+        return NodeFilter.FILTER_ACCEPT;
+      }
+    });
+    const nodes = [];
+    while(walker.nextNode()) nodes.push(walker.currentNode);
+    nodes.forEach(n => {
+      const raw = n.nodeValue.trim();
+      const key = PHRASES[raw];
+      if(key) n.nodeValue = n.nodeValue.replace(raw, tr2(key));
+    });
+  }
+
+  window.applyLanguage = function finalApplyLanguage(){
+    const code = lang(); const pack = BASE[code] || BASE.en;
+    document.documentElement.lang = code;
+    document.documentElement.dir = pack.dir || 'ltr';
+    document.body.dataset.lang = code;
+    const tabMap = {dashboard:'dashboard', patients:'patients', form:'addPatient', scan:'scanQR'};
+    Object.entries(tabMap).forEach(([page,key]) => { const el = document.querySelector(`[data-page="${page}"]`); if(el) el.textContent = tr2(key); });
+    const mb = byId('menuBtn'); if(mb) mb.textContent = tr2('menu');
+    const search = byId('search'); if(search) search.placeholder = tr2('search');
+    translateStaticText(document.body);
+  };
+  window.setUILanguage = function finalSetUILanguage(code){
+    localStorage.setItem('clinicLanguage', BASE[code] ? code : 'en');
+    byId('languageCleanOverlay')?.remove();
+    try { if(typeof renderDashboard==='function') renderDashboard(); if(typeof renderPatients==='function') renderPatients(); } catch(e) { console.warn(e); }
+    setTimeout(window.applyLanguage, 0);
+    toast((BASE[code]?.native || 'Language') + ' selected');
+  };
+  window.openLanguagePicker = function finalOpenLanguagePicker(){
+    byId('languageCleanOverlay')?.remove();
+    const current = lang();
+    const overlay = document.createElement('div');
+    overlay.id = 'languageCleanOverlay'; overlay.className = 'clean-modal-overlay';
+    const codes = Object.keys(BASE).sort((a,b) => (BASE[a].native || a).localeCompare(BASE[b].native || b));
+    overlay.innerHTML = `<div class="clean-modal clean-language-modal final-language-modal" role="dialog" aria-modal="true" dir="ltr">
+      <div class="clean-modal-head"><div><h2>${esc(tr2('chooseLanguage'))}</h2><p>${esc(tr2('languageHelp'))}</p></div><button type="button" onclick="document.getElementById('languageCleanOverlay')?.remove()">×</button></div>
+      <div class="final-language-search"><input id="languageSearchInput" placeholder="Search language..." oninput="filterLanguagesFinal(this.value)"></div>
+      <div class="clean-language-grid final-language-grid">${codes.map(code => `<button type="button" data-language-item="${esc(code + ' ' + BASE[code].native)}" class="clean-language-item ${current===code?'active':''}" dir="${BASE[code].dir}" onclick="setUILanguage('${code}')"><strong>${esc(BASE[code].native)}</strong><span>${esc(code.toUpperCase())}</span></button>`).join('')}</div>
+    </div>`;
+    overlay.addEventListener('click', e => { if(e.target===overlay) overlay.remove(); });
+    document.body.appendChild(overlay);
+    setTimeout(()=>byId('languageSearchInput')?.focus(),80);
+  };
+  window.filterLanguagesFinal = function(q){
+    q = String(q || '').toLowerCase();
+    document.querySelectorAll('[data-language-item]').forEach(btn => { btn.style.display = btn.dataset.languageItem.toLowerCase().includes(q) ? '' : 'none'; });
+  };
+
+  function hexToRgb(hex){ hex = String(hex || '#d4af37').replace('#',''); if(hex.length===3) hex = hex.split('').map(x=>x+x).join(''); const n = parseInt(hex,16); return {r:(n>>16)&255,g:(n>>8)&255,b:n&255}; }
+  function rgbToHex(r,g,b){ return '#' + [r,g,b].map(x => Math.max(0,Math.min(255,Math.round(x))).toString(16).padStart(2,'0')).join(''); }
+  function mix(hex, pct, target){ const a = hexToRgb(hex), b = hexToRgb(target || (pct>0?'#ffffff':'#000000')); const p = Math.abs(pct); return rgbToHex(a.r+(b.r-a.r)*p,a.g+(b.g-a.g)*p,a.b+(b.b-a.b)*p); }
+  const PRESETS = {gold:'#d4af37',rose:'#ff4fa3',ruby:'#ef4444',ocean:'#3b82f6',cyan:'#06b6d4',violet:'#8b5cf6',emerald:'#22c55e',orange:'#f97316',graphite:'#94a3b8',mint:'#14b8a6'};
+  function applyAccent(hex, mode){
+    const color = hex || PRESETS.gold;
+    Object.keys(PRESETS).forEach(k => document.body.classList.remove('theme-'+k));
+    document.documentElement.style.setProperty('--accent', color);
+    document.documentElement.style.setProperty('--accent-light', mix(color,.32,'#ffffff'));
+    document.documentElement.style.setProperty('--accent-dark', mix(color,.38,'#000000'));
+    localStorage.setItem('clinicThemeMode', mode || 'custom');
+    localStorage.setItem('clinicAccent', color);
+    try { const ex = doctorExtras(); ex.accent = color; ex.accentLight = mix(color,.32,'#ffffff'); ex.accentDark = mix(color,.38,'#000000'); saveDoctorExtras(ex); } catch(e) {}
+  }
+  window.setClinicTheme = function finalSetClinicTheme(name){
+    const color = PRESETS[name] || PRESETS.gold;
+    document.body.classList.add('theme-'+name);
+    applyAccent(color, name);
+    byId('themePickerOverlay')?.remove(); document.querySelector('.luxury-modal')?.remove(); toast('Theme saved');
+  };
+  window.saveCustomAccent = function finalSaveCustomAccent(){
+    const color = byId('customAccentPicker')?.value || localStorage.getItem('clinicAccent') || PRESETS.gold;
+    applyAccent(color, 'custom');
+    byId('themePickerOverlay')?.remove(); document.querySelector('.luxury-modal')?.remove(); toast('Theme saved');
+  };
+  window.applySavedTheme = function finalApplySavedTheme(){ applyAccent(localStorage.getItem('clinicAccent') || (doctorExtras()?.accent) || PRESETS.gold, localStorage.getItem('clinicThemeMode') || 'gold'); };
+  window.openThemePicker = function finalOpenThemePicker(){
+    byId('themePickerOverlay')?.remove();
+    const selected = localStorage.getItem('clinicAccent') || (doctorExtras()?.accent) || PRESETS.gold;
+    const overlay = document.createElement('div'); overlay.id='themePickerOverlay'; overlay.className='clean-modal-overlay';
+    overlay.innerHTML = `<div class="clean-modal premium-theme-modal" role="dialog" aria-modal="true">
+      <div class="clean-modal-head"><div><h2>${esc(tr2('theme'))}</h2><p>${esc(tr2('themeHelp'))}</p></div><button type="button" onclick="document.getElementById('themePickerOverlay')?.remove()">×</button></div>
+      <h3 class="theme-section-title">${esc(tr2('presets'))}</h3>
+      <div class="premium-theme-grid">${Object.entries(PRESETS).map(([name,color]) => `<button type="button" class="premium-swatch" style="--sw:${color}" onclick="setClinicTheme('${name}')"><span></span><b>${esc(name[0].toUpperCase()+name.slice(1))}</b></button>`).join('')}</div>
+      <div class="custom-theme-card"><label>${esc(tr2('customColor'))}</label><input id="customAccentPicker" type="color" value="${esc(selected)}"><button class="btn-primary" onclick="saveCustomAccent()">${esc(tr2('applyCustom'))}</button></div>
+    </div>`;
+    overlay.addEventListener('click', e => { if(e.target===overlay) overlay.remove(); });
+    document.body.appendChild(overlay);
+  };
+
+  function normalizePhotosFinal(patient){
+    const list = Array.isArray(patient?.photos) ? patient.photos : [];
+    return list.map((raw,index) => {
+      const obj = (raw && typeof raw === 'object') ? raw : {url:raw, path:raw};
+      let category = String(obj.category || obj.photoCategory || '').toLowerCase();
+      let stage = String(obj.stage || obj.type || '').toLowerCase();
+      const name = String(obj.name || obj.filename || '').toLowerCase();
+      if(category.includes('x') || name.includes('xray') || name.includes('x-ray')) category='xray';
+      if(category !== 'xray') category='clinical';
+      if(!['before','after','general'].includes(stage)) stage='general';
+      return {raw,obj,index,url:urlOf(obj),category,stage,name};
+    }).filter(x=>x.url);
+  }
+  async function savePhotoMetaFinal(patientId,index,patch){
+    const patient = patientById(patientId); if(!patient) return;
+    const next = (patient.photos || []).map((raw,i) => {
+      const obj = (raw && typeof raw === 'object') ? Object.assign({}, raw) : {url:raw, path:raw, name:`Photo ${i+1}`};
+      if((patch.stage === 'before' || patch.stage === 'after') && i !== index && (obj.stage || obj.type) === patch.stage) { obj.stage = 'general'; obj.type = 'general'; }
+      return obj;
+    });
+    const current = next[index] || {};
+    Object.assign(current, patch);
+    if(patch.stage) current.type = patch.stage;
+    next[index] = current;
+    patient.photos = next;
+    try { await api(`patients?id=eq.${encodeURIComponent(patientId)}`, {method:'PATCH', body: JSON.stringify({photos: next})}); } catch(err){ console.error(err); alert('Could not save photo type: ' + err.message); }
+    const box = byId('simplePhotosBox'); if(box) box.innerHTML = window.renderSimplePhotos(patient, window.__photoFilter || 'clinical');
+    toast('Saved');
+  }
+  window.savePhotoMetaClean = savePhotoMetaFinal;
+
+  function card(patientId, ph){
+    return `<div class="clean-photo-card" data-index="${ph.index}">
+      <button class="photo-dots" type="button" aria-label="Photo options" onclick="event.preventDefault();event.stopPropagation();openPhotoOptions('${patientId}', ${ph.index})">•••</button>
+      <img src="${esc(ph.url)}" alt="Patient photo" onclick="openCleanPhotoViewer('${patientId}', ${ph.index})" loading="lazy">
+      <div class="clean-photo-meta"><span>${esc(tr2(ph.category === 'xray' ? 'xray' : 'clinical'))}</span><span>•</span><span>${esc(tr2(ph.stage || 'general'))}</span></div>
+    </div>`;
+  }
+  window.renderSimplePhotos = function finalRenderSimplePhotos(patient,type='clinical'){
+    window.__photoFilter = type;
+    const all = normalizePhotosFinal(patient);
+    const filtered = type === 'xray' ? all.filter(p=>p.category==='xray') : type === 'beforeAfter' ? all.filter(p=>p.stage==='before' || p.stage==='after') : all.filter(p=>p.category==='clinical');
+    return `<div class="clean-photo-section">
+      <div class="clean-photo-tabs">
+        <button type="button" class="${type==='clinical'?'active':''}" onclick="switchSimplePhotoType('${patient.id}','clinical')">${esc(tr2('clinical'))} <small>${all.filter(p=>p.category==='clinical').length}</small></button>
+        <button type="button" class="${type==='xray'?'active':''}" onclick="switchSimplePhotoType('${patient.id}','xray')">${esc(tr2('xray'))} <small>${all.filter(p=>p.category==='xray').length}</small></button>
+        <button type="button" class="${type==='beforeAfter'?'active':''}" onclick="showBeforeAfter('${patient.id}')">${esc(tr2('beforeAfter'))}</button>
+      </div>
+      ${filtered.length ? `<div class="clean-photo-grid">${filtered.map(p=>card(patient.id,p)).join('')}</div>` : `<div class="clean-empty-photo">${esc(tr2('noPhotos'))}</div>`}
+    </div>`;
+  };
+  window.switchSimplePhotoType = function(patientId,type){ const p = patientById(patientId); const box = byId('simplePhotosBox'); if(p && box) box.innerHTML = window.renderSimplePhotos(p,type); };
+  window.openCleanPhotoViewer = function(patientId,index){ const p = patientById(patientId); if(!p) return; const all = normalizePhotosFinal(p); const start = Math.max(0, all.findIndex(x=>x.index===index)); window.currentPhotoList = all.map(x=>x.url); currentPhotoList = window.currentPhotoList; if(typeof openPhotoViewer === 'function') openPhotoViewer(start < 0 ? 0 : start); };
+  window.openPhotoOptions = function(patientId,index){
+    const p = patientById(patientId); if(!p) return; const ph = normalizePhotosFinal(p).find(x=>x.index===index); if(!ph) return;
+    byId('photoOptionsOverlay')?.remove();
+    const overlay = document.createElement('div'); overlay.id='photoOptionsOverlay'; overlay.className='clean-sheet-overlay';
+    overlay.innerHTML = `<div class="clean-photo-sheet" role="dialog" aria-modal="true"><div class="sheet-grip"></div>
+      <div class="sheet-head"><img src="${esc(ph.url)}" alt=""><div><h3>${esc(tr2('photoOptions'))}</h3><p>${esc(tr2('markAs'))}</p></div><button type="button" onclick="document.getElementById('photoOptionsOverlay')?.remove()">×</button></div>
+      <div class="sheet-actions">
+        <button class="${ph.category==='clinical'?'active':''}" onclick="savePhotoMetaClean('${patientId}',${index},{category:'clinical'});document.getElementById('photoOptionsOverlay')?.remove()">${esc(tr2('clinical'))}</button>
+        <button class="${ph.category==='xray'?'active':''}" onclick="savePhotoMetaClean('${patientId}',${index},{category:'xray'});document.getElementById('photoOptionsOverlay')?.remove()">${esc(tr2('xray'))}</button>
+        <button class="${ph.stage==='general'?'active':''}" onclick="savePhotoMetaClean('${patientId}',${index},{stage:'general'});document.getElementById('photoOptionsOverlay')?.remove()">${esc(tr2('general'))}</button>
+        <button class="${ph.stage==='before'?'active':''}" onclick="savePhotoMetaClean('${patientId}',${index},{stage:'before'});document.getElementById('photoOptionsOverlay')?.remove()">${esc(tr2('before'))}</button>
+        <button class="${ph.stage==='after'?'active':''}" onclick="savePhotoMetaClean('${patientId}',${index},{stage:'after'});document.getElementById('photoOptionsOverlay')?.remove()">${esc(tr2('after'))}</button>
+        <button onclick="openCleanPhotoViewer('${patientId}',${index});document.getElementById('photoOptionsOverlay')?.remove()">${esc(tr2('viewPhoto'))}</button>
+      </div></div>`;
+    overlay.addEventListener('click', e => { if(e.target===overlay) overlay.remove(); });
+    document.body.appendChild(overlay);
+  };
+  window.setBlendClean = function(v){ const box = document.querySelector('.ba-blend-wrap'); if(box) box.style.setProperty('--blend', `${Number(v)}%`); };
+  window.showBeforeAfter = function(patientId){
+    const p = patientById(patientId); if(!p) return;
+    const all = normalizePhotosFinal(p);
+    const before = all.find(x=>x.stage==='before');
+    const after = all.find(x=>x.stage==='after');
+    byId('beforeAfterOverlay')?.remove();
+    const overlay = document.createElement('div'); overlay.id='beforeAfterOverlay'; overlay.className='clean-modal-overlay';
+    const body = (before && after) ? `<div class="ba-selected-strip"><div><img src="${esc(before.url)}"><b>${esc(tr2('before'))}</b></div><div><img src="${esc(after.url)}"><b>${esc(tr2('after'))}</b></div></div>
+      <div class="ba-blend-wrap final-ba-wrap" style="--blend:50%"><img class="ba-img ba-before" src="${esc(before.url)}" alt="Before"><img class="ba-img ba-after" src="${esc(after.url)}" alt="After"><span class="ba-label before-label">${esc(tr2('before'))}</span><span class="ba-label after-label">${esc(tr2('after'))}</span><div class="ba-soft-bar"></div></div>
+      <input class="ba-range" type="range" min="0" max="100" value="50" oninput="setBlendClean(this.value)"><p class="muted">${esc(tr2('baHint'))}</p>` : `<div class="clean-empty-photo">${esc(tr2('noBA'))}</div>`;
+    overlay.innerHTML = `<div class="clean-modal ba-modal" role="dialog" aria-modal="true"><div class="clean-modal-head"><div><h2>${esc(tr2('beforeAfter'))}</h2><p>${esc(tr2('baHint'))}</p></div><button type="button" onclick="document.getElementById('beforeAfterOverlay')?.remove()">×</button></div>${body}</div>`;
+    overlay.addEventListener('click', e => { if(e.target===overlay) overlay.remove(); });
+    document.body.appendChild(overlay);
+  };
+
+  const oldShowPageFinal = window.showPage || showPage;
+  window.showPage = function finalShowPage(page){
+    if(page === 'settings'){
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      let s = byId('settings'); if(!s){ s = document.createElement('section'); s.id='settings'; s.className='page'; document.querySelector('main.app')?.appendChild(s); }
+      s.classList.add('active');
+      s.innerHTML = `<div class="card settings-page"><h2>${esc(tr2('settings'))}</h2><p class="muted">${esc(tr2('tools'))}</p><div class="settings-grid-clean">
+        <button class="settings-tile" onclick="openThemePicker()"><b>${esc(tr2('theme'))}</b><span>${esc(tr2('customColor'))}</span></button>
+        <button class="settings-tile" onclick="openLanguagePicker()"><b>${esc(tr2('language'))}</b><span>${esc((BASE[lang()]||BASE.en).native)}</span></button>
+        <button class="settings-tile" onclick="openPdfPatternPicker()"><b>${esc(tr2('pdf'))}</b><span>Reports and receipts</span></button>
+        <button class="settings-tile" onclick="openDoctorInfoCard()"><b>${esc(tr2('doctorCard'))}</b><span>Specialty, phones, website</span></button>
+        <button class="settings-tile" onclick="openSignaturePad()"><b>${esc(tr2('signature'))}</b><span>PDFs and receipts</span></button>
+        <button class="settings-tile" onclick="backupData()"><b>${esc(tr2('backup'))}</b><span>Export clinic data</span></button>
+        <button class="settings-tile" onclick="restoreBackup()"><b>${esc(tr2('restore'))}</b><span>Import backup file</span></button>
+      </div></div>`;
+      window.scrollTo(0,0); window.applyLanguage(); return;
+    }
+    const out = oldShowPageFinal(page); setTimeout(window.applyLanguage,0); return out;
+  };
+
+  function ownMenu(){
+    const btn = byId('menuBtn'); if(!btn || btn.dataset.finalOwned === '1') return;
+    const clone = btn.cloneNode(true); clone.dataset.finalOwned='1'; clone.textContent = tr2('menu'); clone.onclick = null; clone.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); openClinicMenu(); }, true); btn.replaceWith(clone);
+  }
+  const oldOpenMenu = window.openClinicMenu;
+  window.openClinicMenu = function finalOpenClinicMenu(){
+    byId('drawerOverlay')?.remove(); byId('sideDrawer')?.remove();
+    const overlay = document.createElement('div'); overlay.className='drawer-overlay'; overlay.id='drawerOverlay'; overlay.onclick = closeClinicMenu;
+    const drawer = document.createElement('aside'); drawer.className='side-drawer clean-side-drawer'; drawer.id='sideDrawer';
+    const admin = currentUser?.role === 'admin';
+    drawer.innerHTML = `<div class="drawer-head"><h2>${esc(tr2('menu'))}</h2><button class="drawer-close-btn" onclick="closeClinicMenu()" aria-label="Close">×</button></div>
+      <div class="drawer-user"><div>${esc(currentUser?.full_name || currentUser?.username || 'Doctor')}</div><small>${esc((currentUser?.role || 'doctor').toUpperCase())}</small></div>
+      <div class="drawer-menu clean-drawer-menu">
+        <button class="primary-item" onclick="closeClinicMenu();showPage('form')">${esc(tr2('addPatient'))}</button>
+        <button onclick="closeClinicMenu();showPage('scan')">${esc(tr2('scanQR'))}</button>
+        <button onclick="closeClinicMenu();showPage('settings')">${esc(tr2('settings'))}</button>
+        <button onclick="closeClinicMenu();openDoctorProfile()">${esc(tr2('profile'))}</button>
+        ${admin ? `<button onclick="closeClinicMenu();manageUsers()">${esc(tr2('manageUsers'))}</button>` : ''}
+        <button class="danger-item" onclick="logout()">${esc(tr2('logout'))}</button>
+      </div>`;
+    document.body.appendChild(overlay); document.body.appendChild(drawer);
+  };
+
+  document.addEventListener('DOMContentLoaded', () => { window.applySavedTheme(); ownMenu(); window.applyLanguage(); }, {once:true});
+  setTimeout(()=>{ window.applySavedTheme(); ownMenu(); window.applyLanguage(); },0);
+  setTimeout(()=>{ ownMenu(); window.applyLanguage(); },600);
+})();
