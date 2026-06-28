@@ -2603,3 +2603,288 @@ renderPatientDetail = function(p){
 
   try { applyLanguage(); } catch(e) {}
 })();
+
+/* =========================================================
+   REBUILD PATCH: simple menu, working language modal,
+   compact action buttons, strict photo categories, and
+   real before/after slider comparison.
+   ========================================================= */
+(function(){
+  const RTL_LANGS = new Set(["ar","ur","fa","he"]);
+  const DENTAL_LANGUAGES = {
+    en:{name:"English",native:"English",dir:"ltr",dashboard:"Dashboard",patients:"Patients",addPatient:"Add Patient",scanQR:"Scan QR",settings:"Settings",profile:"Profile",manageUsers:"Manage Users",logout:"Logout",theme:"Theme color",language:"Language",pdf:"PDF style",doctorCard:"Doctor card",signature:"Signature",backup:"Backup",restore:"Restore",refresh:"Refresh",search:"Search by name, phone, ID, or diagnosis...",settingsHelp:"Simple controls for the clinic look, doctor card, PDF, signature, backup, and restore.",clinical:"Clinical",xray:"X-ray",beforeAfter:"Before / After",noClinical:"No clinical photos yet",noXray:"No X-ray photos yet",chooseLanguage:"Choose the app language",photoCategory:"Photo category",photoType:"Photo type",generalPhoto:"General",beforePhoto:"Before",afterPhoto:"After"},
+    ar:{name:"Arabic",native:"العربية",dir:"rtl",dashboard:"لوحة التحكم",patients:"المرضى",addPatient:"إضافة مريض",scanQR:"مسح QR",settings:"الإعدادات",profile:"الملف الشخصي",manageUsers:"إدارة المستخدمين",logout:"تسجيل الخروج",theme:"لون التطبيق",language:"اللغة",pdf:"شكل PDF",doctorCard:"بطاقة الطبيب",signature:"التوقيع",backup:"نسخة احتياطية",restore:"استرجاع",refresh:"تحديث",search:"ابحث بالاسم أو الهاتف أو الكود أو التشخيص...",settingsHelp:"تحكم بسيط في شكل العيادة وبطاقة الطبيب وملفات PDF والتوقيع والنسخ الاحتياطي.",clinical:"صور سريرية",xray:"أشعة",beforeAfter:"قبل / بعد",noClinical:"لا توجد صور سريرية",noXray:"لا توجد صور أشعة",chooseLanguage:"اختر لغة التطبيق",photoCategory:"نوع الصورة",photoType:"تصنيف الصورة",generalPhoto:"عام",beforePhoto:"قبل",afterPhoto:"بعد"},
+    fr:{name:"French",native:"Français",dir:"ltr",dashboard:"Tableau",patients:"Patients",addPatient:"Ajouter",scanQR:"Scanner QR",settings:"Paramètres",profile:"Profil",manageUsers:"Utilisateurs",logout:"Déconnexion",theme:"Couleur",language:"Langue",pdf:"Style PDF",doctorCard:"Carte médecin",signature:"Signature",backup:"Sauvegarde",restore:"Restaurer",refresh:"Actualiser",search:"Rechercher nom, téléphone, ID, diagnostic...",settingsHelp:"Contrôles simples pour l'apparence, PDF, signature et sauvegarde.",clinical:"Clinique",xray:"Radio",beforeAfter:"Avant / Après",noClinical:"Aucune photo clinique",noXray:"Aucune radio",chooseLanguage:"Choisir la langue",photoCategory:"Catégorie",photoType:"Type",generalPhoto:"Général",beforePhoto:"Avant",afterPhoto:"Après"},
+    es:{name:"Spanish",native:"Español",dir:"ltr",dashboard:"Panel",patients:"Pacientes",addPatient:"Añadir",scanQR:"Escanear QR",settings:"Ajustes",profile:"Perfil",manageUsers:"Usuarios",logout:"Salir",theme:"Color",language:"Idioma",pdf:"Estilo PDF",doctorCard:"Tarjeta doctor",signature:"Firma",backup:"Copia",restore:"Restaurar",refresh:"Actualizar",search:"Buscar nombre, teléfono, ID, diagnóstico...",settingsHelp:"Controles simples para aspecto, PDF, firma y copias.",clinical:"Clínicas",xray:"Rayos X",beforeAfter:"Antes / Después",noClinical:"Sin fotos clínicas",noXray:"Sin rayos X",chooseLanguage:"Elegir idioma",photoCategory:"Categoría",photoType:"Tipo",generalPhoto:"General",beforePhoto:"Antes",afterPhoto:"Después"},
+    de:{name:"German",native:"Deutsch",dir:"ltr",dashboard:"Dashboard",patients:"Patienten",addPatient:"Hinzufügen",scanQR:"QR scannen",settings:"Einstellungen",profile:"Profil",manageUsers:"Benutzer",logout:"Abmelden",theme:"Farbe",language:"Sprache",pdf:"PDF-Stil",doctorCard:"Arztkarte",signature:"Unterschrift",backup:"Backup",restore:"Wiederherstellen",refresh:"Aktualisieren",search:"Name, Telefon, ID, Diagnose suchen...",settingsHelp:"Einfache Steuerung für Design, PDF, Signatur und Backup.",clinical:"Klinisch",xray:"Röntgen",beforeAfter:"Vorher / Nachher",noClinical:"Keine klinischen Fotos",noXray:"Keine Röntgenbilder",chooseLanguage:"Sprache wählen",photoCategory:"Kategorie",photoType:"Typ",generalPhoto:"Allgemein",beforePhoto:"Vorher",afterPhoto:"Nachher"},
+    it:{name:"Italian",native:"Italiano",dir:"ltr",dashboard:"Cruscotto",patients:"Pazienti",addPatient:"Aggiungi",scanQR:"Scansiona QR",settings:"Impostazioni",profile:"Profilo",manageUsers:"Utenti",logout:"Esci",theme:"Colore",language:"Lingua",pdf:"Stile PDF",doctorCard:"Scheda medico",signature:"Firma",backup:"Backup",restore:"Ripristina",refresh:"Aggiorna",search:"Cerca nome, telefono, ID, diagnosi...",settingsHelp:"Controlli semplici per aspetto, PDF, firma e backup.",clinical:"Cliniche",xray:"Radiografie",beforeAfter:"Prima / Dopo",noClinical:"Nessuna foto clinica",noXray:"Nessuna radiografia",chooseLanguage:"Scegli lingua",photoCategory:"Categoria",photoType:"Tipo",generalPhoto:"Generale",beforePhoto:"Prima",afterPhoto:"Dopo"},
+    pt:{name:"Portuguese",native:"Português",dir:"ltr",dashboard:"Painel",patients:"Pacientes",addPatient:"Adicionar",scanQR:"Ler QR",settings:"Configurações",profile:"Perfil",manageUsers:"Usuários",logout:"Sair",theme:"Cor",language:"Idioma",pdf:"Estilo PDF",doctorCard:"Cartão médico",signature:"Assinatura",backup:"Backup",restore:"Restaurar",refresh:"Atualizar",search:"Pesquisar nome, telefone, ID, diagnóstico...",settingsHelp:"Controles simples para visual, PDF, assinatura e backup.",clinical:"Clínicas",xray:"Raio X",beforeAfter:"Antes / Depois",noClinical:"Sem fotos clínicas",noXray:"Sem raio X",chooseLanguage:"Escolher idioma",photoCategory:"Categoria",photoType:"Tipo",generalPhoto:"Geral",beforePhoto:"Antes",afterPhoto:"Depois"},
+    tr:{name:"Turkish",native:"Türkçe",dir:"ltr",dashboard:"Panel",patients:"Hastalar",addPatient:"Hasta ekle",scanQR:"QR tara",settings:"Ayarlar",profile:"Profil",manageUsers:"Kullanıcılar",logout:"Çıkış",theme:"Renk",language:"Dil",pdf:"PDF stili",doctorCard:"Doktor kartı",signature:"İmza",backup:"Yedek",restore:"Geri yükle",refresh:"Yenile",search:"Ad, telefon, ID, teşhis ara...",settingsHelp:"Görünüm, PDF, imza ve yedekleme için basit kontroller.",clinical:"Klinik",xray:"Röntgen",beforeAfter:"Önce / Sonra",noClinical:"Klinik foto yok",noXray:"Röntgen yok",chooseLanguage:"Dil seç",photoCategory:"Kategori",photoType:"Tip",generalPhoto:"Genel",beforePhoto:"Önce",afterPhoto:"Sonra"},
+    ru:{name:"Russian",native:"Русский",dir:"ltr",dashboard:"Панель",patients:"Пациенты",addPatient:"Добавить",scanQR:"QR скан",settings:"Настройки",profile:"Профиль",manageUsers:"Пользователи",logout:"Выйти",theme:"Цвет",language:"Язык",pdf:"Стиль PDF",doctorCard:"Карта врача",signature:"Подпись",backup:"Резерв",restore:"Восстановить",refresh:"Обновить",search:"Поиск по имени, телефону, ID, диагнозу...",settingsHelp:"Простые настройки внешнего вида, PDF, подписи и резервной копии.",clinical:"Клинические",xray:"Рентген",beforeAfter:"До / После",noClinical:"Нет клинических фото",noXray:"Нет рентгена",chooseLanguage:"Выберите язык",photoCategory:"Категория",photoType:"Тип",generalPhoto:"Общее",beforePhoto:"До",afterPhoto:"После"},
+    hi:{name:"Hindi",native:"हिन्दी",dir:"ltr",dashboard:"डैशबोर्ड",patients:"मरीज़",addPatient:"मरीज़ जोड़ें",scanQR:"QR स्कैन",settings:"सेटिंग्स",profile:"प्रोफ़ाइल",manageUsers:"यूज़र",logout:"लॉग आउट",theme:"रंग",language:"भाषा",pdf:"PDF शैली",doctorCard:"डॉक्टर कार्ड",signature:"हस्ताक्षर",backup:"बैकअप",restore:"रीस्टोर",refresh:"रीफ़्रेश",search:"नाम, फोन, ID, निदान खोजें...",settingsHelp:"लुक, PDF, हस्ताक्षर और बैकअप के आसान कंट्रोल.",clinical:"क्लिनिकल",xray:"एक्स-रे",beforeAfter:"पहले / बाद",noClinical:"कोई क्लिनिकल फोटो नहीं",noXray:"कोई एक्स-रे नहीं",chooseLanguage:"भाषा चुनें",photoCategory:"श्रेणी",photoType:"प्रकार",generalPhoto:"सामान्य",beforePhoto:"पहले",afterPhoto:"बाद"},
+    ur:{name:"Urdu",native:"اردو",dir:"rtl",dashboard:"ڈیش بورڈ",patients:"مریض",addPatient:"مریض شامل",scanQR:"QR اسکین",settings:"ترتیبات",profile:"پروفائل",manageUsers:"صارفین",logout:"لاگ آؤٹ",theme:"رنگ",language:"زبان",pdf:"PDF انداز",doctorCard:"ڈاکٹر کارڈ",signature:"دستخط",backup:"بیک اپ",restore:"بحال",refresh:"تازہ کریں",search:"نام، فون، ID، تشخیص تلاش کریں...",settingsHelp:"کلینک کی شکل، PDF، دستخط اور بیک اپ کے آسان کنٹرول۔",clinical:"کلینیکل",xray:"ایکس رے",beforeAfter:"پہلے / بعد",noClinical:"کلینیکل تصاویر نہیں",noXray:"ایکس رے نہیں",chooseLanguage:"زبان منتخب کریں",photoCategory:"زمرہ",photoType:"قسم",generalPhoto:"عام",beforePhoto:"پہلے",afterPhoto:"بعد"},
+    zh:{name:"Chinese",native:"中文",dir:"ltr",dashboard:"仪表板",patients:"患者",addPatient:"添加患者",scanQR:"扫描 QR",settings:"设置",profile:"资料",manageUsers:"用户",logout:"退出",theme:"颜色",language:"语言",pdf:"PDF 样式",doctorCard:"医生卡",signature:"签名",backup:"备份",restore:"恢复",refresh:"刷新",search:"搜索姓名、电话、ID、诊断...",settingsHelp:"外观、PDF、签名和备份的简单控制。",clinical:"临床",xray:"X 光",beforeAfter:"前 / 后",noClinical:"没有临床照片",noXray:"没有 X 光",chooseLanguage:"选择语言",photoCategory:"类别",photoType:"类型",generalPhoto:"普通",beforePhoto:"前",afterPhoto:"后"}
+  };
+
+  Object.keys(DENTAL_LANGUAGES).forEach(code => {
+    I18N[code] = Object.assign({}, I18N.en || {}, I18N[code] || {}, DENTAL_LANGUAGES[code]);
+  });
+
+  window.t = function(key){
+    const lang = localStorage.getItem("clinicLanguage") || "en";
+    return (I18N[lang] && I18N[lang][key]) || (I18N.en && I18N.en[key]) || key;
+  };
+
+  window.applyLanguage = function(){
+    const lang = localStorage.getItem("clinicLanguage") || "en";
+    const pack = I18N[lang] || I18N.en;
+    document.documentElement.lang = lang;
+    document.documentElement.dir = pack.dir || (RTL_LANGS.has(lang) ? "rtl" : "ltr");
+    const navMap = {dashboard:"dashboard",patients:"patients",form:"addPatient",scan:"scanQR"};
+    Object.keys(navMap).forEach(page => {
+      const el = document.querySelector(`[data-page="${page}"]`);
+      if (el) el.textContent = t(navMap[page]);
+    });
+    const menuBtn = document.getElementById("menuBtn");
+    if (menuBtn) menuBtn.textContent = document.documentElement.dir === "rtl" ? "القائمة" : "Menu";
+    const search = document.getElementById("search");
+    if (search) search.placeholder = t("search");
+    try { if (document.getElementById("settings")?.classList.contains("active")) renderSettingsPage(); } catch(e) {}
+  };
+
+  window.setUILanguage = function(lang){
+    localStorage.setItem("clinicLanguage", I18N[lang] ? lang : "en");
+    applyLanguage();
+    try { renderDashboard(); renderPatients(); } catch(e) {}
+    closeLanguagePicker();
+    if (typeof toast === "function") toast(`${(I18N[lang] || I18N.en).native} selected`);
+  };
+
+  window.closeLanguagePicker = function(){ document.getElementById("languagePickerOverlay")?.remove(); };
+
+  window.openLanguagePicker = function(){
+    closeLanguagePicker();
+    const current = localStorage.getItem("clinicLanguage") || "en";
+    const order = ["en","ar","fr","es","de","it","pt","tr","ru","hi","ur","zh"];
+    const overlay = document.createElement("div");
+    overlay.id = "languagePickerOverlay";
+    overlay.className = "language-picker-overlay";
+    overlay.innerHTML = `
+      <div class="language-picker-box" role="dialog" aria-modal="true">
+        <div class="language-picker-head">
+          <div><h2>${t("chooseLanguage")}</h2><p>${t("settingsHelp")}</p></div>
+          <button type="button" onclick="closeLanguagePicker()" aria-label="Close">×</button>
+        </div>
+        <div class="language-picker-grid">
+          ${order.map(code => {
+            const p = I18N[code] || I18N.en;
+            return `<button type="button" class="language-pill ${current===code?'selected':''}" dir="${p.dir || 'ltr'}" onclick="setUILanguage('${code}')"><b>${safeText(p.native)}</b><span>${safeText(p.name)}</span></button>`;
+          }).join("")}
+        </div>
+      </div>`;
+    overlay.addEventListener("click", e => { if (e.target === overlay) closeLanguagePicker(); });
+    document.body.appendChild(overlay);
+  };
+
+  window.openClinicMenu = function(){
+    closeClinicMenu();
+    const overlay = document.createElement("div");
+    overlay.className = "drawer-overlay";
+    overlay.id = "drawerOverlay";
+    overlay.onclick = closeClinicMenu;
+    const drawer = document.createElement("aside");
+    drawer.className = "side-drawer compact-drawer final-simple-menu";
+    drawer.id = "sideDrawer";
+    drawer.innerHTML = `
+      <div class="drawer-head">
+        <button class="drawer-close-btn" onclick="closeClinicMenu()" aria-label="Close">×</button>
+        <h2>Menu</h2>
+      </div>
+      <div class="drawer-user">
+        <div>${safeText(currentUser?.full_name || currentUser?.username || "Doctor")}</div>
+        <small>${safeText((currentUser?.role || "doctor").toUpperCase())}</small>
+      </div>
+      <div class="drawer-menu final-menu-grid">
+        <button class="primary-item" onclick="closeClinicMenu();showPage('dashboard')">${t("dashboard")}</button>
+        <button onclick="closeClinicMenu();showPage('patients')">${t("patients")}</button>
+        <button onclick="closeClinicMenu();showPage('form')">${t("addPatient")}</button>
+        <button onclick="closeClinicMenu();showPage('scan')">${t("scanQR")}</button>
+        <button onclick="closeClinicMenu();showPage('settings')">${t("settings")}</button>
+        <button onclick="closeClinicMenu();openDoctorProfile()">${t("profile")}</button>
+        ${currentUser?.role === "admin" ? `<button onclick="closeClinicMenu();manageUsers()">${t("manageUsers")}</button>` : ""}
+        <button class="danger-item" onclick="logout()">${t("logout")}</button>
+      </div>`;
+    document.body.appendChild(overlay);
+    document.body.appendChild(drawer);
+  };
+
+  window.renderSettingsPage = function(){
+    const page = document.getElementById("settings");
+    if (!page) return;
+    const extras = doctorExtras();
+    page.innerHTML = `
+      <div class="card settings-page-clean compact-settings final-settings">
+        <div class="settings-title-row"><div><h2>${t("settings")}</h2><p class="muted">${t("settingsHelp")}</p></div></div>
+        <div class="settings-grid-clean settings-grid-compact final-settings-grid">
+          <button class="settings-tile" onclick="openLanguagePicker()"><b>${t("language")}</b><span>${safeText((I18N[localStorage.getItem('clinicLanguage') || 'en']||I18N.en).native)}</span></button>
+          <button class="settings-tile" onclick="openThemePicker()"><b>${t("theme")}</b><span>Preset / custom</span><em style="background:${safeText(extras.accent || '#d4af37')}"></em></button>
+          <button class="settings-tile" onclick="openDoctorInfoCard()"><b>${t("doctorCard")}</b><span>Specialty, phones, website</span></button>
+          <button class="settings-tile" onclick="openPdfPatternPicker()"><b>${t("pdf")}</b><span>Reports and receipts</span></button>
+          <button class="settings-tile" onclick="openSignaturePad({type:'doctor'})"><b>${t("signature")}</b><span>Draw once, use everywhere</span></button>
+          <button class="settings-tile" onclick="backupData()"><b>${t("backup")}</b><span>Export clinic data</span></button>
+          <button class="settings-tile" onclick="restoreBackup()"><b>${t("restore")}</b><span>Import backup</span></button>
+          <button class="settings-tile" onclick="location.reload()"><b>${t("refresh")}</b><span>Reload latest data</span></button>
+        </div>
+        <div class="signature-display settings-signature-preview compact-signature-preview">${signatureImgHTML()}</div>
+      </div>`;
+  };
+
+  function photoCategoryOf(x){
+    const c = String(x?.category || x?.photoCategory || "").toLowerCase();
+    const n = String(x?.name || x?.filename || x?.path || "").toLowerCase();
+    if (c.includes("x") || n.includes("xray") || n.includes("x-ray") || n.includes("ray")) return "xray";
+    return "clinical";
+  }
+  function photoStageOf(x){
+    const s = String(x?.stage || x?.photoStage || x?.type || "").toLowerCase();
+    const n = String(x?.name || x?.filename || x?.path || "").toLowerCase();
+    if (s.includes("before") || n.includes("before") || n.includes("pre")) return "before";
+    if (s.includes("after") || n.includes("after") || n.includes("post")) return "after";
+    return "general";
+  }
+
+  window.categorizedPhotos = function(patient){
+    const photos = (patient.photos || []).map((x, i) => ({
+      raw:x, url:photoUrl(x), category:photoCategoryOf(x), stage:photoStageOf(x),
+      name:String(x?.name || x?.filename || `Photo ${i+1}`), index:i, date:x?.date || ""
+    })).filter(x => x.url);
+    return { clinical: photos.filter(x => x.category === "clinical"), xrays: photos.filter(x => x.category === "xray"), all: photos };
+  };
+
+  window.renderSimplePhotos = function(patient, type = "clinical"){
+    const cats = categorizedPhotos(patient);
+    const photos = type === "xray" ? cats.xrays : cats.clinical;
+    const empty = type === "xray" ? t("noXray") : t("noClinical");
+    window.simplePhotoState = window.simplePhotoState || {};
+    window.simplePhotoState[patient.id] = { type, photos };
+    return `
+      <div class="photo-tabs final-photo-tabs">
+        <button class="photo-tab ${type === 'clinical' ? 'active' : ''}" onclick="switchSimplePhotoType('${patient.id}','clinical')">${t("clinical")} <small>${cats.clinical.length}</small></button>
+        <button class="photo-tab ${type === 'xray' ? 'active' : ''}" onclick="switchSimplePhotoType('${patient.id}','xray')">${t("xray")} <small>${cats.xrays.length}</small></button>
+      </div>
+      ${photos.length ? `<div class="simple-photo-grid final-photo-grid">${photos.map((p, i) => `<button type="button" class="photo-thumb-card" onclick="openSimplePhotoViewer('${patient.id}', ${i})"><img src="${p.url}" alt="${safeText(p.name)}"><span>${p.stage !== 'general' ? safeText(p.stage) : safeText(p.name)}</span></button>`).join("")}</div>` : `<div class="empty-photo-state">${safeText(empty)}</div>`}`;
+  };
+
+  window.switchSimplePhotoType = function(patientId, type){
+    const p = patients.find(x => x.id === patientId);
+    const box = document.getElementById("simplePhotosBox");
+    if (p && box) box.innerHTML = renderSimplePhotos(p, type);
+  };
+
+  window.showBeforeAfter = function(id){
+    const p = patients.find(x => x.id === id);
+    if (!p) return;
+    const all = categorizedPhotos(p).all;
+    if (all.length < 2) return alert("Add at least 2 photos first.");
+    let beforeIndex = Math.max(0, all.findIndex(x => x.stage === "before"));
+    let afterIndex = all.findIndex((x,i) => x.stage === "after" && i !== beforeIndex);
+    if (afterIndex < 0) afterIndex = beforeIndex === 0 ? 1 : 0;
+    let split = 50;
+
+    const modal = document.createElement("div");
+    modal.className = "ba-slider-overlay";
+    modal.id = "baSliderOverlay";
+    const options = all.map((ph, i) => `<option value="${i}">${safeText((ph.stage !== 'general' ? ph.stage + ' · ' : '') + (ph.category === 'xray' ? 'X-ray' : 'Clinical') + ' · ' + (ph.date || ph.name || ('Photo ' + (i+1))))}</option>`).join("");
+    modal.innerHTML = `
+      <div class="ba-slider-box">
+        <div class="ba-slider-head"><div><h2>${t("beforeAfter")}</h2><p>Choose two photos, then move the slider to compare the transition.</p></div><button onclick="document.getElementById('baSliderOverlay')?.remove()">×</button></div>
+        <div class="ba-select-row">
+          <label>Before<select id="baBeforeSelect">${options}</select></label>
+          <label>After<select id="baAfterSelect">${options}</select></label>
+        </div>
+        <div class="ba-compare-stage" id="baCompareStage">
+          <img class="ba-img ba-before-img" id="baBeforeImg" src="${all[beforeIndex].url}" alt="Before">
+          <div class="ba-after-wrap" id="baAfterWrap" style="width:${split}%"><img class="ba-img ba-after-img" id="baAfterImg" src="${all[afterIndex].url}" alt="After"></div>
+          <span class="ba-tag ba-tag-before">Before</span><span class="ba-tag ba-tag-after">After</span>
+          <div class="ba-divider" id="baDivider" style="left:${split}%"></div>
+        </div>
+        <input id="baSlider" class="ba-range" type="range" min="0" max="100" value="${split}">
+      </div>`;
+    document.body.appendChild(modal);
+    const beforeSel = modal.querySelector("#baBeforeSelect");
+    const afterSel = modal.querySelector("#baAfterSelect");
+    beforeSel.value = beforeIndex;
+    afterSel.value = afterIndex;
+    const updateImgs = () => {
+      beforeIndex = Number(beforeSel.value); afterIndex = Number(afterSel.value);
+      modal.querySelector("#baBeforeImg").src = all[beforeIndex].url;
+      modal.querySelector("#baAfterImg").src = all[afterIndex].url;
+    };
+    const updateSplit = () => {
+      split = Number(modal.querySelector("#baSlider").value);
+      modal.querySelector("#baAfterWrap").style.width = `${split}%`;
+      modal.querySelector("#baDivider").style.left = `${split}%`;
+    };
+    beforeSel.onchange = updateImgs; afterSel.onchange = updateImgs;
+    modal.querySelector("#baSlider").oninput = updateSplit;
+    modal.addEventListener("click", e => { if (e.target === modal) modal.remove(); });
+  };
+
+  window.enhancePhotoUploadControls = function(){
+    const input = document.getElementById("photos");
+    if (!input || document.getElementById("photoUploadControls")) return;
+    const controls = document.createElement("div");
+    controls.id = "photoUploadControls";
+    controls.className = "photo-upload-controls";
+    controls.innerHTML = `
+      <label>${t("photoCategory")}<select id="photoCategory"><option value="clinical">${t("clinical")}</option><option value="xray">${t("xray")}</option></select></label>
+      <label>${t("photoType")}<select id="photoStage"><option value="general">${t("generalPhoto")}</option><option value="before">${t("beforePhoto")}</option><option value="after">${t("afterPhoto")}</option></select></label>`;
+    input.parentElement.insertBefore(controls, input);
+  };
+
+  const oldUploadPhotos = uploadPhotos;
+  window.uploadPhotos = uploadPhotos = async function(patientId){
+    const uploaded = [];
+    const category = document.getElementById("photoCategory")?.value || "clinical";
+    const stage = document.getElementById("photoStage")?.value || "general";
+    for (const file of pendingFiles) {
+      const cleanName = file.name.replace(/[^a-zA-Z0-9.]/g, "_");
+      const path = `${patientId}/${Date.now()}-${cleanName}`;
+      const isXray = category === "xray" || file.name.toLowerCase().includes("xray");
+      const compressedBlob = await compressImage(file, isXray);
+      uploaded.push({
+        path,
+        url: await uploadToBucket(PHOTO_BUCKET, path, compressedBlob, "image/jpeg"),
+        name: file.name,
+        category,
+        stage,
+        date: new Date().toLocaleString()
+      });
+    }
+    return uploaded;
+  };
+
+  const photoInput = document.getElementById("photos");
+  if (photoInput) {
+    enhancePhotoUploadControls();
+    photoInput.onchange = e => {
+      pendingFiles = [...e.target.files];
+      const category = document.getElementById("photoCategory")?.value || "clinical";
+      const stage = document.getElementById("photoStage")?.value || "general";
+      const preview = document.getElementById("preview");
+      if (preview) preview.innerHTML = pendingFiles.map(file => `<div class="upload-preview-card"><img src="${URL.createObjectURL(file)}"><span>${safeText(category)} · ${safeText(stage)}</span></div>`).join("");
+    };
+  }
+
+  const oldShowPage = window.showPage;
+  if (typeof oldShowPage === "function") {
+    window.showPage = function(id){
+      oldShowPage(id);
+      if (id === "form") enhancePhotoUploadControls();
+      if (id === "settings") renderSettingsPage();
+      applyLanguage();
+    };
+  }
+
+  try { applyLanguage(); enhancePhotoUploadControls(); } catch(e) {}
+})();
