@@ -2315,7 +2315,7 @@ window.addEventListener("load", async () => {
     overlay.className = 'clean-modal-overlay';
     overlay.innerHTML = `<div class="clean-modal clean-language-modal" role="dialog" aria-modal="true" dir="ltr">
       <div class="clean-modal-head"><div><h2>${htmlSafe(tr('chooseLanguage'))}</h2><p>${htmlSafe(tr('languageHelp'))}</p></div><button type="button" onclick="document.getElementById('languageCleanOverlay')?.remove()">×</button></div>
-      <div class="clean-language-grid">${order.map(code => `<button type="button" class="clean-language-item ${current===code?'active':''}" dir="${LANGS[code].dir}" onclick="setUILanguage('${code}')"><strong>${htmlSafe(LANGS[code].native)}</strong><span>${code.toUpperCase()}</span></button>`).join('')}</div>
+      <div class="clean-language-grid">${order.map(code => `<button type="button" class="clean-language-item no-translate ${current===code?'active':''}" dir="${LANGS[code].dir}" onclick="setUILanguage('${code}')"><strong>${htmlSafe(LANGS[code].native)}</strong><span>${code.toUpperCase()}</span></button>`).join('')}</div>
     </div>`;
     overlay.addEventListener('click', e => { if(e.target === overlay) overlay.remove(); });
     document.body.appendChild(overlay);
@@ -2573,10 +2573,10 @@ window.addEventListener("load", async () => {
     const overlay = document.createElement('div');
     overlay.id = 'languageCleanOverlay'; overlay.className = 'clean-modal-overlay';
     const codes = Object.keys(BASE).sort((a,b) => (BASE[a].native || a).localeCompare(BASE[b].native || b));
-    overlay.innerHTML = `<div class="clean-modal clean-language-modal final-language-modal" role="dialog" aria-modal="true" dir="ltr">
+    overlay.innerHTML = `<div class="clean-modal clean-language-modal final-language-modal no-translate" role="dialog" aria-modal="true" dir="ltr" translate="no">
       <div class="clean-modal-head"><div><h2>${esc(tr2('chooseLanguage'))}</h2><p>${esc(tr2('languageHelp'))}</p></div><button type="button" onclick="document.getElementById('languageCleanOverlay')?.remove()">×</button></div>
       <div class="final-language-search"><input id="languageSearchInput" placeholder="Search language..." oninput="filterLanguagesFinal(this.value)"></div>
-      <div class="clean-language-grid final-language-grid">${codes.map(code => `<button type="button" data-language-item="${esc(code + ' ' + BASE[code].native)}" class="clean-language-item ${current===code?'active':''}" dir="${BASE[code].dir}" onclick="setUILanguage('${code}')"><strong>${esc(BASE[code].native)}</strong><span>${esc(code.toUpperCase())}</span></button>`).join('')}</div>
+      <div class="clean-language-grid final-language-grid">${codes.map(code => `<button type="button" data-language-item="${esc(code + ' ' + BASE[code].native)}" class="clean-language-item no-translate ${current===code?'active':''}" dir="${BASE[code].dir}" onclick="setUILanguage('${code}')"><strong>${esc(BASE[code].native)}</strong><span>${esc(code.toUpperCase())}</span></button>`).join('')}</div>
     </div>`;
     overlay.addEventListener('click', e => { if(e.target===overlay) overlay.remove(); });
     document.body.appendChild(overlay);
@@ -2789,7 +2789,7 @@ window.addEventListener("load", async () => {
     'Dashboard':'dashboard','Patients':'patients','Add Patient':'addPatient','Scan QR':'scanQR','Settings':'settings','Profile':'profile','Manage Users':'manageUsers','Logout':'logout','Menu':'menu','Search by name, phone, ID, or diagnosis...':'search','Search name, phone, ID, diagnosis...':'search','Total Patients':'totalPatients',"Today's Appts":'todaysAppts','Unpaid Balance':'unpaidBalance','Total Visits':'totalVisits','Total Revenue':'totalRevenue','Paid Today':'paidToday','Clinic Overview':'clinicOverview','Appointment Calendar':'appointmentCalendar','Today':'today','Upcoming':'upcoming','+ New Patient':'newPatient','Backup':'backup','Restore':'restore','Open':'open','without treatment plan':'withoutTreatmentPlan','overdue':'overdue','unpaid':'unpaid','Follow-up Watch':'followUpWatch','Treatment Stats':'treatmentStats','Unpaid Priority':'unpaidPriority','Remaining':'remaining','cases':'cases','Photos / X-rays':'photos','Clinical':'clinical','X-ray':'xray','X-rays':'xray','Before / After':'beforeAfter','General':'general','Before':'before','After':'after','Photo options':'photoOptions','Mark as':'markAs','View photo':'viewPhoto','Theme color':'theme','PDF style':'pdf','Doctor card':'doctorCard','Draw signature':'signature','Custom color':'customColor','Apply custom color':'applyCustom','Premium presets':'presets','+ Add Payment':'addPayment','Add Payment +':'addPayment','Installments':'installments','Receipt':'receipt','Delete':'delete','Patient Timeline':'patientTimeline','VISIT':'visit','Visit':'visit','Language':'language'
   };
   const allLocalized = {};
-  Object.values(PACKS).forEach(pack => Object.keys(pack).forEach(k => { const v = pack[k]; if(typeof v === 'string') allLocalized[v] = k; }));
+  Object.values(PACKS).forEach(pack => Object.keys(pack).forEach(k => { if(k==='native' || k==='dir') return; const v = pack[k]; if(typeof v === 'string') allLocalized[v] = k; }));
   function keyForText(txt){ return textMap[txt] || allLocalized[txt]; }
   function applyText(root){
     const code = currentLang(); const pack = PACKS[code] || PACKS.en;
@@ -2801,7 +2801,7 @@ window.addEventListener("load", async () => {
     const menuBtn = document.getElementById('menuBtn'); if(menuBtn) menuBtn.textContent = L('menu');
     const search = document.getElementById('search'); if(search) search.placeholder = L('search');
     document.querySelectorAll('input[placeholder], textarea[placeholder]').forEach(el=>{ const k = keyForText(el.getAttribute('placeholder')); if(k) el.setAttribute('placeholder', L(k)); });
-    const walker = document.createTreeWalker(root || document.body, NodeFilter.SHOW_TEXT, {acceptNode(n){ if(!n.nodeValue || !n.nodeValue.trim()) return NodeFilter.FILTER_REJECT; const p=n.parentElement; if(!p || ['SCRIPT','STYLE','TEXTAREA','INPUT','OPTION'].includes(p.tagName)) return NodeFilter.FILTER_REJECT; return NodeFilter.FILTER_ACCEPT; }});
+    const walker = document.createTreeWalker(root || document.body, NodeFilter.SHOW_TEXT, {acceptNode(n){ if(!n.nodeValue || !n.nodeValue.trim()) return NodeFilter.FILTER_REJECT; const p=n.parentElement; if(!p || ['SCRIPT','STYLE','TEXTAREA','INPUT','OPTION'].includes(p.tagName)) return NodeFilter.FILTER_REJECT; if(p.closest('#languageCleanOverlay, .no-translate, [translate="no"], [data-native-code], .clean-language-item')) return NodeFilter.FILTER_REJECT; return NodeFilter.FILTER_ACCEPT; }});
     const nodes=[]; while(walker.nextNode()) nodes.push(walker.currentNode);
     nodes.forEach(n=>{ const raw=n.nodeValue.trim(); const k=keyForText(raw); if(k) n.nodeValue = n.nodeValue.replace(raw, L(k)); });
   }
@@ -2819,8 +2819,8 @@ window.addEventListener("load", async () => {
     document.getElementById('languageCleanOverlay')?.remove();
     const current = currentLang();
     const codes = Object.keys(PACKS).sort((a,b)=>(PACKS[a].native||a).localeCompare(PACKS[b].native||b));
-    const overlay = document.createElement('div'); overlay.id='languageCleanOverlay'; overlay.className='clean-modal-overlay';
-    overlay.innerHTML = `<div class="clean-modal clean-language-modal final-language-modal" role="dialog" aria-modal="true" dir="ltr"><div class="clean-modal-head"><div><h2>${safeText(L('language'))}</h2><p>${safeText(L('languageHelp'))}</p></div><button type="button" onclick="document.getElementById('languageCleanOverlay')?.remove()">×</button></div><div class="final-language-search"><input id="languageSearchInput" placeholder="Search language..." oninput="filterLanguagesFinal(this.value)"></div><div class="clean-language-grid final-language-grid">${codes.map(code=>`<button type="button" data-language-item="${safeText(code+' '+PACKS[code].native)}" class="clean-language-item ${current===code?'active':''}" dir="${PACKS[code].dir}" onclick="setUILanguage('${code}')"><strong>${safeText(PACKS[code].native)}</strong><span>${safeText(code.toUpperCase())}</span></button>`).join('')}</div></div>`;
+    const overlay = document.createElement('div'); overlay.id='languageCleanOverlay'; overlay.className='clean-modal-overlay no-translate'; overlay.setAttribute('translate','no');
+    overlay.innerHTML = `<div class="clean-modal clean-language-modal final-language-modal no-translate" role="dialog" aria-modal="true" dir="ltr" translate="no"><div class="clean-modal-head"><div><h2>${safeText(L('language'))}</h2><p>${safeText(L('languageHelp'))}</p></div><button type="button" onclick="document.getElementById('languageCleanOverlay')?.remove()">×</button></div><div class="final-language-search"><input id="languageSearchInput" placeholder="Search language..." oninput="filterLanguagesFinal(this.value)"></div><div class="clean-language-grid final-language-grid">${codes.map(code=>`<button type="button" translate="no" data-native-code="${code}" data-language-item="${safeText(code+' '+PACKS[code].native)}" class="clean-language-item no-translate ${current===code?'active':''}" dir="${PACKS[code].dir}" onclick="setUILanguage('${code}')"><strong translate="no">${safeText(PACKS[code].native)}</strong><span translate="no">${safeText(code.toUpperCase())}</span></button>`).join('')}</div></div>`;
     overlay.addEventListener('click', e=>{ if(e.target===overlay) overlay.remove(); });
     document.body.appendChild(overlay);
     setTimeout(()=>document.getElementById('languageSearchInput')?.focus(),80);
@@ -2879,7 +2879,7 @@ window.addEventListener("load", async () => {
     overlay.className = 'clean-modal-overlay no-translate';
     overlay.setAttribute('translate','no');
     const optionsHtml = LANGUAGE_OPTIONS.map(([code,name]) => `
-      <button type="button" translate="no" data-native-code="${esc(code)}" data-language-item="${esc((code+' '+name).toLowerCase())}" class="clean-language-item ${current===code?'active':''}" dir="${RTL.has(code)?'rtl':'ltr'}" onclick="setUILanguage('${esc(code)}')">
+      <button type="button" translate="no" data-native-code="${esc(code)}" data-language-item="${esc((code+' '+name).toLowerCase())}" class="clean-language-item no-translate ${current===code?'active':''}" dir="${RTL.has(code)?'rtl':'ltr'}" onclick="setUILanguage('${esc(code)}')">
         <strong translate="no">${esc(name)}</strong><span translate="no">${esc(code.toUpperCase())}</span>
       </button>`).join('');
     overlay.innerHTML = `<div class="clean-modal clean-language-modal final-language-modal no-translate" role="dialog" aria-modal="true" dir="ltr" translate="no">
@@ -2903,5 +2903,43 @@ window.addEventListener("load", async () => {
     }
     try { window.applyLanguage && window.applyLanguage(); } catch(e) {}
     [0,120,350].forEach(ms=>setTimeout(()=>{ try { window.applyLanguage && window.applyLanguage(); } catch(e) {} }, ms));
+  };
+})();
+
+
+/* === HARD GUARD APPJS LANGUAGE NAMES: never translate native picker labels === */
+(function(){
+  const native = {
+    en:'English', ar:'العربية', fr:'Français', es:'Español', de:'Deutsch', it:'Italiano', pt:'Português', tr:'Türkçe', ur:'اردو', fa:'فارسی',
+    af:'Afrikaans', am:'አማርኛ', az:'Azərbaycanca', bg:'Български', bn:'বাংলা', bs:'Bosanski', ca:'Català', cs:'Čeština', cy:'Cymraeg', da:'Dansk', el:'Ελληνικά', et:'Eesti', eu:'Euskara', fi:'Suomi', fil:'Filipino', ga:'Gaeilge', gl:'Galego', gu:'ગુજરાતી', he:'עברית', hi:'हिन्दी', hr:'Hrvatski', hu:'Magyar', id:'Bahasa Indonesia', is:'Íslenska', ja:'日本語', kn:'ಕನ್ನಡ', kk:'Қазақша', km:'ភាសាខ្មែរ', ko:'한국어', lo:'ລາວ', lt:'Lietuvių', lv:'Latviešu', mk:'Македонски', ml:'മലയാളം', mn:'Монгол', mr:'मराठी', ms:'Bahasa Melayu', my:'မြန်မာ', nb:'Norsk Bokmål', ne:'नेपाली', nl:'Nederlands', pa:'ਪੰਜਾਬੀ', pl:'Polski', ro:'Română', ru:'Русский', sk:'Slovenčina', sl:'Slovenščina', sq:'Shqip', sr:'Српски', sv:'Svenska', sw:'Kiswahili', ta:'தமிழ்', te:'తెలుగు', th:'ไทย', uk:'Українська', vi:'Tiếng Việt', zh:'中文', zu:'Zulu'
+  };
+  const rtl = new Set(['ar','he','ur','fa','ps','ku','sd','ug','yi']);
+  function restore(){
+    const overlay = document.getElementById('languageCleanOverlay');
+    if(!overlay) return;
+    overlay.classList.add('no-translate'); overlay.setAttribute('translate','no');
+    const items = overlay.querySelectorAll('.clean-language-item, [data-native-code]');
+    items.forEach(btn=>{
+      let code = (btn.getAttribute('data-native-code') || '').toLowerCase();
+      if(!code){ code = (btn.querySelector('span')?.textContent || '').trim().toLowerCase(); }
+      if(!native[code]) return;
+      btn.setAttribute('translate','no'); btn.classList.add('no-translate'); btn.dir = rtl.has(code) ? 'rtl':'ltr';
+      const strong = btn.querySelector('strong'); const span = btn.querySelector('span');
+      if(strong){ strong.textContent = native[code]; strong.setAttribute('translate','no'); }
+      if(span){ span.textContent = code.toUpperCase(); span.setAttribute('translate','no'); }
+      btn.dataset.languageItem = (code+' '+native[code]).toLowerCase();
+    });
+  }
+  const oldOpen = window.openLanguagePicker;
+  window.openLanguagePicker = function(){
+    const out = oldOpen ? oldOpen.apply(this, arguments) : undefined;
+    [0,10,30,60,120,250,500,1000,1600].forEach(ms=>setTimeout(restore,ms));
+    return out;
+  };
+  const oldApply = window.applyLanguage;
+  window.applyLanguage = function(){
+    const out = oldApply ? oldApply.apply(this, arguments) : undefined;
+    restore();
+    return out;
   };
 })();

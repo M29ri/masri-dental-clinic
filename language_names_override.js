@@ -66,3 +66,33 @@
     [0,120,350].forEach(ms=>setTimeout(()=>{ try { window.applyLanguage && window.applyLanguage(); } catch(e) {} }, ms));
   };
 })();
+
+/* === HARD GUARD: never translate language names in picker === */
+(function(){
+  const native = {
+    en:'English', ar:'العربية', fr:'Français', es:'Español', de:'Deutsch', it:'Italiano', pt:'Português', tr:'Türkçe', ur:'اردو', fa:'فارسی',
+    af:'Afrikaans', am:'አማርኛ', az:'Azərbaycanca', bg:'Български', bn:'বাংলা', bs:'Bosanski', ca:'Català', cs:'Čeština', cy:'Cymraeg', da:'Dansk', el:'Ελληνικά', et:'Eesti', eu:'Euskara', fi:'Suomi', fil:'Filipino', ga:'Gaeilge', gl:'Galego', gu:'ગુજરાતી', he:'עברית', hi:'हिन्दी', hr:'Hrvatski', hu:'Magyar', id:'Bahasa Indonesia', is:'Íslenska', ja:'日本語', kn:'ಕನ್ನಡ', kk:'Қазақша', km:'ភាសាខ្មែរ', ko:'한국어', lo:'ລາວ', lt:'Lietuvių', lv:'Latviešu', mk:'Македонски', ml:'മലയാളം', mn:'Монгол', mr:'मराठी', ms:'Bahasa Melayu', my:'မြန်မာ', nb:'Norsk Bokmål', ne:'नेपाली', nl:'Nederlands', pa:'ਪੰਜਾਬੀ', pl:'Polski', ro:'Română', ru:'Русский', sk:'Slovenčina', sl:'Slovenščina', sq:'Shqip', sr:'Српски', sv:'Svenska', sw:'Kiswahili', ta:'தமிழ்', te:'తెలుగు', th:'ไทย', uk:'Українська', vi:'Tiếng Việt', zh:'中文', zu:'Zulu'
+  };
+  const rtl = new Set(['ar','he','ur','fa','ps','ku','sd','ug','yi']);
+  function restore(){
+    const overlay = document.getElementById('languageCleanOverlay');
+    if(!overlay) return;
+    overlay.classList.add('no-translate'); overlay.setAttribute('translate','no'); overlay.dir='ltr';
+    overlay.querySelectorAll('.clean-language-item,[data-native-code]').forEach(btn=>{
+      const code = (btn.getAttribute('data-native-code') || (btn.querySelector('span')?.textContent||'').trim().toLowerCase());
+      if(!native[code]) return;
+      btn.setAttribute('translate','no'); btn.classList.add('no-translate'); btn.dir = rtl.has(code) ? 'rtl':'ltr';
+      const strong = btn.querySelector('strong'); const span = btn.querySelector('span');
+      if(strong){ strong.textContent = native[code]; strong.setAttribute('translate','no'); }
+      if(span){ span.textContent = code.toUpperCase(); span.setAttribute('translate','no'); }
+      btn.dataset.languageItem = (code+' '+native[code]).toLowerCase();
+    });
+  }
+  const oldOpen = window.openLanguagePicker;
+  window.openLanguagePicker = function(){
+    const out = oldOpen ? oldOpen.apply(this, arguments) : undefined;
+    [0,16,50,100,200,500,1000].forEach(ms=>setTimeout(restore,ms));
+    return out;
+  };
+  new MutationObserver(()=>setTimeout(restore,0)).observe(document.documentElement,{childList:true,subtree:true,characterData:true});
+})();
