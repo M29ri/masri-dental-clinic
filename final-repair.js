@@ -1,217 +1,208 @@
-/* FINAL REPAIR 2026-06-28
-   Replaces the broken duplicate menu/photo click handlers with one stable layer.
+/* CLEAN PHOTO + MENU REPAIR 2026-06-28
+   This file intentionally replaces all previous photo repair logic with one simple click-based system.
 */
 (function(){
   'use strict';
   const $ = (id)=>document.getElementById(id);
-  const esc = (v)=>String(v ?? '').replace(/[&<>'"]/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;' }[c]));
+  const safe = (v)=>String(v ?? '').replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
   const lang = ()=>localStorage.getItem('clinicLanguage') || 'en';
-  const rtlLangs = new Set(['ar','ur','he','fa']);
-  const WORDS = {
-    en:{menu:'Menu',addPatient:'Add Patient',scanQR:'Scan QR',settings:'Settings',profile:'Profile',manageUsers:'Manage Users',logout:'Logout',clinical:'Clinical',xray:'X-ray',beforeAfter:'Before / After',general:'General',before:'Before',after:'After',photos:'Photos / X-rays',patientTimeline:'Patient Timeline',photoType:'Photo type',markAs:'Mark photo as',chooseBA:'Choose before and after',blendHint:'Move the blend bar for a soft transition.',noClinical:'No clinical photos yet',noXray:'No X-rays yet',close:'Close'},
-    ar:{menu:'القائمة',addPatient:'إضافة مريض',scanQR:'مسح QR',settings:'الإعدادات',profile:'الملف الشخصي',manageUsers:'إدارة المستخدمين',logout:'تسجيل الخروج',clinical:'سريري',xray:'أشعة',beforeAfter:'قبل / بعد',general:'عام',before:'قبل',after:'بعد',photos:'الصور / الأشعة',patientTimeline:'تاريخ المريض',photoType:'نوع الصورة',markAs:'حدد نوع الصورة',chooseBA:'اختر صور قبل وبعد',blendHint:'حرك شريط الدمج لانتقال ناعم.',noClinical:'لا توجد صور سريرية',noXray:'لا توجد أشعة',close:'إغلاق'},
-    fr:{menu:'Menu',addPatient:'Ajouter patient',scanQR:'Scanner QR',settings:'Paramètres',profile:'Profil',manageUsers:'Utilisateurs',logout:'Déconnexion',clinical:'Clinique',xray:'Radio',beforeAfter:'Avant / Après',general:'Général',before:'Avant',after:'Après',photos:'Photos / Radios',patientTimeline:'Timeline patient',photoType:'Type de photo',markAs:'Marquer la photo',chooseBA:'Choisir avant et après',blendHint:'Déplacez la barre pour une transition douce.',noClinical:'Aucune photo clinique',noXray:'Aucune radio',close:'Fermer'},
-    es:{menu:'Menú',addPatient:'Añadir paciente',scanQR:'Escanear QR',settings:'Ajustes',profile:'Perfil',manageUsers:'Usuarios',logout:'Salir',clinical:'Clínica',xray:'Rayos X',beforeAfter:'Antes / Después',general:'General',before:'Antes',after:'Después',photos:'Fotos / Rayos X',patientTimeline:'Cronología',photoType:'Tipo de foto',markAs:'Marcar foto',chooseBA:'Elegir antes y después',blendHint:'Mueve la barra para una transición suave.',noClinical:'Sin fotos clínicas',noXray:'Sin rayos X',close:'Cerrar'}
+  const dict = {
+    en:{menu:'Menu',addPatient:'Add Patient',scanQR:'Scan QR',settings:'Settings',profile:'Profile',manageUsers:'Manage Users',logout:'Logout',photos:'Photos / X-rays',clinical:'Clinical',xray:'X-ray',general:'General',before:'Before',after:'After',beforeAfter:'Before / After',patientTimeline:'Patient Timeline',noClinical:'No clinical photos yet',noXray:'No X-rays yet',photoOptions:'Photo options',view:'View photo',markClinical:'Mark as Clinical',markXray:'Mark as X-ray',markBefore:'Use as Before',markAfter:'Use as After',markGeneral:'Mark as General',chooseBeforeAfter:'Choose before and after photos',transition:'Transition',close:'Close'},
+    ar:{menu:'القائمة',addPatient:'إضافة مريض',scanQR:'مسح QR',settings:'الإعدادات',profile:'الملف الشخصي',manageUsers:'إدارة المستخدمين',logout:'تسجيل الخروج',photos:'الصور / الأشعة',clinical:'سريري',xray:'أشعة',general:'عام',before:'قبل',after:'بعد',beforeAfter:'قبل / بعد',patientTimeline:'تاريخ المريض',noClinical:'لا توجد صور سريرية',noXray:'لا توجد أشعة',photoOptions:'خيارات الصورة',view:'عرض الصورة',markClinical:'تحديد كصورة سريرية',markXray:'تحديد كأشعة',markBefore:'استخدام كصورة قبل',markAfter:'استخدام كصورة بعد',markGeneral:'تحديد كصورة عامة',chooseBeforeAfter:'اختر صور قبل وبعد',transition:'الانتقال',close:'إغلاق'}
   };
-  function tr(k,fallback){ const p=WORDS[lang()] || WORDS.en; return p[k] || WORDS.en[k] || fallback || k; }
-  function currentPatients(){ return window.patients || (typeof patients !== 'undefined' ? patients : []); }
-  function currentUserObj(){ return window.currentUser || (typeof currentUser !== 'undefined' ? currentUser : null); }
+  function t(k){ return (dict[lang()] && dict[lang()][k]) || dict.en[k] || k; }
+  function patientsList(){ return window.patients || (typeof patients !== 'undefined' ? patients : []); }
+  function userObj(){ return window.currentUser || (typeof currentUser !== 'undefined' ? currentUser : {}) || {}; }
+  function findPatient(id){ return patientsList().find(p=>String(p.id)===String(id)); }
+  function photoUrl(ph){ return typeof ph === 'string' ? ph : (ph?.url || ph?.publicUrl || ph?.path || ph?.src || ''); }
+  function photoName(ph, i){ return typeof ph === 'string' ? `Photo ${i+1}` : (ph?.name || ph?.filename || `Photo ${i+1}`); }
+  function photoCategory(ph){
+    const val = String(ph?.category || ph?.photoCategory || '').toLowerCase();
+    const name = String(ph?.name || ph?.filename || ph?.url || ph?.path || '').toLowerCase();
+    if(val.includes('xray') || val.includes('x-ray') || val.includes('radiograph') || name.includes('xray') || name.includes('x-ray') || name.includes('radiograph')) return 'xray';
+    return 'clinical';
+  }
+  function photoStage(ph){
+    const val = String(ph?.stage || ph?.photoStage || ph?.phase || '').toLowerCase();
+    const name = String(ph?.name || ph?.filename || ph?.url || ph?.path || '').toLowerCase();
+    if(val === 'before' || name.includes('before') || name.includes('pre')) return 'before';
+    if(val === 'after' || name.includes('after') || name.includes('post')) return 'after';
+    return 'general';
+  }
+  function allPhotos(patient){
+    return (patient?.photos || []).map((raw,index)=>({raw,index,url:photoUrl(raw),name:photoName(raw,index),category:photoCategory(raw),stage:photoStage(raw)})).filter(x=>x.url);
+  }
+  function setPhotoLocal(patient, index, field, value){
+    if(!patient || !patient.photos) return;
+    const old = patient.photos[index];
+    const url = photoUrl(old);
+    const obj = typeof old === 'string' ? {url, path:url, name:`Photo ${index+1}`, category:'clinical', stage:'general'} : {...old};
+    obj[field] = value;
+    if(field === 'category') obj.photoCategory = value;
+    if(field === 'stage') obj.photoStage = value;
+    patient.photos[index] = obj;
+  }
+  async function savePhotoMeta(pid,index,field,value){
+    const p = findPatient(pid); if(!p) return;
+    setPhotoLocal(p,index,field,value);
+    closeSheet();
+    renderIntoCurrent(p);
+    try{
+      if(typeof api === 'function') await api(`patients?id=eq.${pid}`, {method:'PATCH', body:JSON.stringify({photos:p.photos})});
+      if(typeof toast === 'function') toast('Photo updated');
+    }catch(err){ console.warn('Photo saved locally only:', err); if(typeof toast === 'function') toast('Photo updated locally'); }
+  }
+
+  // Clean menu, with only the items requested.
   function closeMenu(){ $('drawerOverlay')?.remove(); $('sideDrawer')?.remove(); }
   function openMenu(){
     closeMenu();
-    const user = currentUserObj() || {};
-    const ov = document.createElement('div'); ov.id='drawerOverlay'; ov.className='drawer-overlay'; ov.setAttribute('data-final-repair','1');
-    const d = document.createElement('aside'); d.id='sideDrawer'; d.className='side-drawer repair-menu'; d.setAttribute('data-final-repair','1');
-    d.innerHTML = `<div class="drawer-head"><button type="button" class="drawer-close-btn repair-close" data-repair-action="close-menu">×</button><h2>${esc(tr('menu','Menu'))}</h2></div>
-      <div class="drawer-user"><div>${esc(user.full_name || user.username || 'Doctor')}</div><small>${esc(String(user.role || 'doctor').toUpperCase())}</small></div>
-      <div class="drawer-menu repair-menu-list">
-        <button type="button" data-repair-page="form">${esc(tr('addPatient','Add Patient'))}</button>
-        <button type="button" data-repair-page="scan">${esc(tr('scanQR','Scan QR'))}</button>
-        <button type="button" class="primary-item" data-repair-page="settings">${esc(tr('settings','Settings'))}</button>
-        <button type="button" data-repair-action="profile">${esc(tr('profile','Profile'))}</button>
-        ${user.role === 'admin' ? `<button type="button" data-repair-action="manage-users">${esc(tr('manageUsers','Manage Users'))}</button>` : ''}
-        <button type="button" class="danger-item" data-repair-action="logout">${esc(tr('logout','Logout'))}</button>
+    const u = userObj();
+    const ov = document.createElement('div'); ov.id='drawerOverlay'; ov.className='drawer-overlay clean-menu-overlay';
+    const d = document.createElement('aside'); d.id='sideDrawer'; d.className='side-drawer clean-menu-drawer';
+    d.innerHTML = `<div class="drawer-head"><button type="button" class="drawer-close-btn" data-clean-action="close">×</button><h2>${safe(t('menu'))}</h2></div>
+      <div class="drawer-user"><div>${safe(u.full_name || u.username || 'Admin')}</div><small>${safe(String(u.role || 'ADMIN').toUpperCase())}</small></div>
+      <div class="drawer-menu clean-menu-list">
+        <button type="button" data-clean-page="form">${safe(t('addPatient'))}</button>
+        <button type="button" data-clean-page="scan">${safe(t('scanQR'))}</button>
+        <button type="button" class="primary-item" data-clean-page="settings">${safe(t('settings'))}</button>
+        <button type="button" data-clean-action="profile">${safe(t('profile'))}</button>
+        ${(u.role === 'admin' || String(u.role||'').toLowerCase()==='admin') ? `<button type="button" data-clean-action="users">${safe(t('manageUsers'))}</button>` : ''}
+        <button type="button" class="danger-item" data-clean-action="logout">${safe(t('logout'))}</button>
       </div>`;
-    document.body.appendChild(ov); document.body.appendChild(d);
+    document.body.append(ov,d);
   }
-  window.closeClinicMenu = closeMenu;
   window.openClinicMenu = openMenu;
-  function bindMenuBtn(){
-    const btn=$('menuBtn'); if(!btn || btn.dataset.repairBound==='1') return;
-    const clone=btn.cloneNode(true); clone.dataset.repairBound='1'; clone.removeAttribute('onclick'); clone.textContent=tr('menu','Menu');
-    clone.addEventListener('click', function(e){ e.preventDefault(); e.stopImmediatePropagation(); openMenu(); return false; }, true);
-    btn.replaceWith(clone);
+  window.closeClinicMenu = closeMenu;
+  function bindMenu(){
+    const btn=$('menuBtn'); if(!btn || btn.dataset.cleanBound==='1') return;
+    const c=btn.cloneNode(true); c.dataset.cleanBound='1'; c.removeAttribute('onclick'); c.textContent=t('menu');
+    c.addEventListener('click', e=>{ e.preventDefault(); e.stopPropagation(); openMenu(); }, false);
+    btn.replaceWith(c);
   }
-  document.addEventListener('click', function(e){
-    const menuBtn=e.target.closest && e.target.closest('#menuBtn');
-    if(menuBtn){ e.preventDefault(); e.stopImmediatePropagation(); openMenu(); return; }
-    if(e.target.id==='drawerOverlay'){ e.preventDefault(); closeMenu(); return; }
-    const page=e.target.closest && e.target.closest('[data-repair-page]');
-    if(page){ e.preventDefault(); e.stopPropagation(); closeMenu(); window.showPage && window.showPage(page.dataset.repairPage); return; }
-    const act=e.target.closest && e.target.closest('[data-repair-action]');
-    if(act){ e.preventDefault(); e.stopPropagation(); const a=act.dataset.repairAction; if(a==='close-menu') closeMenu(); if(a==='profile'&&window.openDoctorProfile) window.openDoctorProfile(); if(a==='manage-users'&&window.manageUsers) window.manageUsers(); if(a==='logout'&&window.logout) window.logout(); return; }
-    const photoTab=e.target.closest && e.target.closest('[data-photo-tab]');
-    if(photoTab){ e.preventDefault(); e.stopPropagation(); const p=findPatient(photoTab.dataset.patientId); const box=$('repairPhotoZone'); if(p&&box) box.innerHTML=renderPhotos(p, photoTab.dataset.photoTab); return; }
-    const photoView=e.target.closest && e.target.closest('[data-photo-view]');
-    if(photoView){ e.preventDefault(); e.stopPropagation(); openPhotoViewer(photoView.dataset.patientId, +photoView.dataset.photoView); return; }
-    const photoDots=e.target.closest && e.target.closest('[data-photo-menu]');
-    if(photoDots){ e.preventDefault(); e.stopPropagation(); openPhotoSheet(photoDots.dataset.patientId, +photoDots.dataset.photoMenu); return; }
-    const set=e.target.closest && e.target.closest('[data-set-photo]');
-    if(set){ e.preventDefault(); e.stopPropagation(); setPhotoMeta(set.dataset.patientId, +set.dataset.index, set.dataset.field, set.dataset.value); return; }
-    const ba=e.target.closest && e.target.closest('[data-ba-open]');
-    if(ba){ e.preventDefault(); e.stopPropagation(); openBeforeAfter(ba.dataset.baOpen); return; }
-    const baPick=e.target.closest && e.target.closest('[data-ba-pick]');
-    if(baPick){ e.preventDefault(); e.stopPropagation(); pickBA(baPick.dataset.baPick, +baPick.dataset.index); return; }
-  }, true);
+  document.addEventListener('click', e=>{
+    const mb=e.target.closest?.('#menuBtn'); if(mb){ e.preventDefault(); e.stopPropagation(); openMenu(); return; }
+    if(e.target.id==='drawerOverlay'){ closeMenu(); return; }
+    const page=e.target.closest?.('[data-clean-page]'); if(page){ e.preventDefault(); closeMenu(); window.showPage?.(page.dataset.cleanPage); return; }
+    const action=e.target.closest?.('[data-clean-action]');
+    if(action){ e.preventDefault(); const a=action.dataset.cleanAction; if(a==='close') closeMenu(); if(a==='profile') window.openDoctorProfile?.(); if(a==='users') window.manageUsers?.(); if(a==='logout') window.logout?.(); return; }
+  }, false);
 
-  function photoUrl(raw){ return typeof raw === 'string' ? raw : (raw?.url || raw?.publicUrl || raw?.path || raw?.src || ''); }
-  function metaKey(pid){ return 'clinicPhotoMeta:' + pid; }
-  function loadMeta(pid){ try{return JSON.parse(localStorage.getItem(metaKey(pid))||'{}')}catch{return {}} }
-  function saveMeta(pid,m){ localStorage.setItem(metaKey(pid), JSON.stringify(m||{})); }
-  function findPatient(id){ return currentPatients().find(p=>String(p.id)===String(id)); }
-  function normalizePhoto(patient, raw, index){
-    const url=photoUrl(raw); const meta=loadMeta(patient.id)[url] || {}; const name=String(raw?.name || raw?.filename || raw?.path || raw?.url || url || '').toLowerCase();
-    let category=String(meta.category || raw?.category || raw?.photoCategory || raw?.type || '').toLowerCase();
-    if(category==='x-ray') category='xray';
-    if(category!=='clinical' && category!=='xray') category=(name.includes('xray') || name.includes('x-ray') || name.includes('radiograph') || name.includes('radio')) ? 'xray' : 'clinical';
-    let stage=String(meta.stage || raw?.stage || raw?.photoStage || raw?.phase || '').toLowerCase();
-    if(!['general','before','after'].includes(stage)) stage='general';
-    return {raw,index,url,category,stage,name: raw?.name || raw?.filename || `Photo ${index+1}`};
+  function renderPhotos(patient, tab){
+    const photos = allPhotos(patient);
+    const clinical = photos.filter(p=>p.category==='clinical');
+    const xray = photos.filter(p=>p.category==='xray');
+    const list = tab === 'xray' ? xray : clinical;
+    window.__cleanPhotoTab = tab;
+    return `<section class="clean-photo-section" data-patient-id="${safe(patient.id)}">
+      <div class="clean-photo-tabs">
+        <button type="button" class="${tab==='clinical'?'active':''}" data-clean-tab="clinical" data-patient-id="${safe(patient.id)}">${safe(t('clinical'))} <small>${clinical.length}</small></button>
+        <button type="button" class="${tab==='xray'?'active':''}" data-clean-tab="xray" data-patient-id="${safe(patient.id)}">${safe(t('xray'))} <small>${xray.length}</small></button>
+        <button type="button" data-clean-ba="${safe(patient.id)}">${safe(t('beforeAfter'))}</button>
+      </div>
+      <div class="clean-photo-grid">
+        ${list.length ? list.map(ph=>`<article class="clean-photo-card">
+          <button type="button" class="clean-photo-open" data-clean-view="${safe(patient.id)}" data-index="${ph.index}"><img src="${safe(ph.url)}" alt="${safe(ph.name)}"><span>${safe(ph.stage==='before'?t('before'):ph.stage==='after'?t('after'):t('general'))}</span></button>
+          <button type="button" class="clean-photo-dots" data-clean-sheet="${safe(patient.id)}" data-index="${ph.index}" aria-label="${safe(t('photoOptions'))}">•••</button>
+        </article>`).join('') : `<div class="clean-empty">${safe(tab==='xray'?t('noXray'):t('noClinical'))}</div>`}
+      </div>
+    </section>`;
   }
-  function photosOf(patient){ return (patient.photos||[]).map((r,i)=>normalizePhoto(patient,r,i)).filter(x=>x.url); }
-  window.categorizedPhotos = function(patient){ const all=photosOf(patient); return {all, clinical:all.filter(x=>x.category==='clinical'), xray:all.filter(x=>x.category==='xray'), xrays:all.filter(x=>x.category==='xray')}; };
-  async function setPhotoMeta(pid,index,field,value){
-    const p=findPatient(pid); if(!p) return;
-    const raw=(p.photos||[])[index]; const url=photoUrl(raw); if(!url) return;
-    const meta=loadMeta(pid); meta[url]=Object.assign({}, meta[url]||{}, {[field]:value}); saveMeta(pid,meta);
-    if(typeof raw === 'object' && raw){ raw[field]=value; if(field==='category') raw.photoCategory=value; if(field==='stage') raw.photoStage=value; }
-    else { p.photos[index]={url, path:url, name:`Photo ${index+1}`, category: field==='category'?value:'clinical', stage: field==='stage'?value:'general'}; }
-    $('repairPhotoSheet')?.remove();
-    const box=$('repairPhotoZone'); if(box) box.innerHTML=renderPhotos(p, window.__repairPhotoTab || 'clinical');
-    try{ if(typeof api === 'function') await api(`patients?id=eq.${pid}`, {method:'PATCH', body:JSON.stringify({photos:p.photos})}); }catch(e){ console.warn('Photo update saved locally only', e); }
-    if(typeof toast==='function') toast('Photo updated');
+  function renderIntoCurrent(patient){
+    const zone = $('cleanPhotoZone') || $('repairPhotoZone') || $('mdPhotoZone') || $('simplePhotosBox');
+    if(zone) zone.outerHTML = `<div id="cleanPhotoZone">${renderPhotos(patient, window.__cleanPhotoTab || 'clinical')}</div>`;
   }
-  function renderPhotos(patient, tab='clinical'){
-    window.__repairPhotoTab=tab;
-    const all=photosOf(patient); const clinical=all.filter(x=>x.category==='clinical'); const xray=all.filter(x=>x.category==='xray'); const list=tab==='xray'?xray:clinical;
-    return `<div class="repair-photo-tabs" data-photo-controls="1">
-      <button type="button" class="${tab==='clinical'?'active':''}" data-patient-id="${esc(patient.id)}" data-photo-tab="clinical" onclick="return window.repairSetPhotoTab('${esc(patient.id)}','clinical',event)">${esc(tr('clinical'))} <small>${clinical.length}</small></button>
-      <button type="button" class="${tab==='xray'?'active':''}" data-patient-id="${esc(patient.id)}" data-photo-tab="xray" onclick="return window.repairSetPhotoTab('${esc(patient.id)}','xray',event)">${esc(tr('xray'))} <small>${xray.length}</small></button>
-      <button type="button" data-ba-open="${esc(patient.id)}" onclick="return window.repairOpenBeforeAfter('${esc(patient.id)}',event)">${esc(tr('beforeAfter'))}</button>
-    </div>
-    <div class="repair-photo-grid" data-photo-grid="1">${list.length ? list.map((ph,displayIndex)=>`<div class="repair-photo-card">
-        <button type="button" class="repair-photo-image" data-patient-id="${esc(patient.id)}" data-photo-view="${displayIndex}" onclick="return window.repairOpenPhoto('${esc(patient.id)}',${displayIndex},event)"><img src="${esc(ph.url)}" alt=""><span>${esc(ph.category==='xray'?tr('xray'):tr('clinical'))} · ${esc(ph.stage==='before'?tr('before'):ph.stage==='after'?tr('after'):tr('general'))}</span></button>
-        <button type="button" class="repair-photo-dots" aria-label="Photo options" data-patient-id="${esc(patient.id)}" data-photo-menu="${ph.index}" onclick="return window.repairOpenPhotoMenu('${esc(patient.id)}',${ph.index},event)">⋯</button>
-      </div>`).join('') : `<div class="repair-photo-empty">${esc(tab==='xray'?tr('noXray'):tr('noClinical'))}</div>`}</div>`;
+  function replacePhotoBlock(html, p){
+    const block = `<h3 class="clean-photo-title">${safe(t('photos'))}</h3><div id="cleanPhotoZone">${renderPhotos(p, window.__cleanPhotoTab || 'clinical')}</div><h3 class="clean-timeline-title">${safe(t('patientTimeline'))}</h3>`;
+    const patterns = [
+      /<h3[^>]*>Photos\s*\/\s*X-rays<\/h3>[\s\S]*?<h3[^>]*>Patient Timeline<\/h3>/i,
+      /<h3[^>]*>الصور\s*\/\s*الأشعة<\/h3>[\s\S]*?<h3[^>]*>تاريخ المريض<\/h3>/i,
+      /<h3[^>]*class=["'][^"']*repair-section-title[^"']*["'][^>]*>[\s\S]*?Photos[\s\S]*?<\/h3>[\s\S]*?<h3[^>]*class=["'][^"']*repair-section-title[^"']*["'][^>]*>[\s\S]*?Patient Timeline[\s\S]*?<\/h3>/i,
+      /<h3[^>]*class=["'][^"']*clean-photo-title[^"']*["'][^>]*>[\s\S]*?<\/h3>[\s\S]*?<h3[^>]*class=["'][^"']*clean-timeline-title[^"']*["'][^>]*>[\s\S]*?<\/h3>/i
+    ];
+    for(const re of patterns){ if(re.test(html)) return html.replace(re, block); }
+    return html + block;
   }
-  window.renderPhotoSection = function(p,type){ return renderPhotos(p,type); };
-  window.switchSimplePhotoType = function(pid,type){ const p=findPatient(pid); const box=$('repairPhotoZone') || $('simplePhotosBox') || $('mdPhotoZone'); if(p&&box) box.innerHTML=renderPhotos(p,type); };
-  function openPhotoViewer(pid, displayIndex){
-    const p=findPatient(pid); if(!p) return; const c=window.categorizedPhotos(p); const list=(window.__repairPhotoTab==='xray'?c.xray:c.clinical); if(!list.length) return;
-    window.currentPhotoList=list.map(x=>x.url); window.currentPhotoIndex=displayIndex||0;
-    const v=$('photoViewer'), img=$('viewerImage'); if(v&&img){ img.src=window.currentPhotoList[window.currentPhotoIndex]; v.classList.remove('hidden'); }
+  function wrapPatientDetails(){
+    const current = window.patientDetailsHTML || (typeof patientDetailsHTML !== 'undefined' ? patientDetailsHTML : null);
+    if(typeof current !== 'function' || current.__cleanPhotoWrapped) return;
+    const fn = function(p){ return replacePhotoBlock(current(p), p); };
+    fn.__cleanPhotoWrapped = true;
+    window.patientDetailsHTML = fn;
+    try{ patientDetailsHTML = fn; }catch{}
   }
-  function openPhotoSheet(pid,index){
-    const p=findPatient(pid); if(!p) return; const ph=photosOf(p).find(x=>x.index===index); if(!ph) return;
-    $('repairPhotoSheet')?.remove();
-    const ov=document.createElement('div'); ov.id='repairPhotoSheet'; ov.className='repair-sheet-overlay';
-    ov.innerHTML=`<div class="repair-sheet"><div class="repair-sheet-head"><div><b>${esc(tr('markAs'))}</b><span>${esc(ph.name)}</span></div><button type="button" onclick="document.getElementById('repairPhotoSheet')?.remove()">×</button></div>
-      <img class="repair-sheet-preview" src="${esc(ph.url)}" alt="">
-      <div class="repair-sheet-grid">
-        <button type="button" class="${ph.category==='clinical'?'active':''}" data-patient-id="${esc(pid)}" data-index="${index}" data-field="category" data-value="clinical" data-set-photo="1">${esc(tr('clinical'))}</button>
-        <button type="button" class="${ph.category==='xray'?'active':''}" data-patient-id="${esc(pid)}" data-index="${index}" data-field="category" data-value="xray" data-set-photo="1">${esc(tr('xray'))}</button>
-        <button type="button" class="${ph.stage==='general'?'active':''}" data-patient-id="${esc(pid)}" data-index="${index}" data-field="stage" data-value="general" data-set-photo="1">${esc(tr('general'))}</button>
-        <button type="button" class="${ph.stage==='before'?'active':''}" data-patient-id="${esc(pid)}" data-index="${index}" data-field="stage" data-value="before" data-set-photo="1">${esc(tr('before'))}</button>
-        <button type="button" class="${ph.stage==='after'?'active':''}" data-patient-id="${esc(pid)}" data-index="${index}" data-field="stage" data-value="after" data-set-photo="1">${esc(tr('after'))}</button>
-      </div></div>`;
-    ov.addEventListener('click', e=>{ if(e.target===ov) ov.remove(); }); document.body.appendChild(ov);
+
+  function openViewer(pid,index){
+    const p=findPatient(pid); const ph=allPhotos(p).find(x=>x.index===Number(index)); if(!ph) return;
+    closeViewer();
+    const ov=document.createElement('div'); ov.id='cleanPhotoViewer'; ov.className='clean-photo-viewer';
+    ov.innerHTML=`<button type="button" class="clean-view-close" data-clean-close-view>×</button><img src="${safe(ph.url)}" alt="${safe(ph.name)}"><div class="clean-view-caption">${safe(ph.name)}</div>`;
+    document.body.appendChild(ov);
   }
+  function closeViewer(){ $('cleanPhotoViewer')?.remove(); }
+  function openSheet(pid,index){
+    const p=findPatient(pid); const ph=allPhotos(p).find(x=>x.index===Number(index)); if(!ph) return;
+    closeSheet();
+    const ov=document.createElement('div'); ov.id='cleanPhotoSheet'; ov.className='clean-sheet-overlay';
+    ov.innerHTML=`<div class="clean-sheet">
+      <div class="clean-sheet-head"><b>${safe(t('photoOptions'))}</b><button type="button" data-clean-close-sheet>×</button></div>
+      <img src="${safe(ph.url)}" alt="${safe(ph.name)}">
+      <button type="button" data-set-photo="category:clinical" class="${ph.category==='clinical'?'active':''}">${safe(t('markClinical'))}</button>
+      <button type="button" data-set-photo="category:xray" class="${ph.category==='xray'?'active':''}">${safe(t('markXray'))}</button>
+      <button type="button" data-set-photo="stage:general" class="${ph.stage==='general'?'active':''}">${safe(t('markGeneral'))}</button>
+      <button type="button" data-set-photo="stage:before" class="${ph.stage==='before'?'active':''}">${safe(t('markBefore'))}</button>
+      <button type="button" data-set-photo="stage:after" class="${ph.stage==='after'?'active':''}">${safe(t('markAfter'))}</button>
+    </div>`;
+    ov.dataset.patientId=pid; ov.dataset.index=index;
+    document.body.appendChild(ov);
+  }
+  function closeSheet(){ $('cleanPhotoSheet')?.remove(); }
+
   function openBeforeAfter(pid){
-    const p=findPatient(pid); if(!p) return; const all=photosOf(p); if(all.length<2){ alert('Add at least two photos first.'); return; }
-    let before=all.findIndex(x=>x.stage==='before'); if(before<0) before=0; let after=all.findIndex((x,i)=>x.stage==='after'&&i!==before); if(after<0) after=before===0?1:0;
-    $('repairBA')?.remove();
-    const ov=document.createElement('div'); ov.id='repairBA'; ov.className='repair-ba-overlay';
-    ov.innerHTML=`<div class="repair-ba-dialog"><div class="repair-ba-head"><div><h2>${esc(tr('beforeAfter'))}</h2><p>${esc(tr('blendHint'))}</p></div><button type="button" onclick="document.getElementById('repairBA')?.remove()">×</button></div>
-      <h4>${esc(tr('chooseBA'))}</h4><div id="repairBAChoices" class="repair-ba-choices"></div>
-      <div class="repair-ba-stage"><img id="repairBABefore" class="repair-ba-before" src="${esc(all[before].url)}"><img id="repairBAAfter" class="repair-ba-after" src="${esc(all[after].url)}"><span class="repair-ba-label before">${esc(tr('before'))}</span><span class="repair-ba-label after">${esc(tr('after'))}</span><div id="repairBABlur" class="repair-ba-blur"></div><input id="repairBARange" type="range" min="0" max="100" value="50"></div></div>`;
-    document.body.appendChild(ov); window.__repairBA={patient:p,all,before,after}; renderBAChoices(); $('repairBARange').addEventListener('input', updateBlend); ov.addEventListener('click', e=>{ if(e.target===ov) ov.remove(); }); updateBlend();
+    const p=findPatient(pid); const photos=allPhotos(p); if(photos.length<2){ alert('Add at least two photos first.'); return; }
+    let before = photos.findIndex(x=>x.stage==='before'); if(before<0) before=0;
+    let after = photos.findIndex((x,i)=>x.stage==='after' && i!==before); if(after<0) after = before===0 ? 1 : 0;
+    closeBA();
+    const ov=document.createElement('div'); ov.id='cleanBA'; ov.className='clean-ba-overlay';
+    ov.innerHTML=`<div class="clean-ba-dialog">
+      <div class="clean-ba-head"><div><h2>${safe(t('beforeAfter'))}</h2><p>${safe(t('chooseBeforeAfter'))}</p></div><button type="button" data-clean-close-ba>×</button></div>
+      <div class="clean-ba-stage"><img id="cleanBABefore" class="before" src="${safe(photos[before].url)}"><img id="cleanBAAfter" class="after" src="${safe(photos[after].url)}"><span>${safe(t('transition'))}</span></div>
+      <input id="cleanBARange" class="clean-ba-range" type="range" min="0" max="100" value="50">
+      <div class="clean-ba-picker"><h4>${safe(t('before'))}</h4>${photos.map((ph,i)=>`<button type="button" class="${i===before?'active':''}" data-ba-choose="before" data-index="${i}"><img src="${safe(ph.url)}"><small>${i+1}</small></button>`).join('')}</div>
+      <div class="clean-ba-picker"><h4>${safe(t('after'))}</h4>${photos.map((ph,i)=>`<button type="button" class="${i===after?'active':''}" data-ba-choose="after" data-index="${i}"><img src="${safe(ph.url)}"><small>${i+1}</small></button>`).join('')}</div>
+    </div>`;
+    ov.__photos=photos; ov.__before=before; ov.__after=after;
+    document.body.appendChild(ov); updateBA();
   }
-  function renderBAChoices(){
-    const s=window.__repairBA; if(!s) return; const box=$('repairBAChoices'); if(!box) return;
-    box.innerHTML=s.all.map((ph,i)=>`<div class="repair-ba-choice"><img src="${esc(ph.url)}" alt=""><div><b>${esc(ph.category==='xray'?tr('xray'):tr('clinical'))}</b><span>${esc(ph.stage==='before'?tr('before'):ph.stage==='after'?tr('after'):tr('general'))}</span></div><button type="button" class="${s.before===i?'active':''}" data-ba-pick="before" data-index="${i}">${esc(tr('before'))}</button><button type="button" class="${s.after===i?'active':''}" data-ba-pick="after" data-index="${i}">${esc(tr('after'))}</button></div>`).join('');
+  function closeBA(){ $('cleanBA')?.remove(); }
+  function updateBA(){
+    const ov=$('cleanBA'); if(!ov) return;
+    const photos=ov.__photos; const b=photos[ov.__before], a=photos[ov.__after];
+    $('cleanBABefore').src=b.url; $('cleanBAAfter').src=a.url;
+    const val=Number($('cleanBARange')?.value || 50);
+    const after=$('cleanBAAfter');
+    after.style.opacity = String(val/100);
+    after.style.filter = `blur(${Math.max(0, 8 - Math.abs(val-50)/6)}px)`;
+    ov.querySelectorAll('[data-ba-choose="before"]').forEach(btn=>btn.classList.toggle('active', Number(btn.dataset.index)===ov.__before));
+    ov.querySelectorAll('[data-ba-choose="after"]').forEach(btn=>btn.classList.toggle('active', Number(btn.dataset.index)===ov.__after));
   }
-  function pickBA(which,i){ const s=window.__repairBA; if(!s) return; s[which]=i; $('repairBABefore').src=s.all[s.before].url; $('repairBAAfter').src=s.all[s.after].url; renderBAChoices(); updateBlend(); }
-  function updateBlend(){ const r=$('repairBARange'), after=$('repairBAAfter'), blur=$('repairBABlur'); if(!r||!after||!blur) return; const v=+r.value; after.style.opacity=(v/100).toFixed(2); after.style.filter=`blur(${Math.max(0, 10 - Math.abs(v-50)/5)}px)`; blur.style.left=v+'%'; }
   window.showBeforeAfter = openBeforeAfter;
 
-  function replacePhotoSection(html, p){
-    const title=`<h3 class="repair-section-title">${esc(tr('photos'))}</h3><div id="repairPhotoZone">${renderPhotos(p, window.__repairPhotoTab || 'clinical')}</div><h3 class="repair-section-title">${esc(tr('patientTimeline'))}</h3>`;
-    let out = html.replace(/<h3[^>]*>Photos\s*\/\s*X-rays<\/h3>[\s\S]*?<h3[^>]*>Patient Timeline<\/h3>/i, title);
-    out = out.replace(/<h3[^>]*>الصور\s*\/\s*الأشعة<\/h3>[\s\S]*?<h3[^>]*>تاريخ المريض<\/h3>/i, title);
-    if(out===html && !html.includes('repairPhotoZone')) out += title;
-    return out;
-  }
-  function wrapDetails(){
-    if(typeof window.patientDetailsHTML === 'function' && !window.patientDetailsHTML.__repairWrapped){
-      const old=window.patientDetailsHTML;
-      const fn=function(p){ return replacePhotoSection(old(p), p); };
-      fn.__repairWrapped=true;
-      window.patientDetailsHTML = fn;
-      try{ patientDetailsHTML = fn; }catch{}
-    }
-  }
-  function sanitizeOpenMenu(){
-    window.openClinicMenu=openMenu; window.closeClinicMenu=closeMenu;
-    const d=$('sideDrawer'); if(d && !d.dataset.finalRepair){ openMenu(); }
-  }
-  const boot=()=>{ bindMenuBtn(); wrapDetails(); sanitizeOpenMenu(); document.documentElement.dir = rtlLangs.has(lang()) ? 'rtl' : 'ltr'; };
+  document.addEventListener('click', e=>{
+    const tab=e.target.closest?.('[data-clean-tab]'); if(tab){ e.preventDefault(); const p=findPatient(tab.dataset.patientId); const zone=$('cleanPhotoZone'); if(p&&zone) zone.innerHTML=renderPhotos(p,tab.dataset.cleanTab); return; }
+    const ba=e.target.closest?.('[data-clean-ba]'); if(ba){ e.preventDefault(); openBeforeAfter(ba.dataset.cleanBa); return; }
+    const view=e.target.closest?.('[data-clean-view]'); if(view){ e.preventDefault(); openViewer(view.dataset.cleanView, view.dataset.index); return; }
+    const sheet=e.target.closest?.('[data-clean-sheet]'); if(sheet){ e.preventDefault(); e.stopPropagation(); openSheet(sheet.dataset.cleanSheet, sheet.dataset.index); return; }
+    if(e.target.closest?.('[data-clean-close-view]') || e.target.id==='cleanPhotoViewer'){ e.preventDefault(); closeViewer(); return; }
+    if(e.target.closest?.('[data-clean-close-sheet]') || e.target.id==='cleanPhotoSheet'){ e.preventDefault(); closeSheet(); return; }
+    if(e.target.closest?.('[data-clean-close-ba]') || e.target.id==='cleanBA'){ e.preventDefault(); closeBA(); return; }
+    const set=e.target.closest?.('[data-set-photo]'); if(set){ e.preventDefault(); const ov=$('cleanPhotoSheet'); const [field,value]=set.dataset.setPhoto.split(':'); savePhotoMeta(ov.dataset.patientId, Number(ov.dataset.index), field, value); return; }
+    const choose=e.target.closest?.('[data-ba-choose]'); if(choose){ e.preventDefault(); const ov=$('cleanBA'); ov['__'+choose.dataset.baChoose]=Number(choose.dataset.index); updateBA(); return; }
+  }, false);
+  document.addEventListener('input', e=>{ if(e.target.id==='cleanBARange') updateBA(); }, false);
+
+  function boot(){ bindMenu(); wrapPatientDetails(); }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
   window.addEventListener('load',boot);
-  const mo=new MutationObserver(()=>{ bindMenuBtn(); wrapDetails(); const d=$('sideDrawer'); if(d && !d.dataset.finalRepair){ d.remove(); openMenu(); } });
-  try{ mo.observe(document.documentElement,{childList:true,subtree:true}); }catch{}
-  setInterval(boot, 800);
-
-  /* Robust mobile photo controls: iPhone Safari sometimes selects text instead of firing click.
-     These public functions and capture listeners make the photo tabs, 3-dot menu, and before/after work reliably. */
-  window.repairSetPhotoTab = function(pid, tab, ev){
-    try{ if(ev){ev.preventDefault(); ev.stopPropagation();} }catch(e){}
-    const p=findPatient(pid); const box=$('repairPhotoZone');
-    if(p && box) box.innerHTML=renderPhotos(p, tab);
-    return false;
-  };
-  window.repairOpenPhotoMenu = function(pid, index, ev){
-    try{ if(ev){ev.preventDefault(); ev.stopPropagation();} }catch(e){}
-    openPhotoSheet(pid, Number(index));
-    return false;
-  };
-  window.repairOpenPhoto = function(pid, index, ev){
-    try{ if(ev){ev.preventDefault(); ev.stopPropagation();} }catch(e){}
-    openPhotoViewer(pid, Number(index));
-    return false;
-  };
-  window.repairOpenBeforeAfter = function(pid, ev){
-    try{ if(ev){ev.preventDefault(); ev.stopPropagation();} }catch(e){}
-    openBeforeAfter(pid);
-    return false;
-  };
-
-  let lastRepairTap=0;
-  function repairHandleDirectTap(ev){
-    const now=Date.now();
-    if(now-lastRepairTap<180) return;
-    const t=ev.target && (ev.target.closest('[data-photo-menu]') || ev.target.closest('[data-photo-tab]') || ev.target.closest('[data-ba-open]') || ev.target.closest('[data-photo-view]') || ev.target.closest('[data-set-photo]') || ev.target.closest('[data-ba-pick]'));
-    if(!t) return;
-    lastRepairTap=now;
-    ev.preventDefault(); ev.stopPropagation();
-    if(t.dataset.photoMenu!=null) return openPhotoSheet(t.dataset.patientId, Number(t.dataset.photoMenu));
-    if(t.dataset.photoTab) { const p=findPatient(t.dataset.patientId); const box=$('repairPhotoZone'); if(p&&box) box.innerHTML=renderPhotos(p,t.dataset.photoTab); return; }
-    if(t.dataset.baOpen) return openBeforeAfter(t.dataset.baOpen);
-    if(t.dataset.photoView!=null) return openPhotoViewer(t.dataset.patientId, Number(t.dataset.photoView));
-    if(t.dataset.setPhoto) return setPhotoMeta(t.dataset.patientId, Number(t.dataset.index), t.dataset.field, t.dataset.value);
-    if(t.dataset.baPick) return pickBA(t.dataset.baPick, Number(t.dataset.index));
-  }
-  document.addEventListener('touchend', repairHandleDirectTap, true);
-  document.addEventListener('pointerup', repairHandleDirectTap, true);
-  document.addEventListener('click', repairHandleDirectTap, true);
-
+  setInterval(boot, 700);
 })();
