@@ -1,14 +1,11 @@
-// The browser no longer talks to Supabase directly or holds any Supabase key.
-// Every request goes through our own Netlify function, which holds the secret
-// service key server-side and checks who's logged in before touching data.
-const API_BASE = "/.netlify/functions/api";
+const SUPABASE_URL = "https://vstfquvvtsmgmztmnnaq.supabase.co";
+const SUPABASE_KEY = "sb_publishable_9sp5XCEbqCNk0CQNyoE8SA_3a-rXoDn";
 const PHOTO_BUCKET = "patient-photos";
 const LOGO_BUCKET = "clinic-logos";
 
 const $ = (id) => document.getElementById(id);
 
 let currentUser = null;
-let authToken = null;
 let patients = [];
 let pendingFiles = [];
 let scanner = null;
@@ -77,18 +74,17 @@ function allPatientWebsites(data){ return (data.websites || []).filter(Boolean);
 
 
 async function api(path, options = {}) {
-  const res = await fetch(`${API_BASE}?action=query`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken || ""}` },
-    body: JSON.stringify({ path, method: options.method || "GET", body: options.body })
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+    ...options,
+    headers: {
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${SUPABASE_KEY}`,
+      "Content-Type": "application/json",
+      ...(options.headers || {})
+    }
   });
-  if (res.status === 401) {
-    logout();
-    throw new Error("Session expired, please log in again.");
-  }
   if (!res.ok) throw new Error(await res.text());
-  const text = await res.text();
-  return text ? JSON.parse(text) : null;
+  return res.status === 204 ? null : await res.json();
 }
 
 function getSavedUser() {
@@ -96,32 +92,21 @@ function getSavedUser() {
   catch { return null; }
 }
 
-function saveUser(user, token) {
+function saveUser(user) {
   localStorage.setItem("clinicUser", JSON.stringify(user));
-  if (token) {
-    localStorage.setItem("clinicToken", token);
-    authToken = token;
-  }
   currentUser = user;
 }
 
 function logout() {
   localStorage.removeItem("clinicUser");
-  localStorage.removeItem("clinicToken");
-  authToken = null;
   location.href = location.pathname + "?logout=1";
 }
 
 async function login(username, password) {
   try {
-    const res = await fetch(`${API_BASE}?action=login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password })
-    });
-    const data = await res.json();
-    if (!res.ok) return alert(data.error || "Wrong username or password");
-    saveUser(data.user, data.token);
+    const users = await api(`clinic_users?username=eq.${encodeURIComponent(username)}&password=eq.${encodeURIComponent(password)}&select=*`);
+    if (!users.length) return alert("Wrong username or password");
+    saveUser(users[0]);
     location.href = location.pathname;
   } catch (err) {
     alert("Login failed: " + err.message);
@@ -137,13 +122,26 @@ async function registerDoctor() {
   if (!password) return;
   const cleanUsername = username.trim();
   try {
-    const res = await fetch(`${API_BASE}?action=signup`, {
+    const existing = await api(`clinic_users?select=id&username=eq.${encodeURIComponent(cleanUsername)}`);
+    if (existing.length) return alert("This username already exists. Please login.");
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/clinic_users`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username: cleanUsername, password: password.trim(), full_name: full_name.trim() })
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`,
+        "Content-Type": "application/json",
+        Prefer: "return=minimal"
+      },
+      body: JSON.stringify({
+        username: cleanUsername,
+        password: password.trim(),
+        full_name: full_name.trim(),
+        role: "doctor",
+        clinic_name: `${full_name.trim()}'s Clinic`,
+        clinic_logo: ""
+      })
     });
-    const data = await res.json();
-    if (!res.ok) return alert(data.error || "Account creation failed");
+    if (!res.ok) throw new Error(await res.text());
     alert("Account created successfully. Please login now.");
   } catch (err) {
     alert("Account creation failed: " + err.message);
@@ -866,25 +864,14 @@ async function compressImage(file, isXray = false) {
   });
 }
 
-function blobToBase64(blob) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result.split(",")[1]);
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
-  });
-}
-
 async function uploadToBucket(bucket, path, blob, type) {
-  const base64 = await blobToBase64(blob);
-  const res = await fetch(`${API_BASE}?action=uploadPhoto`, {
+  const res = await fetch(`${SUPABASE_URL}/storage/v1/object/${bucket}/${path}`, {
     method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken || ""}` },
-    body: JSON.stringify({ bucket, path, contentType: type || "application/octet-stream", base64 })
+    headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, "Content-Type": type || "application/octet-stream" },
+    body: blob
   });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || "Upload failed");
-  return data.url;
+  if (!res.ok) throw new Error(await res.text());
+  return `${SUPABASE_URL}/storage/v1/object/public/${bucket}/${path}`;
 }
 
 async function uploadPhotos(patientId) {
@@ -1970,19 +1957,16 @@ window.editProfile = async function() {
 window.changeMyPassword = async function() {
   const oldPass = await luxuryPrompt("Current password");
   if (!oldPass) return;
+  if (oldPass.trim() !== currentUser.password) return alert("Wrong password.");
   const newPass = await luxuryPrompt("New password");
   if (!newPass) return;
   const confirmPass = await luxuryPrompt("Confirm new password");
   if (!confirmPass || newPass.trim() !== confirmPass.trim()) return alert("Passwords don't match.");
   if (newPass.trim().length < 4) return alert("Password must be at least 4 characters.");
   try {
-    const res = await fetch(`${API_BASE}?action=changePassword`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken || ""}` },
-      body: JSON.stringify({ oldPassword: oldPass.trim(), newPassword: newPass.trim() })
-    });
-    const data = await res.json();
-    if (!res.ok) return alert(data.error || "Update failed");
+    await api(`clinic_users?id=eq.${currentUser.id}`, { method: "PATCH", body: JSON.stringify({ password: newPass.trim() }) });
+    currentUser.password = newPass.trim();
+    saveUser(currentUser);
     alert("Password updated!");
   } catch (err) { alert("Update failed: " + err.message); }
 };
@@ -2233,10 +2217,8 @@ window.addEventListener("load", async () => {
       return;
     }
     currentUser = getSavedUser();
-    authToken = localStorage.getItem("clinicToken");
-    if (!currentUser || !currentUser.id || !currentUser.role || !authToken) {
+    if (!currentUser || !currentUser.id || !currentUser.role) {
       localStorage.removeItem("clinicUser");
-      localStorage.removeItem("clinicToken");
       showLoginScreen();
       return;
     }
