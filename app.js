@@ -1,7 +1,6 @@
 // app.js - Complete & Unified Version
-const const SUPABASE_URL = "https://vstfquvvtsmgmztmnnaq.supabase.co";
+const SUPABASE_URL = "https://vstfquvvtsmgmztmnnaq.supabase.co";
 const SUPABASE_KEY = "sb_publishable_9sp5XCEbqCNk0CQNyoE8SA_3a-rXoDn";
-
 const PHOTO_BUCKET = "patient-photos";
 const LOGO_BUCKET = "clinic-logos";
 
