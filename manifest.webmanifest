@@ -1,1 +1,8 @@
-{"name": "Masri Dental Clinic", "short_name": "Masri Clinic", "start_url": "./", "display": "standalone", "background_color": "#eef4f7", "theme_color": "#0f766e"}
+{
+  "name": "Masri Dental Clinic",
+  "short_name": "Masri Clinic",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#070b10",
+  "theme_color": "#d4af37"
+}
