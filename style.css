@@ -25,7 +25,7 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  padding-bottom: 70px;
+  padding-bottom: 80px;
 }
 
 .app-header {
@@ -35,6 +35,9 @@ body {
   padding: 16px 20px;
   background: var(--card-bg);
   border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 99;
 }
 
 .header-left {
@@ -82,12 +85,20 @@ body {
 .page { display: none; }
 .page.active { display: block; }
 
-.card {
+/* Dashboard & Stats Grid */
+#dashboardContent {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.stat-card, .card {
   background: var(--card-bg);
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 20px;
+  padding: 16px;
+  margin-bottom: 16px;
 }
 
 .card h2 {
@@ -96,6 +107,40 @@ body {
   color: var(--text);
 }
 
+/* Patient List Styling */
+.patient-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.patient-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.patient-card h3 {
+  font-size: 16px;
+  color: var(--text);
+}
+
+.patient-card p {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.patient-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+/* Forms Styling */
 form label {
   display: block;
   font-size: 13px;
@@ -108,9 +153,9 @@ form input, form select, form textarea {
   background: var(--bg);
   border: 1px solid var(--border);
   color: var(--text);
-  padding: 10px;
+  padding: 10px 12px;
   border-radius: 8px;
-  margin-top: 4px;
+  margin-top: 6px;
   font-family: inherit;
   font-size: 14px;
 }
@@ -154,12 +199,13 @@ form textarea {
   border-radius: 50%;
 }
 
+/* Bottom Navigation Bar */
 .bottom-nav {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  height: 60px;
+  height: 65px;
   background: var(--card-bg);
   border-top: 1px solid var(--border);
   display: flex;
@@ -173,7 +219,7 @@ form textarea {
   border: none;
   color: var(--muted);
   font-weight: 600;
-  font-size: 14px;
+  font-size: 13px;
   cursor: pointer;
   padding: 10px;
 }
@@ -182,6 +228,7 @@ form textarea {
   color: var(--accent);
 }
 
+/* Photo Viewer Overlay */
 .photo-viewer-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
