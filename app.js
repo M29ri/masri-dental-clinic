@@ -468,15 +468,16 @@ async function loadPatients() {
     if (statusEl) {
       statusEl.innerHTML = '<span class="status-dot pulse"></span> Loading cloud...';
     }
-        const safeClinicName = currentUser.clinic_name || (currentUser.username + "_clinic");
+    const safeClinicName = (currentUser && (currentUser.clinic_name || currentUser.username)) || "Masri_Clinic";
     
-    if (currentUser.role === "admin") {
+    if (!currentUser || currentUser.role === "admin") {
       patients = await api("patients?select=*&order=created_at.desc");
     } else {
       const clinicMembers = await api(`clinic_users?clinic_name=eq.${encodeURIComponent(safeClinicName)}&select=id`);
       const memberIds = clinicMembers.map(u => u.id).join(',');
       patients = memberIds ? await api(`patients?owner_id=in.(${memberIds})&select=*&order=created_at.desc`) : [];
     }
+
 
     renderPatients();
     renderDashboard();
