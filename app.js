@@ -468,23 +468,26 @@ async function loadPatients() {
     if (statusEl) {
       statusEl.innerHTML = '<span class="status-dot pulse"></span> Loading cloud...';
     }
-    const safeClinicName = (currentUser && (currentUser.clinic_name || currentUser.username)) || "Masri_Clinic";
-    
+      const safeClinicName = (currentUser && (currentUser.clinic_name || currentUser.username)) || "Masri_Clinic";
+
     if (!currentUser || currentUser.role === "admin") {
       patients = await api("patients?select=*&order=created_at.desc");
+    } else if (currentUser.role === "doctor") {
+      patients = await api(`patients?owner_id=eq.${currentUser.id}&select=*&order=created_at.desc`);
     } else {
       const clinicMembers = await api(`clinic_users?clinic_name=eq.${encodeURIComponent(safeClinicName)}&select=id`);
       const memberIds = clinicMembers.map(u => u.id).join(',');
       patients = memberIds ? await api(`patients?owner_id=in.(${memberIds})&select=*&order=created_at.desc`) : [];
     }
 
-
     renderPatients();
     renderDashboard();
     cachePatientsOffline();
+    
     if (statusEl) {
       statusEl.innerHTML = '<span class="status-dot"></span> Cloud connected';
     }
+    
     const params = new URLSearchParams(location.search);
     const patientId = params.get("patient");
     if (patientId) openPatient(patientId);
@@ -495,6 +498,7 @@ async function loadPatients() {
     if ($("list")) $("list").innerHTML = `<div class="card"><h3>Cloud error</h3><p>${safeText(err.message)}</p></div>`;
   }
 }
+
 
 function cachePatientsOffline() {
   try {
@@ -3421,17 +3425,6 @@ setTimeout(() => {
     }
   };
   
-  injectDashboardExtras();
-  
-  if (typeof window.renderDashboard === 'function') {
-    const originalRender = window.renderDashboard;
-    window.renderDashboard = function() {
-      originalRender.apply(this, arguments);
-      setTimeout(injectDashboardExtras, 100);
-    };
-  }
-}, 2000);
-
   injectDashboardExtras();
   
   if (typeof window.renderDashboard === 'function') {
