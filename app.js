@@ -2053,31 +2053,42 @@ window.changeMyPassword = async function() {
 
 // --- User Management ---
 window.manageUsers = async function() {
-  if (!currentUser || currentUser.role !== "admin") return alert("Only admin can manage users.");
-  const users = await api("clinic_users?select=*&order=created_at.desc");
+  // 1. Allow both Admins AND Doctors to open the manager
+  if (!currentUser || (currentUser.role !== "admin" && currentUser.role !== "doctor")) {
+    return alert("Only doctors and admins can manage staff.");
+  }
+  
+  // 2. Privacy Filter: Admins see everyone. Doctors ONLY see their own clinic's staff.
+  const query = currentUser.role === "admin" 
+    ? "clinic_users?select=*&order=created_at.desc" 
+    : `clinic_users?clinic_name=eq.${encodeURIComponent(currentUser.clinic_name)}&select=*&order=created_at.desc`;
+    
+  const users = await api(query);
+  
   const modal = document.createElement("div");
   modal.className = "luxury-modal";
   modal.innerHTML = `
     <div class="luxury-box">
-      <h2>Manage Users</h2>
+      <h2>Manage Staff</h2>
       ${users.map(u => `
         <div class="kv" style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
-          <div><b>${safeText(u.full_name || u.username)}</b><br><small class="muted">${safeText(u.username)} - ${safeText((u.role || "doctor").toUpperCase())}</small></div>
+          <div>
+            <b>${safeText(u.full_name || u.username)}</b><br>
+            <small class="muted">${safeText(u.username)} - ${safeText((u.role || "doctor").toUpperCase())}</small>
+          </div>
           <div style="display:flex;gap:8px;">
             ${u.id !== currentUser.id ? `<button class="btn-danger" style="font-size:12px;padding:8px 14px;" onclick="deleteUser('${u.id}')">Delete</button>` : "<span class='pill'>You</span>"}
           </div>
         </div>
       `).join("")}
       <div class="actions-bar" style="margin-top:14px;">
-        <button class="btn-secondary" style="width:100%;" onclick="this.closest('.luxury-modal').remove()">Close</button>
-      </div>
-            <div class="actions-bar" style="margin-top:14px;">
         <button class="btn-primary" style="flex:1;" onclick="createAssistantAccount()">+ Add Assistant</button>
         <button class="btn-secondary" style="flex:1;" onclick="this.closest('.luxury-modal').remove()">Close</button>
       </div>
     </div>`;
   document.body.appendChild(modal);
 };
+
 
 window.deleteUser = async function(id) {
   if (!(await luxuryConfirm("Delete user?"))) return;
@@ -3188,3 +3199,221 @@ window.addEventListener("load", async () => {
   const oldShowPage=window.showPage;
   window.showPage=function(id){ const out=oldShowPage?oldShowPage(id):undefined; if(id==='settings') setTimeout(()=>{ const page=document.getElementById('settings'); if(page && !document.getElementById('premiumSettingsTools')){ const block=document.createElement('div'); block.id='premiumSettingsTools'; block.className='card'; block.innerHTML=`<h2>Clinic Management</h2><div class="premium-tools-grid"><button class="premium-tool-btn" onclick="openPremiumCalendar()">Calendar<small>Appointments and statuses</small></button><button class="premium-tool-btn" onclick="openFinancialReports()">Financial reports<small>Revenue and unpaid balances</small></button><button class="premium-tool-btn" onclick="openReminderCenter()">Reminders<small>WhatsApp templates</small></button><button class="premium-tool-btn" onclick="openRolePermissions()">Roles<small>Permissions by staff type</small></button></div>`; page.appendChild(block); } },120); return out; };
 })();
+// ============================================
+// PREMIUM MODULES: CLOUD TASKS & INVENTORY
+// ============================================
+
+// --- Shared Task Board (Supabase) ---
+window.openTaskBoard = async function() {
+  const modal = document.createElement("div");
+  modal.className = "luxury-modal";
+  modal.id = "taskBoardModal";
+  modal.innerHTML = `
+    <div class="luxury-box">
+      <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:12px;">
+        <h2>Clinic Task Board</h2>
+        <button class="drawer-close-btn" onclick="document.getElementById('taskBoardModal').remove()">×</button>
+      </div>
+      <div class="actions-bar" style="margin-bottom:16px;">
+        <button class="btn-primary" style="width:100%;" onclick="addTask()">+ Add New Task</button>
+      </div>
+      <div id="taskList" style="max-height: 400px; overflow-y: auto;">
+        <p class="muted">Loading tasks from cloud...</p>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+  await refreshTaskList();
+};
+
+window.refreshTaskList = async function() {
+  const listDiv = document.getElementById("taskList");
+  if (!listDiv) return;
+  try {
+    const tasks = await api(`clinic_tasks?clinic_name=eq.${encodeURIComponent(currentUser.clinic_name)}&order=created_at.desc`);
+    listDiv.innerHTML = tasks.map(t => `
+      <div class="premium-list-row" style="opacity: ${t.done ? '0.5' : '1'}; transition: 0.3s;">
+        <div>
+          <b style="text-decoration: ${t.done ? 'line-through' : 'none'}; color: var(--text);">${safeText(t.title)}</b>
+          <br><span style="font-size: 11px;" class="muted">Added by: ${safeText(t.author)}</span>
+        </div>
+        <div class="premium-pill-grid" style="display:flex; gap:6px;">
+          <button class="btn-secondary" style="font-size:12px; padding:8px 14px;" onclick="toggleTask(${t.id}, ${t.done})">${t.done ? 'Undo' : 'Done'}</button>
+          <button class="btn-danger" style="font-size:12px; padding:8px 14px;" onclick="deleteTask(${t.id})">X</button>
+        </div>
+      </div>
+    `).join("") || '<p class="muted">No pending tasks. Great job!</p>';
+  } catch (err) {
+    listDiv.innerHTML = `<p class="muted" style="color:#ef4444;">Error loading tasks. Check your connection.</p>`;
+  }
+};
+
+window.addTask = async function() {
+  const title = await luxuryPrompt("Task Description", "e.g., Call lab for Patient X's crown");
+  if (!title) return;
+  
+  const btn = document.querySelector("#taskBoardModal .btn-primary");
+  if (btn) btn.textContent = "Saving to cloud...";
+  
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/clinic_tasks`, {
+      method: "POST",
+      headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        clinic_name: currentUser.clinic_name,
+        title: title.trim(),
+        author: currentUser.full_name || currentUser.username,
+        done: false
+      })
+    });
+    await refreshTaskList();
+  } catch (err) {
+    alert("Failed to add task: " + err.message);
+  } finally {
+    if (btn) btn.textContent = "+ Add New Task";
+  }
+};
+
+window.toggleTask = async function(id, currentStatus) {
+  try {
+    await api(`clinic_tasks?id=eq.${id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ done: !currentStatus })
+    });
+    await refreshTaskList();
+  } catch (err) {
+    alert("Update failed: " + err.message);
+  }
+};
+
+window.deleteTask = async function(id) {
+  try {
+    await api(`clinic_tasks?id=eq.${id}`, { method: "DELETE" });
+    await refreshTaskList();
+  } catch (err) {
+    alert("Delete failed: " + err.message);
+  }
+};
+
+// --- Inventory & Supply Alerts (Supabase) ---
+window.openInventory = async function() {
+  const modal = document.createElement("div");
+  modal.className = "luxury-modal";
+  modal.id = "inventoryModal";
+  modal.innerHTML = `
+    <div class="luxury-box wide-box">
+      <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:12px;">
+        <h2>Inventory Tracker</h2>
+        <button class="drawer-close-btn" onclick="document.getElementById('inventoryModal').remove()">×</button>
+      </div>
+      <p class="muted">Track clinical materials. Items turn red when they drop below your alert threshold.</p>
+      <div class="actions-bar" style="margin-bottom:16px;">
+        <button class="btn-primary" style="width:100%;" onclick="addInventoryItem()">+ Add Supply Item</button>
+      </div>
+      <div id="inventoryList" style="max-height: 400px; overflow-y: auto;">
+        <p class="muted">Loading inventory from cloud...</p>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+  await refreshInventoryList();
+};
+
+window.refreshInventoryList = async function() {
+  const listDiv = document.getElementById("inventoryList");
+  if (!listDiv) return;
+  try {
+    const inventory = await api(`clinic_inventory?clinic_name=eq.${encodeURIComponent(currentUser.clinic_name)}&order=name.asc`);
+    listDiv.innerHTML = inventory.map(item => {
+      const isLow = item.qty <= item.alert_qty;
+      return `
+      <div class="premium-list-row" style="${isLow ? 'border-left: 4px solid #ef4444;' : 'border-left: 4px solid var(--accent);'}">
+        <div>
+          <b style="${isLow ? 'color: #ef4444;' : 'color: var(--text);'}">${safeText(item.name)}</b>
+          <br><span style="font-size:12px;" class="muted">Quantity: <strong style="font-size:14px; color:var(--text);">${item.qty}</strong> | Alert at: ${item.alert_qty}</span>
+          ${isLow ? `<br><span style="color:#ef4444; font-size:11px; font-weight:bold;">⚠️ LOW STOCK ALERT</span>` : ''}
+        </div>
+        <div class="premium-pill-grid" style="display:flex; gap:6px;">
+          <button class="btn-secondary" style="font-size:14px; padding:8px 14px;" onclick="updateInventoryQty(${item.id}, ${item.qty}, 1)">+</button>
+          <button class="btn-secondary" style="font-size:14px; padding:8px 14px;" onclick="updateInventoryQty(${item.id}, ${item.qty}, -1)">-</button>
+          <button class="btn-danger" style="font-size:12px; padding:8px 14px;" onclick="deleteInventoryItem(${item.id})">Delete</button>
+        </div>
+      </div>
+    `}).join("") || '<p class="muted">Inventory is empty. Add supplies like gloves, composite, or anesthetic.</p>';
+  } catch(err) {
+    listDiv.innerHTML = `<p class="muted" style="color:#ef4444;">Error loading inventory.</p>`;
+  }
+};
+
+window.addInventoryItem = async function() {
+  const name = await luxuryPrompt("Supply Name", "e.g., Composite A2");
+  if (!name) return;
+  const qtyStr = await luxuryPrompt("Current Quantity", "e.g., 10", "10");
+  if (!qtyStr) return;
+  const alertStr = await luxuryPrompt("Alert me when it drops below:", "e.g., 3", "3");
+  
+  const btn = document.querySelector("#inventoryModal .btn-primary");
+  if (btn) btn.textContent = "Saving to cloud...";
+
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/clinic_inventory`, {
+      method: "POST",
+      headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        clinic_name: currentUser.clinic_name,
+        name: name.trim(),
+        qty: Number(qtyStr) || 0,
+        alert_qty: Number(alertStr) || 0
+      })
+    });
+    await refreshInventoryList();
+  } catch (err) {
+    alert("Failed to add inventory: " + err.message);
+  } finally {
+    if (btn) btn.textContent = "+ Add Supply Item";
+  }
+};
+
+window.updateInventoryQty = async function(id, currentQty, change) {
+  const newQty = Math.max(0, currentQty + change);
+  try {
+    await api(`clinic_inventory?id=eq.${id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ qty: newQty })
+    });
+    await refreshInventoryList();
+  } catch (err) {
+    alert("Update failed: " + err.message);
+  }
+};
+
+window.deleteInventoryItem = async function(id) {
+  if (!(await luxuryConfirm("Delete this supply item?"))) return;
+  try {
+    await api(`clinic_inventory?id=eq.${id}`, { method: "DELETE" });
+    await refreshInventoryList();
+  } catch (err) {
+    alert("Delete failed: " + err.message);
+  }
+};
+
+// --- Inject Buttons into Dashboard ---
+setTimeout(() => {
+  const injectDashboardExtras = function() {
+    const grid = document.querySelector('.premium-tools-grid');
+    if (grid && !document.getElementById('injectedInventoryBtn')) {
+      grid.insertAdjacentHTML('beforeend', `
+        <button id="injectedTaskBtn" class="premium-tool-btn" onclick="openTaskBoard()">Task Board<small>Shared clinic to-do list</small></button>
+        <button id="injectedInventoryBtn" class="premium-tool-btn" onclick="openInventory()">Inventory Tracker<small>Supply levels and low stock alerts</small></button>
+      `);
+    }
+  };
+  
+  injectDashboardExtras();
+  
+  if (typeof window.renderDashboard === 'function') {
+    const originalRender = window.renderDashboard;
+    window.renderDashboard = function() {
+      originalRender.apply(this, arguments);
+      setTimeout(injectDashboardExtras, 100);
+    };
+  }
+}, 2000);
