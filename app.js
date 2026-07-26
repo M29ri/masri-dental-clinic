@@ -634,8 +634,8 @@ function renderDashboard() {
       <div class="stat-card"><span class="stat-label">${t('todaysAppts')}</span><strong class="stat-value">${todayAppointments.length}</strong></div>
       <div class="stat-card"><span class="stat-label">${t('unpaidBalance')}</span><strong class="stat-value unpaid">${unpaid}</strong></div>
       <div class="stat-card"><span class="stat-label">${t('totalVisits')}</span><strong class="stat-value">${totalVisits}</strong></div>
-      <div class="stat-card"><span class="stat-label">${t('totalRevenue')}</span><strong class="stat-value gold">${totalRevenue}</strong></div>
-      <div class="stat-card"><span class="stat-label">${t('paidToday')}</span><strong class="stat-value gold">${paidToday}</strong></div>
+      ${currentUser?.role === 'assistant' ? '' : `<div class="stat-card"><span class="stat-label">${t('totalRevenue')}</span><strong class="stat-value gold">${totalRevenue}</strong></div>`}
+      ${currentUser?.role === 'assistant' ? '' : `<div class="stat-card"><span class="stat-label">${t('totalRevenue')}</span><strong class="stat-value gold">${totalRevenue}</strong></div>`}
     </div>
 
     <div class="quick-actions">
@@ -1850,15 +1850,20 @@ async function stopScan() {
 }
 
 // --- Backup & Restore ---
-window.backupData = function() {
-  const backup = { exported_at: new Date().toISOString(), clinic: currentUser?.clinic_name || "Masri Dental Clinic", user: currentUser, patients };
-  const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `dental-clinic-backup-${new Date().toISOString().slice(0,10)}.json`;
-  a.click();
-  URL.revokeObjectURL(url);
+window.backupData = async function() {
+  try {
+    const allPatients = await api("patients?select=*");
+    const backup = { exported_at: new Date().toISOString(), clinic: currentUser?.clinic_name || "Clinic", user: currentUser, patients: allPatients };
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `dental-clinic-backup-${new Date().toISOString().slice(0,10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch(err) {
+    alert("Backup failed. Please check your connection.");
+  }
 };
 
 window.restoreBackup = function() {
@@ -1868,21 +1873,32 @@ window.restoreBackup = function() {
   input.onchange = async e => {
     const file = e.target.files[0];
     if (!file) return;
-    if (!confirm("Restore backup? This will add patients from the backup file.")) return;
+    if (!(await luxuryConfirm("Restore Backup?", "This will sync patients from the file to your live cloud database."))) return;
     try {
       const backup = JSON.parse(await file.text());
       if (!backup.patients || !Array.isArray(backup.patients)) return alert("Invalid backup file.");
+      let successCount = 0;
       for (const p of backup.patients) {
-        await api("patients", { method: "POST", body: JSON.stringify({
+        // Use UPSERT by appending the ID and using PATCH if it exists, or POST if it doesn't
+        const dataPayload = {
           owner_id: currentUser.role === "admin" ? (p.owner_id || currentUser.id) : currentUser.id,
           case_id: p.case_id || makeId(),
           name: p.name || "", phone: p.phone || "", age: p.age || "", gender: p.gender || "",
           chief_complaint: p.chief_complaint || "", medical_alerts: p.medical_alerts || "",
           diagnosis: p.diagnosis || "", treatment_plan: p.treatment_plan || "",
           progress_notes: p.progress_notes || "", photos: p.photos || []
-        }) });
+        };
+        try {
+          const exists = await api(`patients?id=eq.${p.id}&select=id`);
+          if (exists && exists.length > 0) {
+            await api(`patients?id=eq.${p.id}`, { method: "PATCH", body: JSON.stringify(dataPayload) });
+          } else {
+            await api("patients", { method: "POST", body: JSON.stringify({...dataPayload, id: p.id}) });
+          }
+          successCount++;
+        } catch(e) { console.warn("Failed to restore patient: ", p.name); }
       }
-      alert("Backup restored successfully.");
+      alert(`Restore complete! ${successCount} patients synced to the cloud.`);
       await loadPatients();
       showPage("patients");
     } catch (err) { alert("Restore failed: " + err.message); }
@@ -1953,6 +1969,69 @@ window.editProfile = async function() {
     alert("Profile updated!");
   } catch (err) { alert("Update failed: " + err.message); }
 };
+window.openSignaturePad = function() {
+  document.getElementById('signaturePadModal')?.remove();
+  const modal = document.createElement("div");
+  modal.className = "luxury-modal";
+  modal.id = "signaturePadModal";
+  modal.innerHTML = `
+    <div class="luxury-box wide-box">
+      <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:12px;">
+        <h2>Draw Signature</h2>
+        <button class="drawer-close-btn" onclick="document.getElementById('signaturePadModal').remove()">×</button>
+      </div>
+      <p class="muted">Draw your signature below. It will be saved for PDFs and receipts.</p>
+      <div style="border:2px solid var(--border);border-radius:12px;background:white;margin:16px 0;touch-action:none;overflow:hidden;">
+        <canvas id="sigCanvas" width="500" height="200" style="width:100%;height:200px;cursor:crosshair;"></canvas>
+      </div>
+      <div class="actions-bar">
+        <button class="btn-secondary" id="clearSigBtn">Clear</button>
+        <button class="btn-primary" id="saveSigBtn">Save Signature</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+
+  const canvas = document.getElementById("sigCanvas");
+  const ctx = canvas.getContext("2d");
+  let drawing = false;
+
+  // Handle high-DPI displays so the drawing isn't blurry
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width;
+  canvas.height = rect.height;
+  ctx.strokeStyle = "#000000";
+  ctx.lineWidth = 3;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+
+  const getPos = (e) => {
+    const r = canvas.getBoundingClientRect();
+    const evt = e.touches ? e.touches[0] : e;
+    return { x: evt.clientX - r.left, y: evt.clientY - r.top };
+  };
+
+  const startDraw = (e) => { e.preventDefault(); drawing = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); };
+  const draw = (e) => { if (!drawing) return; e.preventDefault(); const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); };
+  const endDraw = (e) => { e.preventDefault(); drawing = false; };
+
+  canvas.addEventListener("mousedown", startDraw);
+  canvas.addEventListener("mousemove", draw);
+  canvas.addEventListener("mouseup", endDraw);
+  canvas.addEventListener("mouseout", endDraw);
+  canvas.addEventListener("touchstart", startDraw, { passive: false });
+  canvas.addEventListener("touchmove", draw, { passive: false });
+  canvas.addEventListener("touchend", endDraw);
+
+  document.getElementById("clearSigBtn").onclick = () => ctx.clearRect(0, 0, canvas.width, canvas.height);
+  
+  document.getElementById("saveSigBtn").onclick = () => {
+    const dataUrl = canvas.toDataURL("image/png");
+    const extras = doctorExtras();
+    extras.signature = dataUrl;
+    saveDoctorExtras(extras);
+    document.getElementById('signaturePadModal').remove();
+    alert("Signature saved successfully!");
+};
 
 window.changeMyPassword = async function() {
   const oldPass = await luxuryPrompt("Current password");
@@ -1991,6 +2070,10 @@ window.manageUsers = async function() {
       <div class="actions-bar" style="margin-top:14px;">
         <button class="btn-secondary" style="width:100%;" onclick="this.closest('.luxury-modal').remove()">Close</button>
       </div>
+            <div class="actions-bar" style="margin-top:14px;">
+        <button class="btn-primary" style="flex:1;" onclick="createAssistantAccount()">+ Add Assistant</button>
+        <button class="btn-secondary" style="flex:1;" onclick="this.closest('.luxury-modal').remove()">Close</button>
+      </div>
     </div>`;
   document.body.appendChild(modal);
 };
@@ -2002,6 +2085,39 @@ window.deleteUser = async function(id) {
   document.querySelector(".luxury-modal")?.remove();
 };
 
+window.createAssistantAccount = async function() {
+  const full_name = await luxuryPrompt("Assistant's Name", "e.g. Sarah");
+  if (!full_name) return;
+  const username = await luxuryPrompt("Choose Assistant Username", "e.g. sarah_assist");
+  if (!username) return;
+  const password = await luxuryPrompt("Choose Password for Assistant");
+  if (!password) return;
+  
+  try {
+    const existing = await api(`clinic_users?select=id&username=eq.${encodeURIComponent(username.trim())}`);
+    if (existing.length) return alert("This username already exists.");
+    
+    await fetch(`${SUPABASE_URL}/rest/v1/clinic_users`, {
+      method: "POST",
+      headers: {
+        apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, "Content-Type": "application/json", Prefer: "return=minimal"
+      },
+      body: JSON.stringify({
+        username: username.trim(),
+        password: password.trim(),
+        full_name: full_name.trim(),
+        role: "assistant",
+        clinic_name: currentUser.clinic_name,
+        clinic_logo: currentUser.clinic_logo
+      })
+    });
+    alert("Assistant account created successfully!");
+    document.querySelector(".luxury-modal")?.remove();
+    manageUsers();
+  } catch (err) {
+    alert("Failed to create assistant: " + err.message);
+  }
+};
 
 window.exportReceipt = function(id, index) {
   const p = patients.find(x => x.id === id);
