@@ -634,8 +634,8 @@ function renderDashboard() {
       <div class="stat-card"><span class="stat-label">${t('todaysAppts')}</span><strong class="stat-value">${todayAppointments.length}</strong></div>
       <div class="stat-card"><span class="stat-label">${t('unpaidBalance')}</span><strong class="stat-value unpaid">${unpaid}</strong></div>
       <div class="stat-card"><span class="stat-label">${t('totalVisits')}</span><strong class="stat-value">${totalVisits}</strong></div>
-      ${currentUser?.role === 'assistant' ? '' : `<div class="stat-card"><span class="stat-label">${t('totalRevenue')}</span><strong class="stat-value gold">${totalRevenue}</strong></div>`}
-      ${currentUser?.role === 'assistant' ? '' : `<div class="stat-card"><span class="stat-label">${t('totalRevenue')}</span><strong class="stat-value gold">${totalRevenue}</strong></div>`}
+      <div class="stat-card" style="${currentUser?.role === 'assistant' ? 'display: none !important;' : ''}"><span class="stat-label">${t('totalRevenue')}</span><strong class="stat-value gold">${totalRevenue}</strong></div>
+      <div class="stat-card" style="${currentUser?.role === 'assistant' ? 'display: none !important;' : ''}"><span class="stat-label">${t('paidToday')}</span><strong class="stat-value gold">${paidToday}</strong></div>
     </div>
 
     <div class="quick-actions">
@@ -2031,6 +2031,7 @@ window.openSignaturePad = function() {
     saveDoctorExtras(extras);
     document.getElementById('signaturePadModal').remove();
     alert("Signature saved successfully!");
+  };
 };
 
 window.changeMyPassword = async function() {
