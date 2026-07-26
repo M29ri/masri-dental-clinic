@@ -116,14 +116,22 @@ async function login(username, password) {
 async function registerDoctor() {
   const full_name = await luxuryPrompt("Your full name", "Doctor name");
   if (!full_name) return;
+  
+  let clinic_name = await luxuryPrompt("Clinic Name (Optional)", "e.g. Majed Dental Clinic or leave blank");
+  if (!clinic_name || clinic_name.trim() === "") {
+    clinic_name = `${full_name.trim()}'s Practice`;
+  }
+
   const username = await luxuryPrompt("Choose username", "Any username you want");
   if (!username) return;
   const password = await luxuryPrompt("Choose password", "Password");
   if (!password) return;
+  
   const cleanUsername = username.trim();
   try {
     const existing = await api(`clinic_users?select=id&username=eq.${encodeURIComponent(cleanUsername)}`);
     if (existing.length) return alert("This username already exists. Please login.");
+    
     const res = await fetch(`${SUPABASE_URL}/rest/v1/clinic_users`, {
       method: "POST",
       headers: {
@@ -137,7 +145,7 @@ async function registerDoctor() {
         password: password.trim(),
         full_name: full_name.trim(),
         role: "doctor",
-        clinic_name: `${full_name.trim()}'s Clinic`,
+        clinic_name: clinic_name.trim(),
         clinic_logo: ""
       })
     });
@@ -460,11 +468,16 @@ async function loadPatients() {
     if (statusEl) {
       statusEl.innerHTML = '<span class="status-dot pulse"></span> Loading cloud...';
     }
+        const safeClinicName = currentUser.clinic_name || (currentUser.username + "_clinic");
+    
     if (currentUser.role === "admin") {
       patients = await api("patients?select=*&order=created_at.desc");
     } else {
-      patients = await api(`patients?owner_id=eq.${currentUser.id}&select=*&order=created_at.desc`);
+      const clinicMembers = await api(`clinic_users?clinic_name=eq.${encodeURIComponent(safeClinicName)}&select=id`);
+      const memberIds = clinicMembers.map(u => u.id).join(',');
+      patients = memberIds ? await api(`patients?owner_id=in.(${memberIds})&select=*&order=created_at.desc`) : [];
     }
+
     renderPatients();
     renderDashboard();
     cachePatientsOffline();
@@ -2053,15 +2066,15 @@ window.changeMyPassword = async function() {
 
 // --- User Management ---
 window.manageUsers = async function() {
-  // 1. Allow both Admins AND Doctors to open the manager
   if (!currentUser || (currentUser.role !== "admin" && currentUser.role !== "doctor")) {
     return alert("Only doctors and admins can manage staff.");
   }
   
-  // 2. Privacy Filter: Admins see everyone. Doctors ONLY see their own clinic's staff.
+  const safeClinicName = currentUser.clinic_name || (currentUser.username + "_clinic");
+  
   const query = currentUser.role === "admin" 
     ? "clinic_users?select=*&order=created_at.desc" 
-    : `clinic_users?clinic_name=eq.${encodeURIComponent(currentUser.clinic_name)}&select=*&order=created_at.desc`;
+    : `clinic_users?clinic_name=eq.${encodeURIComponent(safeClinicName)}&select=*&order=created_at.desc`;
     
   const users = await api(query);
   
@@ -2089,14 +2102,6 @@ window.manageUsers = async function() {
   document.body.appendChild(modal);
 };
 
-
-window.deleteUser = async function(id) {
-  if (!(await luxuryConfirm("Delete user?"))) return;
-  await api(`clinic_users?id=eq.${id}`, { method: "DELETE" });
-  alert("User deleted.");
-  document.querySelector(".luxury-modal")?.remove();
-};
-
 window.createAssistantAccount = async function() {
   const full_name = await luxuryPrompt("Assistant's Name", "e.g. Sarah");
   if (!full_name) return;
@@ -2104,6 +2109,8 @@ window.createAssistantAccount = async function() {
   if (!username) return;
   const password = await luxuryPrompt("Choose Password for Assistant");
   if (!password) return;
+  
+  const safeClinicName = currentUser.clinic_name || (currentUser.username + "_clinic");
   
   try {
     const existing = await api(`clinic_users?select=id&username=eq.${encodeURIComponent(username.trim())}`);
@@ -2119,8 +2126,8 @@ window.createAssistantAccount = async function() {
         password: password.trim(),
         full_name: full_name.trim(),
         role: "assistant",
-        clinic_name: currentUser.clinic_name,
-        clinic_logo: currentUser.clinic_logo
+        clinic_name: safeClinicName,
+        clinic_logo: currentUser.clinic_logo || ""
       })
     });
     alert("Assistant account created successfully!");
@@ -2129,6 +2136,13 @@ window.createAssistantAccount = async function() {
   } catch (err) {
     alert("Failed to create assistant: " + err.message);
   }
+};
+
+window.deleteUser = async function(id) {
+  if (!(await luxuryConfirm("Delete user?"))) return;
+  await api(`clinic_users?id=eq.${id}`, { method: "DELETE" });
+  alert("User deleted.");
+  document.querySelector(".luxury-modal")?.remove();
 };
 
 window.exportReceipt = function(id, index) {
@@ -3395,18 +3409,28 @@ window.deleteInventoryItem = async function(id) {
   }
 };
 
-// --- Inject Buttons into Dashboard ---
 setTimeout(() => {
   const injectDashboardExtras = function() {
-    const grid = document.querySelector('.premium-tools-grid');
+    const grid = document.querySelector('.quick-actions');
     if (grid && !document.getElementById('injectedInventoryBtn')) {
       grid.insertAdjacentHTML('beforeend', `
-        <button id="injectedTaskBtn" class="premium-tool-btn" onclick="openTaskBoard()">Task Board<small>Shared clinic to-do list</small></button>
-        <button id="injectedInventoryBtn" class="premium-tool-btn" onclick="openInventory()">Inventory Tracker<small>Supply levels and low stock alerts</small></button>
+        <button id="injectedTaskBtn" class="btn-secondary" onclick="openTaskBoard()">Task Board</button>
+        <button id="injectedInventoryBtn" class="btn-secondary" onclick="openInventory()">Inventory</button>
       `);
     }
   };
   
+  injectDashboardExtras();
+  
+  if (typeof window.renderDashboard === 'function') {
+    const originalRender = window.renderDashboard;
+    window.renderDashboard = function() {
+      originalRender.apply(this, arguments);
+      setTimeout(injectDashboardExtras, 100);
+    };
+  }
+}, 2000);
+
   injectDashboardExtras();
   
   if (typeof window.renderDashboard === 'function') {
