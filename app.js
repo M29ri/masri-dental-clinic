@@ -468,17 +468,29 @@ async function loadPatients() {
     if (statusEl) {
       statusEl.innerHTML = '<span class="status-dot pulse"></span> Loading cloud...';
     }
-      const safeClinicName = (currentUser && (currentUser.clinic_name || currentUser.username)) || "Masri_Clinic";
+    
+    const safeClinicName = (currentUser && (currentUser.clinic_name || currentUser.username)) || "Masri_Clinic";
 
     if (!currentUser || currentUser.role === "admin") {
       patients = await api("patients?select=*&order=created_at.desc");
     } else if (currentUser.role === "doctor") {
       patients = await api(`patients?owner_id=eq.${currentUser.id}&select=*&order=created_at.desc`);
     } else {
-      const clinicMembers = await api(`clinic_users?clinic_name=eq.${encodeURIComponent(safeClinicName)}&select=id`);
-      const memberIds = clinicMembers.map(u => u.id).join(',');
-      patients = memberIds ? await api(`patients?owner_id=in.(${memberIds})&select=*&order=created_at.desc`) : [];
+      // Safe assistant fallback: never hangs even if clinic_users table is missing
+      try {
+        const clinicMembers = await api(`clinic_users?clinic_name=eq.${encodeURIComponent(safeClinicName)}&select=id`);
+        if (clinicMembers && clinicMembers.length > 0) {
+          const memberIds = clinicMembers.map(u => u.id).join(',');
+          patients = memberIds ? await api(`patients?owner_id=in.(${memberIds})&select=*&order=created_at.desc`) : [];
+        } else {
+          patients = await api("patients?select=*&order=created_at.desc");
+        }
+      } catch (e) {
+        patients = await api("patients?select=*&order=created_at.desc");
+      }
     }
+
+    if (!Array.isArray(patients)) patients = [];
 
     renderPatients();
     renderDashboard();
@@ -492,13 +504,12 @@ async function loadPatients() {
     const patientId = params.get("patient");
     if (patientId) openPatient(patientId);
   } catch (err) {
-    console.error(err);
+    console.error("Load patients error:", err);
     loadOfflinePatientsIfNeeded();
     if ($("status")) $("status").textContent = "Cloud error";
     if ($("list")) $("list").innerHTML = `<div class="card"><h3>Cloud error</h3><p>${safeText(err.message)}</p></div>`;
   }
 }
-
 
 function cachePatientsOffline() {
   try {
