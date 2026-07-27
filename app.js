@@ -3464,8 +3464,6 @@ setTimeout(() => {
     };
   }
 }, 2000);
-// --- Task Board Module ---
-window.openTaskBoard = async function() {
 // --- Task Board Module (Synced for Assistants & Doctors) ---
 window.openTaskBoard = async function() {
   const modal = document.createElement("div");
@@ -3625,7 +3623,6 @@ window.refreshInventoryList = async function() {
   }
 };
 
-
 window.addInventoryItem = async function() {
   const name = await luxuryPrompt("Supply Name", "e.g. Endodontic Files");
   if (!name || !name.trim()) return;
@@ -3668,6 +3665,7 @@ window.deleteInventoryItem = async function(id) {
   }
 };
 
+
 // --- Internal Team Chat Module ---
 window.openTeamChat = async function() {
   const modal = document.createElement("div");
@@ -3693,10 +3691,7 @@ window.openTeamChat = async function() {
   document.body.appendChild(modal);
   await refreshChatMessages();
   
-  // Auto-refresh chat every 5 seconds
   window._chatInterval = setInterval(refreshChatMessages, 5000);
-  
-  // Clear interval when modal is closed
   modal.querySelector('.drawer-close-btn').addEventListener('click', () => clearInterval(window._chatInterval));
 };
 
@@ -3749,3 +3744,4 @@ window.sendChatMessage = async function() {
     alert("Failed to send message: " + err.message);
   }
 };
+
