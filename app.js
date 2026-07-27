@@ -3437,6 +3437,8 @@ setTimeout(() => {
 }, 2000);
 // --- Task Board Module ---
 window.openTaskBoard = async function() {
+// --- Task Board Module (Synced for Assistants & Doctors) ---
+window.openTaskBoard = async function() {
   const modal = document.createElement("div");
   modal.className = "luxury-modal";
   modal.id = "taskModal";
@@ -3522,7 +3524,7 @@ window.deleteTask = async function(id) {
 };
 
 
-// --- Inventory Tracker Module ---
+// --- Inventory Tracker Module (Auto-Seeds Default Dental Supplies) ---
 window.openInventory = async function() {
   const modal = document.createElement("div");
   modal.className = "luxury-modal";
@@ -3550,7 +3552,25 @@ window.refreshInventoryList = async function() {
   if (!listDiv) return;
   try {
     const safeClinicName = (currentUser && (currentUser.clinic_name || currentUser.username)) || "Masri_Clinic";
-    const inventory = await api(`clinic_inventory?clinic_name=eq.${encodeURIComponent(safeClinicName)}&select=*&order=created_at.desc`);
+    let inventory = await api(`clinic_inventory?clinic_name=eq.${encodeURIComponent(safeClinicName)}&select=*&order=created_at.desc`);
+    
+    // AUTO-SEED DEFAULT DENTAL SUPPLIES IF EMPTY
+    if (!inventory.length) {
+      const defaultSupplies = [
+        { name: "Composite", qty: 5, alert_qty: 2 },
+        { name: "Rubber dam", qty: 10, alert_qty: 3 },
+        { name: "Gloves", qty: 25, alert_qty: 5 },
+        { name: "Local Anesthetic", qty: 15, alert_qty: 4 }
+      ];
+      for (const item of defaultSupplies) {
+        await fetch(`${SUPABASE_URL}/rest/v1/clinic_inventory`, {
+          method: "POST",
+          headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, "Content-Type": "application/json", Prefer: "return=minimal" },
+          body: JSON.stringify({ clinic_name: safeClinicName, name: item.name, qty: item.qty, alert_qty: item.alert_qty })
+        });
+      }
+      inventory = await api(`clinic_inventory?clinic_name=eq.${encodeURIComponent(safeClinicName)}&select=*&order=created_at.desc`);
+    }
     
     if (!inventory.length) {
       listDiv.innerHTML = `<p class="muted">Inventory is empty. Add supplies like gloves or composite.</p>`;
@@ -3578,11 +3598,11 @@ window.refreshInventoryList = async function() {
 };
 
 window.addInventoryItem = async function() {
-  const name = await luxuryPrompt("Supply Name", "e.g. Latex Gloves");
+  const name = await luxuryPrompt("Supply Name", "e.g. Endodontic Files");
   if (!name || !name.trim()) return;
-  const qtyStr = await luxuryPrompt("Current Quantity", "e.g. 50");
+  const qtyStr = await luxuryPrompt("Current Quantity", "e.g. 20");
   if (qtyStr === null) return;
-  const alertStr = await luxuryPrompt("Low Stock Alert Threshold", "e.g. 10");
+  const alertStr = await luxuryPrompt("Low Stock Alert Threshold", "e.g. 5");
   if (alertStr === null) return;
   
   const safeClinicName = (currentUser && (currentUser.clinic_name || currentUser.username)) || "Masri_Clinic";
@@ -3619,3 +3639,84 @@ window.deleteInventoryItem = async function(id) {
   }
 };
 
+// --- Internal Team Chat Module ---
+window.openTeamChat = async function() {
+  const modal = document.createElement("div");
+  modal.className = "luxury-modal";
+  modal.id = "chatModal";
+  modal.innerHTML = `
+    <div class="luxury-box wide-box" style="display:flex;flex-direction:column;height:500px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <h2>Clinic Team Chat</h2>
+        <button class="drawer-close-btn" onclick="document.getElementById('chatModal').remove()">×</button>
+      </div>
+      <p class="muted" style="margin-bottom:10px;">Instant communication between doctors and assistants.</p>
+      
+      <div id="chatMessages" style="flex:1;overflow-y:auto;background:rgba(0,0,0,0.2);padding:12px;border-radius:8px;margin-bottom:12px;display:flex;flex-direction:column;gap:8px;">
+        <p class="muted">Loading messages...</p>
+      </div>
+
+      <div style="display:flex;gap:8px;">
+        <input type="text" id="chatInput" class="luxury-input" placeholder="Type a message..." style="flex:1;padding:10px;border-radius:6px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:#fff;" onkeydown="if(event.key==='Enter') sendChatMessage()">
+        <button class="btn-primary" onclick="sendChatMessage()">Send</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+  await refreshChatMessages();
+  
+  // Auto-refresh chat every 5 seconds
+  window._chatInterval = setInterval(refreshChatMessages, 5000);
+  
+  // Clear interval when modal is closed
+  modal.querySelector('.drawer-close-btn').addEventListener('click', () => clearInterval(window._chatInterval));
+};
+
+window.refreshChatMessages = async function() {
+  const container = document.getElementById("chatMessages");
+  if (!container) return;
+  try {
+    const safeClinicName = (currentUser && (currentUser.clinic_name || currentUser.username)) || "Masri_Clinic";
+    const messages = await api(`clinic_chats?clinic_name=eq.${encodeURIComponent(safeClinicName)}&select=*&order=created_at.asc`);
+    
+    if (!messages.length) {
+      container.innerHTML = `<p class="muted" style="text-align:center;">No messages yet. Start the conversation!</p>`;
+      return;
+    }
+    
+    container.innerHTML = messages.map(m => `
+      <div style="background:rgba(255,255,255,0.04);padding:8px 12px;border-radius:6px;border-left:3px solid ${m.role === 'doctor' ? '#3b82f6' : '#10b981'};">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+          <b style="font-size:12px;color:${m.role === 'doctor' ? '#60a5fa' : '#34d399'};">${safeText(m.sender_name)} (${safeText(m.role)})</b>
+          <span class="muted" style="font-size:10px;">${new Date(m.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+        </div>
+        <div style="font-size:14px;word-break:break-word;">${safeText(m.message)}</div>
+      </div>
+    `).join("");
+    container.scrollTop = container.scrollHeight;
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+window.sendChatMessage = async function() {
+  const input = document.getElementById("chatInput");
+  if (!input || !input.value.trim()) return;
+  const messageText = input.value.trim();
+  input.value = "";
+  
+  const safeClinicName = (currentUser && (currentUser.clinic_name || currentUser.username)) || "Masri_Clinic";
+  const senderName = currentUser ? (currentUser.full_name || currentUser.username || "Staff") : "User";
+  const role = currentUser ? (currentUser.role || "staff") : "staff";
+  
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/clinic_chats`, {
+      method: "POST",
+      headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, "Content-Type": "application/json", Prefer: "return=minimal" },
+      body: JSON.stringify({ clinic_name: safeClinicName, sender_name: senderName, role: role, message: messageText })
+    });
+    if (!res.ok) throw new Error(await res.text());
+    await refreshChatMessages();
+  } catch (err) {
+    alert("Failed to send message: " + err.message);
+  }
+};
