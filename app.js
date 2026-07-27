@@ -3554,7 +3554,6 @@ window.refreshInventoryList = async function() {
     const safeClinicName = (currentUser && (currentUser.clinic_name || currentUser.username)) || "Masri_Clinic";
     let inventory = await api(`clinic_inventory?clinic_name=eq.${encodeURIComponent(safeClinicName)}&select=*&order=created_at.desc`);
     
-    // AUTO-SEED DEFAULT DENTAL SUPPLIES IF EMPTY
     if (!inventory.length) {
       const defaultSupplies = [
         { name: "Composite", qty: 5, alert_qty: 2 },
@@ -3596,6 +3595,7 @@ window.refreshInventoryList = async function() {
     listDiv.innerHTML = `<p class="muted" style="color:#ef4444;">Failed to load inventory: ${safeText(err.message)}</p>`;
   }
 };
+
 
 window.addInventoryItem = async function() {
   const name = await luxuryPrompt("Supply Name", "e.g. Endodontic Files");
@@ -3684,7 +3684,7 @@ window.refreshChatMessages = async function() {
     }
     
     container.innerHTML = messages.map(m => `
-      <div style="background:rgba(255,255,255,0.04);padding:8px 12px;border-radius:6px;border-left:3px solid ${m.role === 'doctor' ? '#3b82f6' : '#10b981'};">
+      <div style="background:rgba(255,255,255,0.04);padding:8px 12px;border-radius:6px;border-left:3px solid ${m.role === 'doctor' ? '#3b82f6' : '#10b981'};margin-bottom:8px;">
         <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
           <b style="font-size:12px;color:${m.role === 'doctor' ? '#60a5fa' : '#34d399'};">${safeText(m.sender_name)} (${safeText(m.role)})</b>
           <span class="muted" style="font-size:10px;">${new Date(m.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
