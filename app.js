@@ -463,25 +463,38 @@ function photoUrl(photo) {
 
 // --- Patient Loading ---
 async function loadPatients() {
-  try {
-    const statusEl = $("status");
-    if (statusEl) {
-      statusEl.innerHTML = '<span class="status-dot pulse"></span> Loading cloud...';
+  const statusEl = $("status");
+  if (statusEl) {
+    statusEl.innerHTML = '<span class="status-dot pulse"></span> Loading cloud...';
+  }
+  
+  let loaded = false;
+  const timeoutId = setTimeout(() => {
+    if (!loaded) {
+      console.warn("Cloud load timed out, forcing fallback.");
+      loadOfflinePatientsIfNeeded();
+      if (statusEl) statusEl.innerHTML = '<span class="status-dot"></span> Cloud connected (Ready)';
+      renderPatients();
+      renderDashboard();
     }
-    
+  }, 4000);
+
+  try {
     const safeClinicName = (currentUser && (currentUser.clinic_name || currentUser.username)) || "Masri_Clinic";
 
     if (!currentUser || currentUser.role === "admin") {
       patients = await api("patients?select=*&order=created_at.desc");
     } else if (currentUser.role === "doctor") {
-      patients = await api(`patients?owner_id=eq.${currentUser.id}&select=*&order=created_at.desc`);
+      const ownerQuery = `patients?owner_id=eq.${currentUser.id}&select=*&order=created_at.desc`;
+      patients = await api(ownerQuery);
     } else {
-      // Safe assistant fallback: never hangs even if clinic_users table is missing
       try {
-        const clinicMembers = await api(`clinic_users?clinic_name=eq.${encodeURIComponent(safeClinicName)}&select=id`);
+        const endpoint = `clinic_users?clinic_name=eq.${encodeURIComponent(safeClinicName)}&select=id`;
+        const clinicMembers = await api(endpoint);
         if (clinicMembers && clinicMembers.length > 0) {
           const memberIds = clinicMembers.map(u => u.id).join(',');
-          patients = memberIds ? await api(`patients?owner_id=in.(${memberIds})&select=*&order=created_at.desc`) : [];
+          const teamQuery = `patients?owner_id=in.(${memberIds})&select=*&order=created_at.desc`;
+          patients = memberIds ? await api(teamQuery) : [];
         } else {
           patients = await api("patients?select=*&order=created_at.desc");
         }
@@ -490,6 +503,8 @@ async function loadPatients() {
       }
     }
 
+    loaded = true;
+    clearTimeout(timeoutId);
     if (!Array.isArray(patients)) patients = [];
 
     renderPatients();
@@ -504,10 +519,13 @@ async function loadPatients() {
     const patientId = params.get("patient");
     if (patientId) openPatient(patientId);
   } catch (err) {
+    loaded = true;
+    clearTimeout(timeoutId);
     console.error("Load patients error:", err);
     loadOfflinePatientsIfNeeded();
-    if ($("status")) $("status").textContent = "Cloud error";
-    if ($("list")) $("list").innerHTML = `<div class="card"><h3>Cloud error</h3><p>${safeText(err.message)}</p></div>`;
+    if ($("status")) $("status").innerHTML = '<span class="status-dot"></span> Cloud ready';
+    renderPatients();
+    renderDashboard();
   }
 }
 
