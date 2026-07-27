@@ -3435,3 +3435,187 @@ setTimeout(() => {
     };
   }
 }, 2000);
+// --- Task Board Module ---
+window.openTaskBoard = async function() {
+  const modal = document.createElement("div");
+  modal.className = "luxury-modal";
+  modal.id = "taskModal";
+  modal.innerHTML = `
+    <div class="luxury-box wide-box">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <h2>Clinic Task Board</h2>
+        <button class="drawer-close-btn" onclick="document.getElementById('taskModal').remove()">×</button>
+      </div>
+      <p class="muted">Manage daily clinic tasks and assignments with your team.</p>
+      <div class="actions-bar" style="margin-bottom:16px;">
+        <button class="btn-primary" style="width:100%;" onclick="addTask()">+ Add New Task</button>
+      </div>
+      <div id="taskList" style="max-height:400px;overflow-y:auto;">
+        <p class="muted">Loading tasks...</p>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+  await refreshTaskList();
+};
+
+window.refreshTaskList = async function() {
+  const listDiv = document.getElementById("taskList");
+  if (!listDiv) return;
+  try {
+    const safeClinicName = (currentUser && (currentUser.clinic_name || currentUser.username)) || "Masri_Clinic";
+    const tasks = await api(`clinic_tasks?clinic_name=eq.${encodeURIComponent(safeClinicName)}&select=*&order=created_at.desc`);
+    
+    if (!tasks.length) {
+      listDiv.innerHTML = `<p class="muted">No pending tasks. Great job!</p>`;
+      return;
+    }
+    
+    listDiv.innerHTML = tasks.map(t => `
+      <div class="premium-list-row" style="display:flex;justify-content:space-between;align-items:center;padding:10px;margin-bottom:8px;background:rgba(255,255,255,0.03);border-radius:8px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <input type="checkbox" ${t.done ? "checked" : ""} onclick="toggleTask('${t.id}', ${t.done})">
+          <span style="${t.done ? "text-decoration:line-through;opacity:0.5;" : ""}">${safeText(t.title)}</span>
+        </div>
+        <button class="btn-danger" style="font-size:11px;padding:4px 8px;" onclick="deleteTask('${t.id}')">Delete</button>
+      </div>
+    `).join("");
+  } catch (err) {
+    listDiv.innerHTML = `<p class="muted" style="color:#ef4444;">Failed to load tasks: ${safeText(err.message)}</p>`;
+  }
+};
+
+window.addTask = async function() {
+  const title = await luxuryPrompt("New Task Description", "e.g. Sterilize instruments");
+  if (!title || !title.trim()) return;
+  const safeClinicName = (currentUser && (currentUser.clinic_name || currentUser.username)) || "Masri_Clinic";
+  
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/clinic_tasks`, {
+      method: "POST",
+      headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, "Content-Type": "application/json", Prefer: "return=minimal" },
+      body: JSON.stringify({ clinic_name: safeClinicName, title: title.trim(), done: false })
+    });
+    if (!res.ok) throw new Error(await res.text());
+    await refreshTaskList();
+  } catch (err) {
+    alert("Failed to add task: " + err.message);
+  }
+};
+
+window.toggleTask = async function(id, currentStatus) {
+  try {
+    await api(`clinic_tasks?id=eq.${id}`, { method: "PATCH", body: JSON.stringify({ done: !currentStatus }) });
+    await refreshTaskList();
+  } catch (err) {
+    alert("Update failed: " + err.message);
+  }
+};
+
+window.deleteTask = async function(id) {
+  if (!await luxuryConfirm("Delete this task?")) return;
+  try {
+    await api(`clinic_tasks?id=eq.${id}`, { method: "DELETE" });
+    await refreshTaskList();
+  } catch (err) {
+    alert("Delete failed: " + err.message);
+  }
+};
+
+
+// --- Inventory Tracker Module ---
+window.openInventory = async function() {
+  const modal = document.createElement("div");
+  modal.className = "luxury-modal";
+  modal.id = "inventoryModal";
+  modal.innerHTML = `
+    <div class="luxury-box wide-box">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <h2>Inventory Tracker</h2>
+        <button class="drawer-close-btn" onclick="document.getElementById('inventoryModal').remove()">×</button>
+      </div>
+      <p class="muted">Track clinical materials. Items turn red when below alert threshold.</p>
+      <div class="actions-bar" style="margin-bottom:16px;">
+        <button class="btn-primary" style="width:100%;" onclick="addInventoryItem()">+ Add Supply Item</button>
+      </div>
+      <div id="inventoryList" style="max-height:400px;overflow-y:auto;">
+        <p class="muted">Loading inventory...</p>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+  await refreshInventoryList();
+};
+
+window.refreshInventoryList = async function() {
+  const listDiv = document.getElementById("inventoryList");
+  if (!listDiv) return;
+  try {
+    const safeClinicName = (currentUser && (currentUser.clinic_name || currentUser.username)) || "Masri_Clinic";
+    const inventory = await api(`clinic_inventory?clinic_name=eq.${encodeURIComponent(safeClinicName)}&select=*&order=created_at.desc`);
+    
+    if (!inventory.length) {
+      listDiv.innerHTML = `<p class="muted">Inventory is empty. Add supplies like gloves or composite.</p>`;
+      return;
+    }
+    
+    listDiv.innerHTML = inventory.map(item => {
+      const isLow = Number(item.qty) <= Number(item.alert_qty);
+      return `
+        <div class="premium-list-row" style="display:flex;justify-content:space-between;align-items:center;padding:10px;margin-bottom:8px;background:rgba(255,255,255,0.03);border-radius:8px;border-left:4px solid ${isLow ? '#ef4444' : '#10b981'};">
+          <div>
+            <b>${safeText(item.name)}</b><br>
+            <small class="muted">Quantity: <b>${item.qty}</b> (Alert at: ${item.alert_qty}) ${isLow ? '⚠️ Low Stock' : ''}</small>
+          </div>
+          <div style="display:flex;gap:6px;">
+            <button class="btn-secondary" style="padding:4px 8px;font-size:12px;" onclick="updateInventoryQty('${item.id}', ${item.qty}, 1)">+1</button>
+            <button class="btn-secondary" style="padding:4px 8px;font-size:12px;" onclick="updateInventoryQty('${item.id}', ${item.qty}, -1)">-1</button>
+            <button class="btn-danger" style="padding:4px 8px;font-size:12px;" onclick="deleteInventoryItem('${item.id}')">Delete</button>
+          </div>
+        </div>`;
+    }).join("");
+  } catch (err) {
+    listDiv.innerHTML = `<p class="muted" style="color:#ef4444;">Failed to load inventory: ${safeText(err.message)}</p>`;
+  }
+};
+
+window.addInventoryItem = async function() {
+  const name = await luxuryPrompt("Supply Name", "e.g. Latex Gloves");
+  if (!name || !name.trim()) return;
+  const qtyStr = await luxuryPrompt("Current Quantity", "e.g. 50");
+  if (qtyStr === null) return;
+  const alertStr = await luxuryPrompt("Low Stock Alert Threshold", "e.g. 10");
+  if (alertStr === null) return;
+  
+  const safeClinicName = (currentUser && (currentUser.clinic_name || currentUser.username)) || "Masri_Clinic";
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/clinic_inventory`, {
+      method: "POST",
+      headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, "Content-Type": "application/json", Prefer: "return=minimal" },
+      body: JSON.stringify({ clinic_name: safeClinicName, name: name.trim(), qty: Number(qtyStr) || 0, alert_qty: Number(alertStr) || 0 })
+    });
+    if (!res.ok) throw new Error(await res.text());
+    await refreshInventoryList();
+  } catch (err) {
+    alert("Failed to add inventory: " + err.message);
+  }
+};
+
+window.updateInventoryQty = async function(id, currentQty, change) {
+  const newQty = Math.max(0, Number(currentQty) + change);
+  try {
+    await api(`clinic_inventory?id=eq.${id}`, { method: "PATCH", body: JSON.stringify({ qty: newQty }) });
+    await refreshInventoryList();
+  } catch (err) {
+    alert("Update failed: " + err.message);
+  }
+};
+
+window.deleteInventoryItem = async function(id) {
+  if (!await luxuryConfirm("Delete this supply item?")) return;
+  try {
+    await api(`clinic_inventory?id=eq.${id}`, { method: "DELETE" });
+    await refreshInventoryList();
+  } catch (err) {
+    alert("Delete failed: " + err.message);
+  }
+};
+
