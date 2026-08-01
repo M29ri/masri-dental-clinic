@@ -3745,3 +3745,77 @@ window.sendChatMessage = async function() {
   }
 };
 
+// --- Complete Default Inventory & Team Chat Integrations ---
+setTimeout(() => {
+  const injectDashboardExtras = function() {
+    const grid = document.querySelector('.quick-actions');
+    if (grid && !document.getElementById('injectedChatBtn')) {
+      grid.insertAdjacentHTML('beforeend', `
+        <button id="injectedTaskBtn" class="btn-secondary" onclick="openTaskBoard()">Task Board</button>
+        <button id="injectedInventoryBtn" class="btn-secondary" onclick="openInventory()">Inventory</button>
+        <button id="injectedChatBtn" class="btn-secondary" onclick="openTeamChat()">Team Chat</button>
+      `);
+    }
+  };
+  
+  injectDashboardExtras();
+  
+  if (typeof window.renderDashboard === 'function') {
+    const originalRender = window.renderDashboard;
+    window.renderDashboard = function() {
+      originalRender.apply(this, arguments);
+      setTimeout(injectDashboardExtras, 100);
+    };
+  }
+}, 2000);
+
+// Upgraded Inventory Auto-Seed with Full Dental Essentials
+window.refreshInventoryList = async function() {
+  const listDiv = document.getElementById("inventoryList");
+  if (!listDiv) return;
+  try {
+    const safeClinicName = (currentUser && (currentUser.clinic_name || currentUser.username)) || "Masri_Clinic";
+    let inventory = await api(`clinic_inventory?clinic_name=eq.${encodeURIComponent(safeClinicName)}&select=*&order=created_at.desc`);
+    
+    if (!inventory.length) {
+      const defaultSupplies = [
+        { name: "Composite A2", qty: 5, alert_qty: 2 },
+        { name: "Rubber dam", qty: 10, alert_qty: 3 },
+        { name: "Latex Gloves", qty: 25, alert_qty: 5 },
+        { name: "Local Anesthetic", qty: 15, alert_qty: 4 },
+        { name: "Endodontic Files", qty: 20, alert_qty: 5 }
+      ];
+      for (const item of defaultSupplies) {
+        await fetch(`${SUPABASE_URL}/rest/v1/clinic_inventory`, {
+          method: "POST",
+          headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, "Content-Type": "application/json", Prefer: "return=minimal" },
+          body: JSON.stringify({ clinic_name: safeClinicName, name: item.name, qty: item.qty, alert_qty: item.alert_qty })
+        });
+      }
+      inventory = await api(`clinic_inventory?clinic_name=eq.${encodeURIComponent(safeClinicName)}&select=*&order=created_at.desc`);
+    }
+    
+    if (!inventory.length) {
+      listDiv.innerHTML = `<p class="muted">Inventory is empty. Add supplies like gloves or composite.</p>`;
+      return;
+    }
+    
+    listDiv.innerHTML = inventory.map(item => {
+      const isLow = Number(item.qty) <= Number(item.alert_qty);
+      return `
+        <div class="premium-list-row" style="display:flex;justify-content:space-between;align-items:center;padding:10px;margin-bottom:8px;background:rgba(255,255,255,0.03);border-radius:8px;border-left:4px solid ${isLow ? '#ef4444' : '#10b981'};">
+          <div>
+            <b>${safeText(item.name)}</b><br>
+            <small class="muted">Quantity: <b>${item.qty}</b> (Alert at: ${item.alert_qty}) ${isLow ? '⚠️ Low Stock' : ''}</small>
+          </div>
+          <div style="display:flex;gap:6px;">
+            <button class="btn-secondary" style="padding:4px 8px;font-size:12px;" onclick="updateInventoryQty('${item.id}', ${item.qty}, 1)">+1</button>
+            <button class="btn-secondary" style="padding:4px 8px;font-size:12px;" onclick="updateInventoryQty('${item.id}', ${item.qty}, -1)">-1</button>
+            <button class="btn-danger" style="padding:4px 8px;font-size:12px;" onclick="deleteInventoryItem('${item.id}')">Delete</button>
+          </div>
+        </div>`;
+    }).join("");
+  } catch (err) {
+    listDiv.innerHTML = `<p class="muted" style="color:#ef4444;">Failed to load inventory: ${safeText(err.message)}</p>`;
+  }
+};
