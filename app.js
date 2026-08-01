@@ -3781,7 +3781,7 @@ window.openInventory = async function() {
         <h2>Inventory Tracker</h2>
         <button class="drawer-close-btn" onclick="document.getElementById('inventoryModal').remove()">×</button>
       </div>
-      <p class="muted">Track clinical materials with photos. Items turn red when below alert threshold.</p>
+      <p class="muted">Track clinical materials. Photos are added automatically.</p>
       
       <div style="margin: 12px 0;">
         <input type="text" id="inventorySearch" class="luxury-input" placeholder="Search supplies (e.g., composite, gloves)..." oninput="filterInventoryList()" style="width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:#fff;font-family:inherit;">
@@ -3805,21 +3805,45 @@ window.refreshInventoryList = async function() {
     const safeClinicName = (currentUser && (currentUser.clinic_name || currentUser.username)) || "Masri_Clinic";
     let inventory = await api(`clinic_inventory?clinic_name=eq.${encodeURIComponent(safeClinicName)}&select=*&order=created_at.desc`);
     
-    if (!inventory.length) {
-      const defaultSupplies = [
-        { name: "Composite Resin (A2)", qty: 5, alert_qty: 2, image_url: "" },
-        { name: "Rubber dam", qty: 10, alert_qty: 3, image_url: "" },
-        { name: "Latex Gloves", qty: 25, alert_qty: 5, image_url: "" },
-        { name: "Local Anesthetic", qty: 15, alert_qty: 4, image_url: "" },
-        { name: "Endodontic Files", qty: 20, alert_qty: 5, image_url: "" }
-      ];
-      for (const item of defaultSupplies) {
+    // The Full List of 20 Clinic Essentials
+    const defaultSupplies = [
+      { name: "Latex Gloves (Medium)", qty: 50, alert_qty: 10, image_url: "" },
+      { name: "Face Masks", qty: 40, alert_qty: 10, image_url: "" },
+      { name: "Patient Bibs", qty: 60, alert_qty: 15, image_url: "" },
+      { name: "Cotton Rolls", qty: 100, alert_qty: 20, image_url: "" },
+      { name: "Gauze Squares", qty: 80, alert_qty: 20, image_url: "" },
+      { name: "Saliva Ejectors", qty: 50, alert_qty: 10, image_url: "" },
+      { name: "Sterilization Pouches", qty: 100, alert_qty: 20, image_url: "" },
+      { name: "Composite Resin (A2)", qty: 5, alert_qty: 2, image_url: "" },
+      { name: "Composite Resin (A3)", qty: 5, alert_qty: 2, image_url: "" },
+      { name: "Universal Bonding Agent", qty: 3, alert_qty: 1, image_url: "" },
+      { name: "Etching Gel", qty: 4, alert_qty: 1, image_url: "" },
+      { name: "Glass Ionomer Cement (GIC)", qty: 3, alert_qty: 1, image_url: "" },
+      { name: "Temporary Filling (Cavit)", qty: 4, alert_qty: 1, image_url: "" },
+      { name: "Local Anesthetic Carpules", qty: 30, alert_qty: 10, image_url: "" },
+      { name: "Rubber Dam Sheets", qty: 20, alert_qty: 5, image_url: "" },
+      { name: "Endodontic Files (K-Files)", qty: 25, alert_qty: 5, image_url: "" },
+      { name: "Gutta-Percha Points", qty: 15, alert_qty: 5, image_url: "" },
+      { name: "Paper Points", qty: 15, alert_qty: 5, image_url: "" },
+      { name: "Alginate Powder", qty: 3, alert_qty: 1, image_url: "" },
+      { name: "Dental Stone", qty: 2, alert_qty: 1, image_url: "" }
+    ];
+
+    // Checks what you already have and ONLY adds the missing ones
+    const existingNames = new Set(inventory.map(i => i.name.toLowerCase()));
+    let addedNew = false;
+    for (const item of defaultSupplies) {
+      if (!existingNames.has(item.name.toLowerCase())) {
         await fetch(`${SUPABASE_URL}/rest/v1/clinic_inventory`, {
           method: "POST",
           headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, "Content-Type": "application/json", Prefer: "return=minimal" },
           body: JSON.stringify({ clinic_name: safeClinicName, name: item.name, qty: item.qty, alert_qty: item.alert_qty, image_url: item.image_url })
         });
+        addedNew = true;
       }
+    }
+
+    if (addedNew) {
       inventory = await api(`clinic_inventory?clinic_name=eq.${encodeURIComponent(safeClinicName)}&select=*&order=created_at.desc`);
     }
     
@@ -3845,25 +3869,62 @@ function renderFilteredInventory(inventory) {
     return;
   }
   
+  // Smart Auto-Photo Logic automatically matches the name to a picture
+  const getPhoto = (name, customUrl) => {
+    if (customUrl) return customUrl;
+    const n = name.toLowerCase();
+    if (n.includes("glove")) return "https://images.unsplash.com/photo-1584982751601-97d8cb0f66fc?w=150&q=80&fit=crop";
+    if (n.includes("mask")) return "https://images.unsplash.com/photo-1586942369287-21a48c5a2c26?w=150&q=80&fit=crop";
+    if (n.includes("anesthetic") || n.includes("syringe") || n.includes("carpule")) return "https://images.unsplash.com/photo-1628177142898-93e46e462bf4?w=150&q=80&fit=crop";
+    if (n.includes("composite") || n.includes("bond") || n.includes("etch") || n.includes("cement") || n.includes("alginate") || n.includes("stone") || n.includes("powder")) return "https://images.unsplash.com/photo-1606811841689-23dfddce3e95?w=150&q=80&fit=crop";
+    if (n.includes("cotton") || n.includes("gauze") || n.includes("bib") || n.includes("pouch") || n.includes("ejector")) return "https://images.unsplash.com/photo-1584362917165-526a968579e8?w=150&q=80&fit=crop";
+    return "https://images.unsplash.com/photo-1598331668826-20cefac91461?w=150&q=80&fit=crop"; // Default dental tray
+  };
+
   listDiv.innerHTML = inventory.map(item => {
     const isLow = Number(item.qty) <= Number(item.alert_qty);
+    const displayPhoto = getPhoto(item.name, item.image_url);
+    
     return `
       <div class="premium-list-row" style="display:flex;justify-content:space-between;align-items:center;padding:10px;margin-bottom:8px;background:rgba(255,255,255,0.03);border-radius:8px;border-left:4px solid ${isLow ? '#ef4444' : '#10b981'};">
         <div style="display:flex;align-items:center;gap:12px;">
-          ${item.image_url ? `<img src="${item.image_url}" style="width:44px;height:44px;object-fit:cover;border-radius:8px;border:1px solid rgba(255,255,255,0.1);" alt="item">` : `<div style="width:44px;height:44px;background:rgba(255,255,255,0.05);border-radius:8px;display:grid;place-items:center;font-size:10px;" class="muted">No img</div>`}
+          <img src="${displayPhoto}" style="width:44px;height:44px;object-fit:cover;border-radius:8px;border:1px solid rgba(255,255,255,0.1);" alt="item">
           <div>
             <b>${safeText(item.name)}</b><br>
             <small class="muted">Qty: <b>${item.qty}</b> (Alert: ${item.alert_qty}) ${isLow ? '⚠️ Low' : ''}</small>
           </div>
         </div>
-        <div style="display:flex;gap:6px;">
+        <div style="display:flex;gap:4px;align-items:center;">
           <button class="btn-secondary" style="padding:4px 8px;font-size:12px;" onclick="updateInventoryQty('${item.id}', ${item.qty}, 1)">+1</button>
           <button class="btn-secondary" style="padding:4px 8px;font-size:12px;" onclick="updateInventoryQty('${item.id}', ${item.qty}, -1)">-1</button>
+          <button class="btn-secondary" style="padding:4px 8px;font-size:11px;" onclick="uploadInventoryPhoto('${item.id}')">📷 Photo</button>
           <button class="btn-danger" style="padding:4px 8px;font-size:12px;" onclick="deleteInventoryItem('${item.id}')">Delete</button>
         </div>
       </div>`;
   }).join("");
 }
+
+window.uploadInventoryPhoto = async function(id) {
+  const fileInput = document.createElement("input");
+  fileInput.type = "file";
+  fileInput.accept = "image/*";
+  fileInput.onchange = async e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+      const cleanName = file.name.replace(/[^a-zA-Z0-9.]/g, "_");
+      const path = `inventory/${Date.now()}-${cleanName}`;
+      const compressedBlob = await compressImage(file, false);
+      const imageUrl = await uploadToBucket(PHOTO_BUCKET, path, compressedBlob, "image/jpeg");
+      
+      await api(`clinic_inventory?id=eq.${id}`, { method: "PATCH", body: JSON.stringify({ image_url: imageUrl }) });
+      await refreshInventoryList();
+    } catch (err) {
+      alert("Failed to upload photo: " + err.message);
+    }
+  };
+  fileInput.click();
+};
 
 window.addInventoryItem = async function() {
   const name = await luxuryPrompt("Supply Name", "e.g. Endodontic Files");
@@ -3873,45 +3934,17 @@ window.addInventoryItem = async function() {
   const alertStr = await luxuryPrompt("Low Stock Alert Threshold", "e.g. 5");
   if (alertStr === null) return;
 
-  const fileInput = document.createElement("input");
-  fileInput.type = "file";
-  fileInput.accept = "image/*";
-  
-  fileInput.onchange = async e => {
-    const file = e.target.files[0];
-    let imageUrl = "";
-    if (file) {
-      try {
-        const cleanName = file.name.replace(/[^a-zA-Z0-9.]/g, "_");
-        const path = `inventory/${Date.now()}-${cleanName}`;
-        const compressedBlob = await compressImage(file, false);
-        imageUrl = await uploadToBucket(PHOTO_BUCKET, path, compressedBlob, "image/jpeg");
-      } catch (err) {
-        console.warn("Photo upload failed, saving item without photo:", err);
-      }
-    }
-
-    const safeClinicName = (currentUser && (currentUser.clinic_name || currentUser.username)) || "Masri_Clinic";
-    try {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/clinic_inventory`, {
-        method: "POST",
-        headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, "Content-Type": "application/json", Prefer: "return=minimal" },
-        body: JSON.stringify({
-          clinic_name: safeClinicName,
-          name: name.trim(),
-          qty: Number(qtyStr) || 0,
-          alert_qty: Number(alertStr) || 0,
-          image_url: imageUrl
-        })
-      });
-      if (!res.ok) throw new Error(await res.text());
-      await refreshInventoryList();
-    } catch (err) {
-      alert("Failed to add inventory: " + err.message);
-    }
-  };
-
-  fileInput.click();
+  const safeClinicName = (currentUser && (currentUser.clinic_name || currentUser.username)) || "Masri_Clinic";
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/clinic_inventory`, {
+      method: "POST",
+      headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, "Content-Type": "application/json", Prefer: "return=minimal" },
+      body: JSON.stringify({ clinic_name: safeClinicName, name: name.trim(), qty: Number(qtyStr) || 0, alert_qty: Number(alertStr) || 0, image_url: "" })
+    });
+    await refreshInventoryList();
+  } catch (err) {
+    alert("Failed to add inventory: " + err.message);
+  }
 };
 
 window.updateInventoryQty = async function(id, currentQty, change) {
