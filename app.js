@@ -3869,16 +3869,24 @@ function renderFilteredInventory(inventory) {
     return;
   }
   
-  // Smart Auto-Photo Logic automatically matches the name to a picture
+  // Smart Auto-Icon Logic (Zero load time, never breaks)
   const getPhoto = (name, customUrl) => {
     if (customUrl) return customUrl;
+    
+    let emoji = "🦷"; 
     const n = name.toLowerCase();
-    if (n.includes("glove")) return "https://images.unsplash.com/photo-1584982751601-97d8cb0f66fc?w=150&q=80&fit=crop";
-    if (n.includes("mask")) return "https://images.unsplash.com/photo-1586942369287-21a48c5a2c26?w=150&q=80&fit=crop";
-    if (n.includes("anesthetic") || n.includes("syringe") || n.includes("carpule")) return "https://images.unsplash.com/photo-1628177142898-93e46e462bf4?w=150&q=80&fit=crop";
-    if (n.includes("composite") || n.includes("bond") || n.includes("etch") || n.includes("cement") || n.includes("alginate") || n.includes("stone") || n.includes("powder")) return "https://images.unsplash.com/photo-1606811841689-23dfddce3e95?w=150&q=80&fit=crop";
-    if (n.includes("cotton") || n.includes("gauze") || n.includes("bib") || n.includes("pouch") || n.includes("ejector")) return "https://images.unsplash.com/photo-1584362917165-526a968579e8?w=150&q=80&fit=crop";
-    return "https://images.unsplash.com/photo-1598331668826-20cefac91461?w=150&q=80&fit=crop"; // Default dental tray
+    if (n.includes("glove")) emoji = "🧤";
+    else if (n.includes("mask") || n.includes("bib")) emoji = "😷";
+    else if (n.includes("anesthetic") || n.includes("syringe") || n.includes("carpule")) emoji = "💉";
+    else if (n.includes("composite") || n.includes("bond") || n.includes("etch") || n.includes("cement")) emoji = "🧪";
+    else if (n.includes("cotton") || n.includes("gauze") || n.includes("paper") || n.includes("pouch") || n.includes("ejector")) emoji = "📄";
+    else if (n.includes("file") || n.includes("rubber")) emoji = "🗜️";
+    else if (n.includes("alginate") || n.includes("stone") || n.includes("powder")) emoji = "🥣";
+    
+    // Generates a crisp, dark-themed SVG badge instantly
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="#1e293b" rx="20"/><text x="50%" y="50%" font-size="50" text-anchor="middle" dy=".35em">${emoji}</text></svg>`;
+    
+    return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
   };
 
   listDiv.innerHTML = inventory.map(item => {
