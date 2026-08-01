@@ -3769,7 +3769,35 @@ setTimeout(() => {
   }
 }, 2000);
 
-// Upgraded Inventory Auto-Seed with Full Dental Essentials
+window._currentInventoryCache = [];
+
+window.openInventory = async function() {
+  const modal = document.createElement("div");
+  modal.className = "luxury-modal";
+  modal.id = "inventoryModal";
+  modal.innerHTML = `
+    <div class="luxury-box wide-box">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <h2>Inventory Tracker</h2>
+        <button class="drawer-close-btn" onclick="document.getElementById('inventoryModal').remove()">×</button>
+      </div>
+      <p class="muted">Track clinical materials with photos. Items turn red when below alert threshold.</p>
+      
+      <div style="margin: 12px 0;">
+        <input type="text" id="inventorySearch" class="luxury-input" placeholder="Search supplies (e.g., composite, gloves)..." oninput="filterInventoryList()" style="width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:#fff;font-family:inherit;">
+      </div>
+
+      <div class="actions-bar" style="margin-bottom:16px;">
+        <button class="btn-primary" style="width:100%;" onclick="addInventoryItem()">+ Add Supply Item</button>
+      </div>
+      <div id="inventoryList" style="max-height:380px;overflow-y:auto;">
+        <p class="muted">Loading inventory...</p>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+  await refreshInventoryList();
+};
+
 window.refreshInventoryList = async function() {
   const listDiv = document.getElementById("inventoryList");
   if (!listDiv) return;
@@ -3779,43 +3807,129 @@ window.refreshInventoryList = async function() {
     
     if (!inventory.length) {
       const defaultSupplies = [
-        { name: "Composite A2", qty: 5, alert_qty: 2 },
-        { name: "Rubber dam", qty: 10, alert_qty: 3 },
-        { name: "Latex Gloves", qty: 25, alert_qty: 5 },
-        { name: "Local Anesthetic", qty: 15, alert_qty: 4 },
-        { name: "Endodontic Files", qty: 20, alert_qty: 5 }
+        { name: "Composite Resin (A2)", qty: 5, alert_qty: 2, image_url: "" },
+        { name: "Rubber dam", qty: 10, alert_qty: 3, image_url: "" },
+        { name: "Latex Gloves", qty: 25, alert_qty: 5, image_url: "" },
+        { name: "Local Anesthetic", qty: 15, alert_qty: 4, image_url: "" },
+        { name: "Endodontic Files", qty: 20, alert_qty: 5, image_url: "" }
       ];
       for (const item of defaultSupplies) {
         await fetch(`${SUPABASE_URL}/rest/v1/clinic_inventory`, {
           method: "POST",
           headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, "Content-Type": "application/json", Prefer: "return=minimal" },
-          body: JSON.stringify({ clinic_name: safeClinicName, name: item.name, qty: item.qty, alert_qty: item.alert_qty })
+          body: JSON.stringify({ clinic_name: safeClinicName, name: item.name, qty: item.qty, alert_qty: item.alert_qty, image_url: item.image_url })
         });
       }
       inventory = await api(`clinic_inventory?clinic_name=eq.${encodeURIComponent(safeClinicName)}&select=*&order=created_at.desc`);
     }
     
-    if (!inventory.length) {
-      listDiv.innerHTML = `<p class="muted">Inventory is empty. Add supplies like gloves or composite.</p>`;
-      return;
-    }
-    
-    listDiv.innerHTML = inventory.map(item => {
-      const isLow = Number(item.qty) <= Number(item.alert_qty);
-      return `
-        <div class="premium-list-row" style="display:flex;justify-content:space-between;align-items:center;padding:10px;margin-bottom:8px;background:rgba(255,255,255,0.03);border-radius:8px;border-left:4px solid ${isLow ? '#ef4444' : '#10b981'};">
-          <div>
-            <b>${safeText(item.name)}</b><br>
-            <small class="muted">Quantity: <b>${item.qty}</b> (Alert at: ${item.alert_qty}) ${isLow ? '⚠️ Low Stock' : ''}</small>
-          </div>
-          <div style="display:flex;gap:6px;">
-            <button class="btn-secondary" style="padding:4px 8px;font-size:12px;" onclick="updateInventoryQty('${item.id}', ${item.qty}, 1)">+1</button>
-            <button class="btn-secondary" style="padding:4px 8px;font-size:12px;" onclick="updateInventoryQty('${item.id}', ${item.qty}, -1)">-1</button>
-            <button class="btn-danger" style="padding:4px 8px;font-size:12px;" onclick="deleteInventoryItem('${item.id}')">Delete</button>
-          </div>
-        </div>`;
-    }).join("");
+    window._currentInventoryCache = inventory;
+    renderFilteredInventory(inventory);
   } catch (err) {
     listDiv.innerHTML = `<p class="muted" style="color:#ef4444;">Failed to load inventory: ${safeText(err.message)}</p>`;
+  }
+};
+
+window.filterInventoryList = function() {
+  const query = (document.getElementById("inventorySearch")?.value || "").toLowerCase().trim();
+  const filtered = window._currentInventoryCache.filter(item => item.name.toLowerCase().includes(query));
+  renderFilteredInventory(filtered);
+};
+
+function renderFilteredInventory(inventory) {
+  const listDiv = document.getElementById("inventoryList");
+  if (!listDiv) return;
+  
+  if (!inventory.length) {
+    listDiv.innerHTML = `<p class="muted" style="text-align:center;padding:20px;">No matching supplies found.</p>`;
+    return;
+  }
+  
+  listDiv.innerHTML = inventory.map(item => {
+    const isLow = Number(item.qty) <= Number(item.alert_qty);
+    return `
+      <div class="premium-list-row" style="display:flex;justify-content:space-between;align-items:center;padding:10px;margin-bottom:8px;background:rgba(255,255,255,0.03);border-radius:8px;border-left:4px solid ${isLow ? '#ef4444' : '#10b981'};">
+        <div style="display:flex;align-items:center;gap:12px;">
+          ${item.image_url ? `<img src="${item.image_url}" style="width:44px;height:44px;object-fit:cover;border-radius:8px;border:1px solid rgba(255,255,255,0.1);" alt="item">` : `<div style="width:44px;height:44px;background:rgba(255,255,255,0.05);border-radius:8px;display:grid;place-items:center;font-size:10px;" class="muted">No img</div>`}
+          <div>
+            <b>${safeText(item.name)}</b><br>
+            <small class="muted">Qty: <b>${item.qty}</b> (Alert: ${item.alert_qty}) ${isLow ? '⚠️ Low' : ''}</small>
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;">
+          <button class="btn-secondary" style="padding:4px 8px;font-size:12px;" onclick="updateInventoryQty('${item.id}', ${item.qty}, 1)">+1</button>
+          <button class="btn-secondary" style="padding:4px 8px;font-size:12px;" onclick="updateInventoryQty('${item.id}', ${item.qty}, -1)">-1</button>
+          <button class="btn-danger" style="padding:4px 8px;font-size:12px;" onclick="deleteInventoryItem('${item.id}')">Delete</button>
+        </div>
+      </div>`;
+  }).join("");
+}
+
+window.addInventoryItem = async function() {
+  const name = await luxuryPrompt("Supply Name", "e.g. Endodontic Files");
+  if (!name || !name.trim()) return;
+  const qtyStr = await luxuryPrompt("Current Quantity", "e.g. 20");
+  if (qtyStr === null) return;
+  const alertStr = await luxuryPrompt("Low Stock Alert Threshold", "e.g. 5");
+  if (alertStr === null) return;
+
+  const fileInput = document.createElement("input");
+  fileInput.type = "file";
+  fileInput.accept = "image/*";
+  
+  fileInput.onchange = async e => {
+    const file = e.target.files[0];
+    let imageUrl = "";
+    if (file) {
+      try {
+        const cleanName = file.name.replace(/[^a-zA-Z0-9.]/g, "_");
+        const path = `inventory/${Date.now()}-${cleanName}`;
+        const compressedBlob = await compressImage(file, false);
+        imageUrl = await uploadToBucket(PHOTO_BUCKET, path, compressedBlob, "image/jpeg");
+      } catch (err) {
+        console.warn("Photo upload failed, saving item without photo:", err);
+      }
+    }
+
+    const safeClinicName = (currentUser && (currentUser.clinic_name || currentUser.username)) || "Masri_Clinic";
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/clinic_inventory`, {
+        method: "POST",
+        headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, "Content-Type": "application/json", Prefer: "return=minimal" },
+        body: JSON.stringify({
+          clinic_name: safeClinicName,
+          name: name.trim(),
+          qty: Number(qtyStr) || 0,
+          alert_qty: Number(alertStr) || 0,
+          image_url: imageUrl
+        })
+      });
+      if (!res.ok) throw new Error(await res.text());
+      await refreshInventoryList();
+    } catch (err) {
+      alert("Failed to add inventory: " + err.message);
+    }
+  };
+
+  fileInput.click();
+};
+
+window.updateInventoryQty = async function(id, currentQty, change) {
+  const newQty = Math.max(0, Number(currentQty) + change);
+  try {
+    await api(`clinic_inventory?id=eq.${id}`, { method: "PATCH", body: JSON.stringify({ qty: newQty }) });
+    await refreshInventoryList();
+  } catch (err) {
+    alert("Update failed: " + err.message);
+  }
+};
+
+window.deleteInventoryItem = async function(id) {
+  if (!await luxuryConfirm("Delete this supply item?")) return;
+  try {
+    await api(`clinic_inventory?id=eq.${id}`, { method: "DELETE" });
+    await refreshInventoryList();
+  } catch (err) {
+    alert("Delete failed: " + err.message);
   }
 };
