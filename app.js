@@ -3868,45 +3868,29 @@ function renderFilteredInventory(inventory) {
     listDiv.innerHTML = `<p class="muted" style="text-align:center;padding:20px;">No matching supplies found.</p>`;
     return;
   }
-  
-  // Smart Auto-Icon Logic (Zero load time, never breaks)
-  const getPhoto = (name, customUrl) => {
-    if (customUrl) return customUrl;
-    
-    let emoji = "🦷"; 
-    const n = name.toLowerCase();
-    if (n.includes("glove")) emoji = "🧤";
-    else if (n.includes("mask") || n.includes("bib")) emoji = "😷";
-    else if (n.includes("anesthetic") || n.includes("syringe") || n.includes("carpule")) emoji = "💉";
-    else if (n.includes("composite") || n.includes("bond") || n.includes("etch") || n.includes("cement")) emoji = "🧪";
-    else if (n.includes("cotton") || n.includes("gauze") || n.includes("paper") || n.includes("pouch") || n.includes("ejector")) emoji = "📄";
-    else if (n.includes("file") || n.includes("rubber")) emoji = "🗜️";
-    else if (n.includes("alginate") || n.includes("stone") || n.includes("powder")) emoji = "🥣";
-    
-    // Generates a crisp, dark-themed SVG badge instantly
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="#1e293b" rx="20"/><text x="50%" y="50%" font-size="50" text-anchor="middle" dy=".35em">${emoji}</text></svg>`;
-    
-    return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
-  };
 
   listDiv.innerHTML = inventory.map(item => {
     const isLow = Number(item.qty) <= Number(item.alert_qty);
-    const displayPhoto = getPhoto(item.name, item.image_url);
+    
+    // ONLY show an image if you manually uploaded a real one. Otherwise, no empty boxes.
+    const imageElement = item.image_url 
+      ? `<img src="${item.image_url}" style="width:44px;height:44px;object-fit:cover;border-radius:8px;border:1px solid rgba(255,255,255,0.1); margin-right: 12px;" alt="item">` 
+      : ``;
     
     return `
-      <div class="premium-list-row" style="display:flex;justify-content:space-between;align-items:center;padding:10px;margin-bottom:8px;background:rgba(255,255,255,0.03);border-radius:8px;border-left:4px solid ${isLow ? '#ef4444' : '#10b981'};">
-        <div style="display:flex;align-items:center;gap:12px;">
-          <img src="${displayPhoto}" style="width:44px;height:44px;object-fit:cover;border-radius:8px;border:1px solid rgba(255,255,255,0.1);" alt="item">
+      <div class="premium-list-row" style="display:flex;justify-content:space-between;align-items:center;padding:14px;margin-bottom:8px;background:rgba(255,255,255,0.03);border-radius:8px;border-left:4px solid ${isLow ? '#ef4444' : '#10b981'};">
+        <div style="display:flex;align-items:center;">
+          ${imageElement}
           <div>
-            <b>${safeText(item.name)}</b><br>
-            <small class="muted">Qty: <b>${item.qty}</b> (Alert: ${item.alert_qty}) ${isLow ? '⚠️ Low' : ''}</small>
+            <b style="font-size: 15px;">${safeText(item.name)}</b><br>
+            <small class="muted" style="font-size: 13px;">Qty: <b style="color: #fff;">${item.qty}</b> <span style="opacity:0.6;">(Alert: ${item.alert_qty})</span> ${isLow ? '⚠️ Low' : ''}</small>
           </div>
         </div>
-        <div style="display:flex;gap:4px;align-items:center;">
-          <button class="btn-secondary" style="padding:4px 8px;font-size:12px;" onclick="updateInventoryQty('${item.id}', ${item.qty}, 1)">+1</button>
-          <button class="btn-secondary" style="padding:4px 8px;font-size:12px;" onclick="updateInventoryQty('${item.id}', ${item.qty}, -1)">-1</button>
-          <button class="btn-secondary" style="padding:4px 8px;font-size:11px;" onclick="uploadInventoryPhoto('${item.id}')">📷 Photo</button>
-          <button class="btn-danger" style="padding:4px 8px;font-size:12px;" onclick="deleteInventoryItem('${item.id}')">Delete</button>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <button class="btn-secondary" style="padding:6px 10px;font-size:12px;" onclick="updateInventoryQty('${item.id}', ${item.qty}, 1)">+1</button>
+          <button class="btn-secondary" style="padding:6px 10px;font-size:12px;" onclick="updateInventoryQty('${item.id}', ${item.qty}, -1)">-1</button>
+          <button class="btn-secondary" style="padding:6px 10px;font-size:11px;" onclick="uploadInventoryPhoto('${item.id}')">📷 Photo</button>
+          <button class="btn-danger" style="padding:6px 10px;font-size:12px;" onclick="deleteInventoryItem('${item.id}')">Delete</button>
         </div>
       </div>`;
   }).join("");
