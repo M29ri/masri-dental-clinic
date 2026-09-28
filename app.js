@@ -3750,8 +3750,8 @@ setTimeout(() => {
 const injectDashboardExtras = function() {
   const grid = document.querySelector('.quick-actions');
   if (grid) {
-    document.querySelectorAll('#injectedTaskBtn, #injectedInventoryBtn, #injectedChatBtn').forEach(btn => btn.remove());
-    grid.insertAdjacentHTML('beforeend', '<button id="injectedTaskBtn" class="btn-secondary" onclick="openTaskBoard()">Task Board</button><button id="injectedInventoryBtn" class="btn-secondary" onclick="openInventory()">Inventory</button><button id="injectedChatBtn" class="btn-secondary" onclick="openTeamChat()">Team Chat</button>');
+    document.querySelectorAll('#injectedTaskBtn, #injectedInventoryBtn, #injectedChatBtn, #injectedExportBtn').forEach(btn => btn.remove());
+    grid.insertAdjacentHTML('beforeend', '<button id="injectedTaskBtn" class="btn-secondary" onclick="openTaskBoard()">Task Board</button><button id="injectedInventoryBtn" class="btn-secondary" onclick="openInventory()">Inventory</button><button id="injectedChatBtn" class="btn-secondary" onclick="openTeamChat()">Team Chat</button><button id="injectedExportBtn" class="btn-secondary" style="background:#ea580c;color:#fff;" onclick="openSocialExporter()">📸 IG Exporter</button>');
   }
 };
 
@@ -3955,4 +3955,142 @@ window.deleteInventoryItem = async function(id) {
   } catch (err) {
     alert("Delete failed: " + err.message);
   }
+};
+// ==========================================
+// CLINICAL CASE PORTFOLIO & SOCIAL EXPORTER
+// ==========================================
+window.openSocialExporter = function() {
+  const modal = document.createElement("div");
+  modal.className = "luxury-modal";
+  modal.id = "exporterModal";
+  modal.innerHTML = `
+    <div class="luxury-box wide-box" style="max-width: 500px; text-align: center;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
+        <h2>IG Case Exporter</h2>
+        <button class="drawer-close-btn" onclick="document.getElementById('exporterModal').remove()">×</button>
+      </div>
+      
+      <div style="display:flex; gap:10px; margin-bottom:15px;">
+        <button class="btn-primary" style="flex:1; font-size: 14px;" onclick="setExportMode('single')">Single Photo</button>
+        <button class="btn-secondary" style="flex:1; font-size: 14px;" onclick="setExportMode('split')">Before & After</button>
+      </div>
+      
+      <div id="exportInputs" style="margin-bottom: 15px;"></div>
+
+      <div style="background:#000; padding:10px; border-radius:10px; margin-bottom:15px; overflow:hidden;">
+        <p class="muted" style="font-size:12px; margin-bottom:8px;">Preview:</p>
+        <canvas id="exportCanvas" style="width:100%; max-width:400px; height:auto; background:#111; border-radius:8px;"></canvas>
+      </div>
+      
+      <button class="btn-primary" style="width:100%; font-size:16px; padding:14px; background:#10b981;" onclick="downloadIGPost()">💾 Download for Instagram</button>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  setExportMode('single'); // Defaults to single image mode
+};
+
+window._exportMode = 'single';
+
+window.setExportMode = function(mode) {
+  window._exportMode = mode;
+  const inputDiv = document.getElementById("exportInputs");
+  if (mode === 'single') {
+    inputDiv.innerHTML = `<label style="display:block;text-align:left;margin-bottom:5px;font-size:13px;color:#94a3b8;">Upload Final Case:</label><input type="file" id="imgSingle" accept="image/*" class="luxury-input" onchange="generateCanvas()">`;
+  } else {
+    inputDiv.innerHTML = `
+      <div style="display:flex; gap:10px;">
+        <div style="flex:1; text-align:left;"><label style="font-size:13px;color:#94a3b8;">Before:</label><input type="file" id="imgBefore" accept="image/*" class="luxury-input" style="padding:8px;" onchange="generateCanvas()"></div>
+        <div style="flex:1; text-align:left;"><label style="font-size:13px;color:#94a3b8;">After:</label><input type="file" id="imgAfter" accept="image/*" class="luxury-input" style="padding:8px;" onchange="generateCanvas()"></div>
+      </div>
+    `;
+  }
+  generateCanvas();
+};
+
+window.generateCanvas = async function() {
+  const canvas = document.getElementById('exportCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  
+  // 1. Load your specific GitHub Frame
+  const baseImg = new Image();
+  baseImg.crossOrigin = "anonymous";
+  baseImg.src = 'IMG_4923.jpeg';
+  
+  await new Promise(r => baseImg.onload = r);
+  canvas.width = baseImg.width;
+  canvas.height = baseImg.height;
+  
+  // Draw the blank base frame
+  ctx.drawImage(baseImg, 0, 0, canvas.width, canvas.height);
+  
+  // 2. Map the dimensions of the inner gray square
+  const marginX = canvas.width * 0.045; // 4.5% border width
+  const marginY = canvas.width * 0.045; 
+  const safeW = canvas.width - (marginX * 2);
+  const safeH = safeW; // Central area is a perfect square
+  
+  // Smart cropper logic (mimics CSS object-fit: cover)
+  const drawCover = async (fileInputId, x, y, w, h, radius = 0) => {
+    const file = document.getElementById(fileInputId)?.files[0];
+    if (!file) return;
+    
+    const img = new Image();
+    img.src = URL.createObjectURL(file);
+    await new Promise(r => img.onload = r);
+    
+    ctx.save();
+    if (radius > 0) {
+        ctx.beginPath();
+        ctx.roundRect(x, y, w, h, radius);
+        ctx.clip();
+    } else {
+        ctx.beginPath();
+        ctx.rect(x, y, w, h);
+        ctx.clip();
+    }
+    
+    const scale = Math.max(w / img.width, h / img.height);
+    const drawW = img.width * scale;
+    const drawH = img.height * scale;
+    const drawX = x + (w - drawW) / 2;
+    const drawY = y + (h - drawH) / 2;
+    
+    ctx.drawImage(img, drawX, drawY, drawW, drawH);
+    ctx.restore();
+  };
+
+  // 3. Render the selected layout
+  if (window._exportMode === 'single') {
+     await drawCover('imgSingle', marginX, marginY, safeW, safeH);
+  } else {
+     const gap = safeH * 0.18; // Blank space for the text markers
+     const imgHeight = (safeH - gap) / 2;
+     const cornerRadius = canvas.width * 0.04; // Adds the smooth rounded edges
+     
+     await drawCover('imgBefore', marginX, marginY, safeW, imgHeight, cornerRadius);
+     await drawCover('imgAfter', marginX, marginY + imgHeight + gap, safeW, imgHeight, cornerRadius);
+     
+     // 4. Inject the Before/After Marker Text
+     const centerX = marginX + (safeW / 2);
+     const textY1 = marginY + imgHeight + (gap * 0.42);
+     const textY2 = marginY + imgHeight + (gap * 0.88);
+     
+     ctx.fillStyle = "#0f172a";
+     ctx.textAlign = "center";
+     ctx.textBaseline = "middle";
+     ctx.font = `bold ${canvas.width * 0.05}px system-ui, -apple-system, sans-serif`;
+     
+     ctx.fillText("Before ⬇", centerX, textY1);
+     ctx.fillText("⤵ After", centerX, textY2);
+  }
+};
+
+window.downloadIGPost = function() {
+  const canvas = document.getElementById('exportCanvas');
+  if (!canvas) return;
+  const link = document.createElement('a');
+  link.download = `Masri_Clinic_Case_${new Date().getTime()}.jpg`;
+  link.href = canvas.toDataURL('image/jpeg', 0.95); // High quality export
+  link.click();
 };
