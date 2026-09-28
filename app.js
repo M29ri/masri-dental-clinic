@@ -3969,13 +3969,14 @@ window.openSocialExporter = function() {
   modal.id = "exporterModal";
   modal.innerHTML = `
     <div class="luxury-box wide-box" style="max-width: 500px; text-align: center;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
-        <h2>IG Case Exporter</h2>
-        <div style="display:flex;gap:6px;">
-          <button class="btn-secondary" style="padding:6px 10px;" onclick="openFrameSettings()">⚙️ Frame</button>
-          <button class="drawer-close-btn" onclick="document.getElementById('exporterModal').remove()">×</button>
+          <div style="position:relative; min-height:40px; margin-bottom:15px;">
+        <div style="display:flex; align-items:center; gap:15px; padding-top:5px;">
+          <h2 style="margin:0;">IG Exporter</h2>
+          <button class="btn-secondary" style="padding:6px 12px; font-size:13px;" onclick="openFrameSettings()">⚙️ Frame Settings</button>
         </div>
+        <button class="drawer-close-btn" onclick="document.getElementById('exporterModal').remove()">×</button>
       </div>
+
       
       <div style="display:flex; gap:10px; margin-bottom:15px;">
         <button class="btn-primary" style="flex:1; font-size: 14px;" onclick="setExportMode('single')">Single Photo</button>
