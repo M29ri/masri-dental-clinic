@@ -3851,30 +3851,6 @@ window.refreshInventoryList = async function() {
   }
 };
 
-    // Checks what you already have and ONLY adds the missing ones
-    const existingNames = new Set(inventory.map(i => i.name.toLowerCase()));
-    let addedNew = false;
-    for (const item of defaultSupplies) {
-      if (!existingNames.has(item.name.toLowerCase())) {
-        await fetch(`${SUPABASE_URL}/rest/v1/clinic_inventory`, {
-          method: "POST",
-          headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, "Content-Type": "application/json", Prefer: "return=minimal" },
-          body: JSON.stringify({ clinic_name: safeClinicName, name: item.name, qty: item.qty, alert_qty: item.alert_qty, image_url: item.image_url })
-        });
-        addedNew = true;
-      }
-    }
-
-    if (addedNew) {
-      inventory = await api(`clinic_inventory?clinic_name=eq.${encodeURIComponent(safeClinicName)}&select=*&order=created_at.desc`);
-    }
-    
-    window._currentInventoryCache = inventory;
-    renderFilteredInventory(inventory);
-  } catch (err) {
-    listDiv.innerHTML = `<p class="muted" style="color:#ef4444;">Failed to load inventory: ${safeText(err.message)}</p>`;
-  }
-};
 
 window.filterInventoryList = function() {
   const query = (document.getElementById("inventorySearch")?.value || "").toLowerCase().trim();
