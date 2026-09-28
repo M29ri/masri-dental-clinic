@@ -3747,20 +3747,13 @@ window.sendChatMessage = async function() {
 
 // --- Complete Default Inventory & Team Chat Integrations ---
 setTimeout(() => {
-      const injectDashboardExtras = function() {
-      const grid = document.querySelector('.quick-actions');
-      if (grid) {
-        // Force-remove any existing injected buttons to prevent duplicates
-        document.querySelectorAll('#injectedTaskBtn, #injectedInventoryBtn, #injectedChatBtn').forEach(btn => btn.remove());
-        
-        // Insert exactly one clean set
-        grid.insertAdjacentHTML('beforeend',
-          `<button id="injectedTaskBtn" class="btn-secondary" onclick="openTaskBoard()">Task Board</button>
-           <button id="injectedInventoryBtn" class="btn-secondary" onclick="openInventory()">Inventory</button>
-           <button id="injectedChatBtn" class="btn-secondary" onclick="openTeamChat()">Team Chat</button>`
-        );
-      }
-    };
+const injectDashboardExtras = function() {
+  const grid = document.querySelector('.quick-actions');
+  if (grid) {
+    document.querySelectorAll('#injectedTaskBtn, #injectedInventoryBtn, #injectedChatBtn').forEach(btn => btn.remove());
+    grid.insertAdjacentHTML('beforeend', '<button id="injectedTaskBtn" class="btn-secondary" onclick="openTaskBoard()">Task Board</button><button id="injectedInventoryBtn" class="btn-secondary" onclick="openInventory()">Inventory</button><button id="injectedChatBtn" class="btn-secondary" onclick="openTeamChat()">Team Chat</button>');
+  }
+};
 
   
   injectDashboardExtras();
