@@ -3956,10 +3956,14 @@ window.deleteInventoryItem = async function(id) {
     alert("Delete failed: " + err.message);
   }
 };
-// ==========================================
-// CLINICAL CASE PORTFOLIO & SOCIAL EXPORTER
-// ==========================================
+// ==============================================
+// MULTI-USER IG EXPORTER W/ DYNAMIC FRAMES
+// ==============================================
+
+// Main initialization
 window.openSocialExporter = function() {
+  if (document.getElementById('exporterModal')) document.getElementById('exporterModal').remove();
+
   const modal = document.createElement("div");
   modal.className = "luxury-modal";
   modal.id = "exporterModal";
@@ -3967,7 +3971,10 @@ window.openSocialExporter = function() {
     <div class="luxury-box wide-box" style="max-width: 500px; text-align: center;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
         <h2>IG Case Exporter</h2>
-        <button class="drawer-close-btn" onclick="document.getElementById('exporterModal').remove()">×</button>
+        <div style="display:flex;gap:6px;">
+          <button class="btn-secondary" style="padding:6px 10px;" onclick="openFrameSettings()">⚙️ Frame</button>
+          <button class="drawer-close-btn" onclick="document.getElementById('exporterModal').remove()">×</button>
+        </div>
       </div>
       
       <div style="display:flex; gap:10px; margin-bottom:15px;">
@@ -3989,8 +3996,8 @@ window.openSocialExporter = function() {
   setExportMode('single'); // Defaults to single image mode
 };
 
+// Mode selection (Single or Split)
 window._exportMode = 'single';
-
 window.setExportMode = function(mode) {
   window._exportMode = mode;
   const inputDiv = document.getElementById("exportInputs");
@@ -4007,30 +4014,45 @@ window.setExportMode = function(mode) {
   generateCanvas();
 };
 
+// Canvas generation logic
 window.generateCanvas = async function() {
   const canvas = document.getElementById('exportCanvas');
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
   
-  // 1. Load your specific GitHub Frame
+  // ==========================================
+// DYNAMIC FRAME LOGIC (REPLACES HARDCODED FILE)
+// ==========================================
   const baseImg = new Image();
   baseImg.crossOrigin = "anonymous";
-  baseImg.src = 'IMG_4923.jpeg';
   
-  await new Promise(r => baseImg.onload = r);
-  canvas.width = baseImg.width;
-  canvas.height = baseImg.height;
+  // Use user's custom frame URL if it exists in the profile, otherwise fallback to your legacy IMG_4923.jpeg.
+  // In a final production release, the fallback should be a plain blank white square (not your signature).
+  baseImg.src = (currentUser && currentUser.ig_frame_url) ? currentUser.ig_frame_url : 'IMG_4923.jpeg';
+  
+  try {
+      await new Promise(r => baseImg.onload = r);
+  } catch (err) {
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(0,0, canvas.width, canvas.height);
+      console.log("Failed to load frame, using plain white fallback.");
+  }
+
+  canvas.width = baseImg.width || 1080;
+  canvas.height = baseImg.height || 1080;
   
   // Draw the blank base frame
-  ctx.drawImage(baseImg, 0, 0, canvas.width, canvas.height);
+  if (baseImg.complete && baseImg.naturalWidth !== 0) {
+      ctx.drawImage(baseImg, 0, 0, canvas.width, canvas.height);
+  }
   
-  // 2. Map the dimensions of the inner gray square
+  // Coordinate Mapping of the central safe zone
   const marginX = canvas.width * 0.045; // 4.5% border width
   const marginY = canvas.width * 0.045; 
   const safeW = canvas.width - (marginX * 2);
   const safeH = safeW; // Central area is a perfect square
   
-  // Smart cropper logic (mimics CSS object-fit: cover)
+  // Smart cropper logic (object-fit: cover)
   const drawCover = async (fileInputId, x, y, w, h, radius = 0) => {
     const file = document.getElementById(fileInputId)?.files[0];
     if (!file) return;
@@ -4060,23 +4082,23 @@ window.generateCanvas = async function() {
     ctx.restore();
   };
 
-  // 3. Render the selected layout
+  // Render Layout
   if (window._exportMode === 'single') {
      await drawCover('imgSingle', marginX, marginY, safeW, safeH);
   } else {
-     const gap = safeH * 0.18; // Blank space for the text markers
+     const gap = safeH * 0.18; // Text marker area
      const imgHeight = (safeH - gap) / 2;
-     const cornerRadius = canvas.width * 0.04; // Adds the smooth rounded edges
+     const cornerRadius = canvas.width * 0.04; 
      
      await drawCover('imgBefore', marginX, marginY, safeW, imgHeight, cornerRadius);
      await drawCover('imgAfter', marginX, marginY + imgHeight + gap, safeW, imgHeight, cornerRadius);
      
-     // 4. Inject the Before/After Marker Text
+     // Inject Marker Text
      const centerX = marginX + (safeW / 2);
      const textY1 = marginY + imgHeight + (gap * 0.42);
      const textY2 = marginY + imgHeight + (gap * 0.88);
      
-     ctx.fillStyle = "#0f172a";
+     ctx.fillStyle = "#0f172a"; // Match default IG marker color
      ctx.textAlign = "center";
      ctx.textBaseline = "middle";
      ctx.font = `bold ${canvas.width * 0.05}px system-ui, -apple-system, sans-serif`;
@@ -4086,11 +4108,124 @@ window.generateCanvas = async function() {
   }
 };
 
+// Save Sheet integration (iOS compatible)
 window.downloadIGPost = function() {
   const canvas = document.getElementById('exportCanvas');
   if (!canvas) return;
-  const link = document.createElement('a');
-  link.download = `Masri_Clinic_Case_${new Date().getTime()}.jpg`;
-  link.href = canvas.toDataURL('image/jpeg', 0.95); // High quality export
-  link.click();
+  
+  canvas.toBlob(async function(blob) {
+    const fileName = `Masri_Case_${new Date().getTime()}.jpg`;
+    const file = new File([blob], fileName, { type: 'image/jpeg' });
+    
+    // Trigger Share Sheet
+    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({
+          files: [file],
+          title: 'Clinical Case Export'
+        });
+      } catch (err) {
+        console.log("Share sheet closed.", err);
+      }
+    } else {
+      // Desktop Fallback
+      const link = document.createElement('a');
+      link.download = fileName;
+      link.href = URL.createObjectURL(blob);
+      link.click();
+    }
+  }, 'image/jpeg', 0.95);
+};
+
+// ==============================================
+// FRAME SETTINGS: Allows users to upload their branded frame
+// ==============================================
+
+window.openFrameSettings = function() {
+  const modal = document.createElement("div");
+  modal.className = "luxury-modal";
+  modal.id = "frameSettingsModal";
+  modal.style.zIndex = '1001'; // Place above the main exporter modal
+  modal.innerHTML = `
+    <div class="luxury-box wide-box" style="max-width: 400px; text-align: center;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
+        <h2>Frame Settings</h2>
+        <button class="drawer-close-btn" onclick="document.getElementById('frameSettingsModal').remove()">×</button>
+      </div>
+      
+      <p class="muted" style="font-size: 13px; margin-bottom: 15px; text-align: left;">
+        To standardize clinical posts with your branding, upload a squared (1080x1080) PNG that includes your signature or logo on the border. The central area should have a light gray guide square (4.5% border width).
+      </p>
+      
+      <div id="currentFramePreview" style="background:#000; padding:10px; border-radius:10px; margin-bottom:15px;">
+        <p class="muted" style="font-size:12px; margin-bottom:6px;">Current Branded Frame:</p>
+        <img id="frameImgPvw" src="${(currentUser && currentUser.ig_frame_url) ? currentUser.ig_frame_url : 'IMG_4923.jpeg'}" style="width:100%; max-width:200px; height:auto; border-radius:8px; background:#111;">
+      </div>
+      
+      <label style="display:block;text-align:left;margin-bottom:5px;font-size:13px;color:#94a3b8;">Upload New Frame:</label>
+      <input type="file" id="newFrameFile" accept="image/*" class="luxury-input" style="margin-bottom:15px;">
+      
+      <button id="saveFrameBtn" class="btn-primary" style="width:100%; padding:12px;" onclick="uploadAndUpdateCustomFrame()">Save Frame</button>
+    </div>
+  `;
+  document.body.appendChild(modal);
+};
+
+window.uploadAndUpdateCustomFrame = async function() {
+  const fileInput = document.getElementById('newFrameFile');
+  if (!fileInput || !fileInput.files[0]) {
+    alert("Please select a frame image file first.");
+    return;
+  }
+  
+  const btn = document.getElementById('saveFrameBtn');
+  btn.innerText = "Saving...";
+  btn.disabled = true;
+  btn.style.opacity = '0.5';
+  
+  const file = fileInput.files[0];
+  const secureClinicName = encodeURIComponent(currentUser ? currentUser.clinic_name : "General");
+  const fileName = `${secureClinicName}_IG_Frame_${new Date().getTime()}.png`;
+  
+  try {
+    // 1. Upload new frame to the existing inventory_photos bucket (as we already established it is public)
+    const { data: uploadData, error: uploadError } = await window.supabase.storage
+      .from('inventory_photos') // Reuse existing bucket
+      .upload(fileName, file);
+
+    if (uploadError) throw uploadError;
+
+    // 2. Get Public URL
+    const { data: publicUrlData } = window.supabase.storage
+      .from('inventory_photos')
+      .getPublicUrl(fileName);
+
+    const publicUrl = publicUrlData.publicUrl;
+
+    // 3. Update the logged-in user's dynamic profile in Supabase
+    const { error: updateError } = await window.supabase
+      .from('clinic_users')
+      .update({ ig_frame_url: publicUrl })
+      .eq('id', currentUser.id);
+
+    if (updateError) throw updateError;
+
+    // 4. Update the active session so the UI updates immediately without a reload
+    currentUser.ig_frame_url = publicUrl;
+    
+    // 5. Update UI
+    const preview = document.getElementById('frameImgPvw');
+    if (preview) preview.src = publicUrl;
+    generateCanvas(); // Regenerate main exporter canvas
+    
+    alert("Branded frame saved successfully!");
+    document.getElementById('frameSettingsModal').remove();
+    
+  } catch (err) {
+    alert("Failed to save frame: " + err.message);
+  } finally {
+    btn.innerText = "Save Frame";
+    btn.disabled = false;
+    btn.style.opacity = '1';
+  }
 };
