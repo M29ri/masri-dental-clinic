@@ -3969,15 +3969,14 @@ window.openSocialExporter = function() {
   modal.id = "exporterModal";
   modal.innerHTML = `
     <div class="luxury-box wide-box" style="max-width: 500px; text-align: center;">
-          <div style="position:relative; min-height:40px; margin-bottom:15px;">
-        <div style="display:flex; align-items:center; gap:15px; padding-top:5px;">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:20px;">
+        <div style="display:flex; flex-direction:column; align-items:flex-start; gap:10px;">
           <h2 style="margin:0;">IG Exporter</h2>
           <button class="btn-secondary" style="padding:6px 12px; font-size:13px;" onclick="openFrameSettings()">⚙️ Frame Settings</button>
         </div>
-        <button class="drawer-close-btn" onclick="document.getElementById('exporterModal').remove()">×</button>
+        <button style="background:rgba(255,255,255,0.15); border:none; color:#fff; width:36px; height:36px; border-radius:10px; font-size:22px; cursor:pointer; display:flex; align-items:center; justify-content:center;" onclick="document.getElementById('exporterModal').remove()">×</button>
       </div>
-
-      
+   
       <div style="display:flex; gap:10px; margin-bottom:15px;">
         <button class="btn-primary" style="flex:1; font-size: 14px;" onclick="setExportMode('single')">Single Photo</button>
         <button class="btn-secondary" style="flex:1; font-size: 14px;" onclick="setExportMode('split')">Before & After</button>
@@ -4024,28 +4023,29 @@ window.generateCanvas = async function() {
   // ==========================================
 // DYNAMIC FRAME LOGIC (REPLACES HARDCODED FILE)
 // ==========================================
-  const baseImg = new Image();
-  baseImg.crossOrigin = "anonymous";
+  // 1. Draw a clean, blank white square as the default background
+  canvas.width = 1080;
+  canvas.height = 1080;
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0,0, canvas.width, canvas.height);
   
-  // Use user's custom frame URL if it exists in the profile, otherwise fallback to your legacy IMG_4923.jpeg.
-  // In a final production release, the fallback should be a plain blank white square (not your signature).
-  baseImg.src = (currentUser && currentUser.ig_frame_url) ? currentUser.ig_frame_url : 'IMG_4923.jpeg';
-  
-  try {
-      await new Promise(r => baseImg.onload = r);
-  } catch (err) {
-      ctx.fillStyle = "#fff";
-      ctx.fillRect(0,0, canvas.width, canvas.height);
-      console.log("Failed to load frame, using plain white fallback.");
+  // 2. If the doctor has their own custom frame, load and draw it on top
+  if (currentUser && currentUser.ig_frame_url) {
+      const customImg = new Image();
+      customImg.crossOrigin = "anonymous";
+      customImg.src = currentUser.ig_frame_url;
+      try {
+          await new Promise(r => customImg.onload = r);
+          if (customImg.naturalWidth !== 0) {
+              canvas.width = customImg.width;
+              canvas.height = customImg.height;
+              ctx.drawImage(customImg, 0, 0, canvas.width, canvas.height);
+          }
+      } catch (err) {
+          console.log("No custom frame found or failed to load.");
+      }
   }
 
-  canvas.width = baseImg.width || 1080;
-  canvas.height = baseImg.height || 1080;
-  
-  // Draw the blank base frame
-  if (baseImg.complete && baseImg.naturalWidth !== 0) {
-      ctx.drawImage(baseImg, 0, 0, canvas.width, canvas.height);
-  }
   
   // Coordinate Mapping of the central safe zone
   const marginX = canvas.width * 0.045; // 4.5% border width
@@ -4160,7 +4160,7 @@ window.openFrameSettings = function() {
       
       <div id="currentFramePreview" style="background:#000; padding:10px; border-radius:10px; margin-bottom:15px;">
         <p class="muted" style="font-size:12px; margin-bottom:6px;">Current Branded Frame:</p>
-        <img id="frameImgPvw" src="${(currentUser && currentUser.ig_frame_url) ? currentUser.ig_frame_url : 'IMG_4923.jpeg'}" style="width:100%; max-width:200px; height:auto; border-radius:8px; background:#111;">
+        <img id="frameImgPvw" src="${(currentUser && currentUser.ig_frame_url) ? currentUser.ig_frame_url : 'data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=='}" style="width:100%; max-width:200px; height:auto; min-height:150px; border-radius:8px; background:#fff; object-fit:contain;">
       </div>
       
       <label style="display:block;text-align:left;margin-bottom:5px;font-size:13px;color:#94a3b8;">Upload New Frame:</label>
